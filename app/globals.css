@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────
+   포엠 — 색·타이포 토큰
+   "조용한 작업실 / 종이 같은 질감"을 위한 저채도 팔레트.
+   ────────────────────────────────────────────────────────── */
+:root {
+  --paper: #faf7f2;
+  --paper-2: #f4efe6;
+  --ink: #1f1d1a;
+  --ink-soft: #4a463f;
+  --ink-mute: #8a857a;
+  --line: #e7e1d4;
+  --line-soft: #efeadd;
+  --accent: #6b6256;
+  --accent-soft: #a89a85;
+  --danger: #a85a4a;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-mute: var(--ink-mute);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-sans-kr);
+  --font-serif: var(--font-serif-kr);
+}
+
+html, body { height: 100%; }
+
+body {
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans-kr), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 시 본문은 항상 명조체 + 넉넉한 여백·행간 */
+.prose-poem {
+  font-family: var(--font-serif-kr), "Noto Serif KR", "Nanum Myeongjo",
+    ui-serif, Georgia, serif;
+  white-space: pre-wrap;
+  line-height: 2.0;
+  letter-spacing: 0.01em;
+  font-size: 1.0625rem;
+  color: var(--ink);
+}
+.prose-poem.lg {
+  font-size: 1.1875rem;
+  line-height: 2.1;
+}
+
+/* 종이 질감 — 아주 옅은 그라디언트 */
+.bg-paper-grain {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(0,0,0,0.015), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(0,0,0,0.015), transparent 40%);
+}
+
+/* 카드 한 장 */
+.card-paper {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+/* 얇은 구분선 */
+hr.divider {
+  border: none;
+  border-top: 1px solid var(--line);
+}
