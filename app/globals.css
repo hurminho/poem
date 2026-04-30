@@ -1,81 +1,164 @@
 @import "tailwindcss";
 
+/* Pretendard — 한국어 UI 본 폰트 */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+
 /* ──────────────────────────────────────────────────────────
-   포엠 — 색·타이포 토큰
-   "조용한 작업실 / 종이 같은 질감"을 위한 저채도 팔레트.
+   포엠 — 3 테마 토큰
+     기본: 따뜻한 종이 (light)
+     [data-theme="night"]   : 야간 (서재의 등불)
+     [data-theme="minimal"] : 미니멀 (흰 종이)
    ────────────────────────────────────────────────────────── */
+
 :root {
-  --paper: #faf7f2;
-  --paper-2: #f4efe6;
-  --ink: #1f1d1a;
-  --ink-soft: #4a463f;
-  --ink-mute: #8a857a;
-  --line: #e7e1d4;
-  --line-soft: #efeadd;
-  --accent: #6b6256;
-  --accent-soft: #a89a85;
-  --danger: #a85a4a;
+  /* Light (기본) */
+  --background: #FAF7F0;
+  --surface: #FFFFFF;
+  --text-primary: #27231F;
+  --text-secondary: #7A7168;
+  --border-soft: #E8DFD2;
+  --accent: #8C6A4F;
+  --accent-soft: #EFE4D6;
 }
 
+[data-theme="night"] {
+  --background: #151515;
+  --surface: #1F1E1B;
+  --text-primary: #F5EFE6;
+  --text-secondary: #B8ADA1;
+  --border-soft: #38332D;
+  --accent: #C6A57A;
+  --accent-soft: #2B241D;
+}
+
+[data-theme="minimal"] {
+  --background: #FFFFFF;
+  --surface: #F8F8F8;
+  --text-primary: #111111;
+  --text-secondary: #777777;
+  --border-soft: #E5E5E5;
+  --accent: #222222;
+  --accent-soft: #F0F0F0;
+}
+
+/* Tailwind v4 : @theme 로 변수를 디자인 토큰으로 노출 */
 @theme inline {
-  --color-paper: var(--paper);
-  --color-paper-2: var(--paper-2);
-  --color-ink: var(--ink);
-  --color-ink-soft: var(--ink-soft);
-  --color-ink-mute: var(--ink-mute);
-  --color-line: var(--line);
-  --color-line-soft: var(--line-soft);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-soft: var(--border-soft);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
-  --color-danger: var(--danger);
 
-  --font-sans: var(--font-sans-kr);
-  --font-serif: var(--font-serif-kr);
+  --font-sans: var(--font-sans-ui), "Pretendard Variable", Pretendard,
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  --font-serif: var(--font-serif-poem), "Noto Serif KR", "KoPub Batang",
+    "Nanum Myeongjo", ui-serif, Georgia, serif;
 }
 
 html, body { height: 100%; }
 
 body {
-  background-color: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-sans-kr), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-sans-ui), "Pretendard Variable", Pretendard,
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* 시 본문은 항상 명조체 + 넉넉한 여백·행간 */
-.prose-poem {
-  font-family: var(--font-serif-kr), "Noto Serif KR", "Nanum Myeongjo",
-    ui-serif, Georgia, serif;
-  white-space: pre-wrap;
-  line-height: 2.0;
-  letter-spacing: 0.01em;
-  font-size: 1.0625rem;
-  color: var(--ink);
-}
-.prose-poem.lg {
-  font-size: 1.1875rem;
-  line-height: 2.1;
-}
+/* ──────────────────────────────────────────────────────────
+   재사용 클래스 (포엠 디자인 시스템)
+   ────────────────────────────────────────────────────────── */
 
-/* 종이 질감 — 아주 옅은 그라디언트 */
-.bg-paper-grain {
-  background-color: var(--paper);
+/* 시 한 편이 펼쳐지는 가장 바깥의 페이지 — 종이 위 */
+.poem-page {
+  background-color: var(--background);
   background-image:
-    radial-gradient(circle at 20% 10%, rgba(0,0,0,0.015), transparent 40%),
-    radial-gradient(circle at 80% 90%, rgba(0,0,0,0.015), transparent 40%);
+    radial-gradient(circle at 18% 8%,  rgba(0,0,0,0.018), transparent 42%),
+    radial-gradient(circle at 82% 92%, rgba(0,0,0,0.018), transparent 42%);
+  min-height: 100%;
 }
 
-/* 카드 한 장 */
-.card-paper {
-  background: #fff;
-  border: 1px solid var(--line);
+/* 카드 형태로 떠 있는 종이 한 장 */
+.poem-surface {
+  background-color: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+}
+
+/* 시 제목 */
+.poem-title {
+  font-family: var(--font-serif-poem), "Noto Serif KR", "KoPub Batang",
+    "Nanum Myeongjo", ui-serif, Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+/* 시 본문 — 명조체 + 줄바꿈 보존 + 넉넉한 행간 */
+.poem-body {
+  font-family: var(--font-serif-poem), "Noto Serif KR", "KoPub Batang",
+    "Nanum Myeongjo", ui-serif, Georgia, serif;
+  font-weight: 400;
+  white-space: pre-wrap;
+  line-height: 2.05;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  font-size: 18px;
+}
+@media (min-width: 768px) {
+  .poem-body { font-size: 20px; }
+}
+
+/* 작가의 말, 메타, 보조 텍스트 */
+.poem-muted {
+  color: var(--text-secondary);
+  font-size: 13px;
+  letter-spacing: -0.005em;
+}
+
+/* 시집 표지 — book-cover.tsx 컴포넌트가 추가 스타일 합칩니다 */
+.book-cover {
+  border-radius: 12px;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  overflow: hidden;
+  background-color: var(--accent-soft);
+  aspect-ratio: 3 / 4;
+}
+
+/* 감상평 카드 */
+.reflection-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border-soft);
   border-radius: 14px;
+  padding: 18px 20px;
+}
+
+/* 작업실 카드 */
+.studio-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 20px;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.studio-card:hover {
+  border-color: var(--accent);
 }
 
 /* 얇은 구분선 */
 hr.divider {
   border: none;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--border-soft);
+}
+
+/* 포커스 링 (잔잔하게) */
+:where(button, a, input, textarea, select):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
 }

@@ -9,18 +9,19 @@ import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { BookCover } from "@/components/book/book-cover";
 import { BookPoemPicker } from "@/components/book/book-poem-picker";
-import type { Book, Poem, Visibility, Status } from "@/types";
+import type { PoemBook, Poem, Visibility, ContentStatus } from "@/types";
 
 const COVER_THEMES = [
-  { value: "linen", label: "리넨" },
-  { value: "ink", label: "먹" },
-  { value: "dawn", label: "여명" },
-  { value: "forest", label: "숲" },
-  { value: "paper", label: "한지" },
+  { value: "warm_paper", label: "따뜻한 종이" },
+  { value: "linen",      label: "리넨" },
+  { value: "ink",        label: "먹" },
+  { value: "dawn",       label: "여명" },
+  { value: "forest",     label: "숲" },
+  { value: "paper",      label: "한지" },
 ];
 
 interface BookFormProps {
-  initial?: Partial<Book> & { poem_ids?: string[] };
+  initial?: Partial<PoemBook> & { poem_ids?: string[] };
   myPoems: Poem[];
 }
 
@@ -28,15 +29,16 @@ export function BookForm({ initial, myPoems }: BookFormProps) {
   const [title, setTitle] = React.useState(initial?.title ?? "");
   const [subtitle, setSubtitle] = React.useState(initial?.subtitle ?? "");
   const [description, setDescription] = React.useState(initial?.description ?? "");
-  const [coverTheme, setCoverTheme] = React.useState(initial?.cover_theme ?? "linen");
+  const [coverTheme, setCoverTheme] = React.useState(initial?.cover_theme ?? "warm_paper");
   const [visibility, setVisibility] = React.useState<Visibility>(initial?.visibility ?? "private");
-  const [status, setStatus] = React.useState<Status>(initial?.status ?? "draft");
+  const [status, setStatus] = React.useState<ContentStatus>(initial?.status ?? "draft");
+  const [allowReviews, setAllowReviews] = React.useState(initial?.allow_reviews ?? true);
   const [selectedPoemIds, setSelectedPoemIds] = React.useState<string[]>(initial?.poem_ids ?? []);
 
   const onPublish = () => {
     setStatus("published");
     if (visibility === "private") setVisibility("link");
-    // TODO: Supabase upsert
+    // TODO: Supabase upsert (poem_books + poem_book_items 일괄)
   };
   const onSaveDraft = () => {
     setStatus("draft");
@@ -45,7 +47,6 @@ export function BookForm({ initial, myPoems }: BookFormProps) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      {/* 표지 + 메타 */}
       <div className="space-y-5">
         <BookCover title={title} subtitle={subtitle} theme={coverTheme} size="lg" />
 
@@ -87,18 +88,26 @@ export function BookForm({ initial, myPoems }: BookFormProps) {
             </div>
           </div>
 
+          <label className="flex items-center gap-2 text-sm text-text-secondary">
+            <input
+              type="checkbox"
+              checked={allowReviews}
+              onChange={(e) => setAllowReviews(e.target.checked)}
+            />
+            감상평 받기
+          </label>
+
           <hr className="divider" />
           <div className="flex flex-wrap items-center gap-2">
             <Button onClick={onPublish}>발행하기</Button>
             <Button variant="secondary" onClick={onSaveDraft}>임시저장</Button>
-            <span className="ml-auto text-xs text-ink-mute">
+            <span className="ml-auto text-xs text-text-secondary">
               {status === "draft" ? "임시저장" : status === "published" ? "발행됨" : "보관함"}
             </span>
           </div>
         </Card>
       </div>
 
-      {/* 시 선택·재정렬 */}
       <div>
         <BookPoemPicker
           allPoems={myPoems}

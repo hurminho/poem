@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { PoemPreview } from "@/components/poem/poem-preview";
-import type { Poem, Visibility, Status } from "@/types";
+import type { Poem, Visibility, ContentStatus } from "@/types";
 
 interface PoemEditorProps {
   initial?: Partial<Poem>;
@@ -23,23 +23,16 @@ export function PoemEditor({ initial }: PoemEditorProps) {
   const [content, setContent] = React.useState(initial?.content ?? "");
   const [note, setNote] = React.useState(initial?.note ?? "");
   const [visibility, setVisibility] = React.useState<Visibility>(initial?.visibility ?? "private");
-  const [status, setStatus] = React.useState<Status>(initial?.status ?? "draft");
+  const [status, setStatus] = React.useState<ContentStatus>(initial?.status ?? "draft");
   const [allowComments, setAllowComments] = React.useState(initial?.allow_comments ?? true);
   const [allowCopy, setAllowCopy] = React.useState(initial?.allow_copy ?? false);
-  const [tagsText, setTagsText] = React.useState((initial?.tags ?? []).join(", "));
   const [savedState, setSavedState] = React.useState<"idle" | "saving" | "saved">("saved");
 
-  // 입력 시 "임시저장 중" 시각 표지 (실 저장은 추후 Supabase 연결)
   React.useEffect(() => {
     setSavedState("saving");
     const t = setTimeout(() => setSavedState("saved"), 800);
     return () => clearTimeout(t);
-  }, [title, content, note, visibility, allowComments, allowCopy, tagsText]);
-
-  const tags = tagsText
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  }, [title, content, note, visibility, allowComments, allowCopy]);
 
   const onPublish = () => {
     setStatus("published");
@@ -58,10 +51,9 @@ export function PoemEditor({ initial }: PoemEditorProps) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-      {/* 입력 */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-serif text-base font-semibold">시 쓰기</h2>
+          <h2 className="font-serif text-base font-semibold text-text-primary">시 쓰기</h2>
           <SavedIndicator state={savedState} />
         </div>
 
@@ -99,7 +91,7 @@ export function PoemEditor({ initial }: PoemEditorProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="visibility">공개 범위</Label>
               <Select
@@ -112,72 +104,44 @@ export function PoemEditor({ initial }: PoemEditorProps) {
                 <option value="public">전체 공개</option>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
-              <Input
-                id="tags"
-                placeholder="예) 겨울, 일상"
-                value={tagsText}
-                onChange={(e) => setTagsText(e.target.value)}
-              />
+            <div className="flex flex-wrap items-center gap-4 sm:items-end pt-1">
+              <label className="flex items-center gap-2 text-sm text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={allowComments}
+                  onChange={(e) => setAllowComments(e.target.checked)}
+                />
+                감상평 받기
+              </label>
+              <label className="flex items-center gap-2 text-sm text-text-secondary">
+                <input
+                  type="checkbox"
+                  checked={allowCopy}
+                  onChange={(e) => setAllowCopy(e.target.checked)}
+                />
+                복사 허용
+              </label>
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 pt-1">
-            <label className="flex items-center gap-2 text-sm text-ink-soft">
-              <input
-                type="checkbox"
-                checked={allowComments}
-                onChange={(e) => setAllowComments(e.target.checked)}
-                className="accent-ink"
-              />
-              감상평 받기
-            </label>
-            <label className="flex items-center gap-2 text-sm text-ink-soft">
-              <input
-                type="checkbox"
-                checked={allowCopy}
-                onChange={(e) => setAllowCopy(e.target.checked)}
-                className="accent-ink"
-              />
-              복사 허용
-            </label>
           </div>
 
           <hr className="divider my-2" />
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="primary" onClick={onPublish}>발행하기</Button>
+            <Button onClick={onPublish}>발행하기</Button>
             <Button variant="secondary" onClick={onSaveDraft}>임시저장</Button>
-            <span className="ml-auto text-xs text-ink-mute">
+            <span className="ml-auto text-xs text-text-secondary">
               현재 상태:{" "}
-              <span className="text-ink-soft">
+              <span className="text-text-primary">
                 {status === "draft" ? "임시저장" : status === "published" ? "발행됨" : "보관함"}
               </span>
             </span>
           </div>
-
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 pt-2">
-              {tags.map((t) => (
-                <span
-                  key={t}
-                  className="inline-flex items-center rounded-full border border-line bg-paper-2 px-2.5 py-0.5 text-xs text-ink-soft"
-                >
-                  #{t}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </Card>
 
-      {/* 미리보기 */}
-      <Card className="p-8 bg-paper-grain">
-        <p className="text-xs text-ink-mute mb-6 text-center tracking-wider">
-          ─ 미리보기 ─
-        </p>
-        <PoemPreview title={title} content={content} size="md" />
+      <Card className="poem-page p-8">
+        <p className="poem-muted text-center mb-6 tracking-wider">─ 미리보기 ─</p>
+        <PoemPreview title={title} content={content} />
       </Card>
     </div>
   );
@@ -185,8 +149,8 @@ export function PoemEditor({ initial }: PoemEditorProps) {
 
 function SavedIndicator({ state }: { state: "idle" | "saving" | "saved" }) {
   const map = {
-    idle: { label: "·", className: "text-ink-mute" },
-    saving: { label: "임시저장 중…", className: "text-ink-mute" },
+    idle: { label: "·", className: "text-text-secondary" },
+    saving: { label: "임시저장 중…", className: "text-text-secondary" },
     saved: { label: "임시저장됨", className: "text-accent" },
   } as const;
   const it = map[state];

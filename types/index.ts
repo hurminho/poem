@@ -4,16 +4,30 @@
  */
 
 export type Visibility = "private" | "link" | "public";
-export type Status = "draft" | "published" | "archived";
-export type ReportTarget = "poem" | "book" | "reflection" | "user";
+export type ContentStatus = "draft" | "published" | "archived";
+export type ReportStatus = "pending" | "reviewing" | "resolved" | "dismissed";
+export type ReflectionStatus = "visible" | "hidden" | "deleted";
 
-export interface Author {
+export type ReactionTargetType = "poem" | "book" | "comment";
+export type ReactionType =
+  | "like"
+  | "comforted"
+  | "saved_feeling"
+  | "beautiful_sentence";
+
+export type SaveTargetType = "poem" | "book" | "highlight";
+export type ReflectionTargetType = "poem" | "book";
+export type ReportTargetType = "poem" | "book" | "reflection" | "profile";
+
+export interface Profile {
   id: string;
-  username: string;
   display_name: string;
+  username: string | null;
   bio: string | null;
   avatar_url: string | null;
+  is_author: boolean;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Poem {
@@ -23,102 +37,117 @@ export interface Poem {
   content: string;
   note: string | null;
   visibility: Visibility;
-  status: Status;
+  status: ContentStatus;
   allow_comments: boolean;
   allow_copy: boolean;
-  tags: string[];
+  published_at: string | null;
   created_at: string;
   updated_at: string;
-  published_at: string | null;
 }
 
-export interface Book {
+export interface PoemBook {
   id: string;
   author_id: string;
-  slug: string;
   title: string;
   subtitle: string | null;
   description: string | null;
+  cover_url: string | null;
   cover_theme: string;
   visibility: Visibility;
-  status: Status;
+  status: ContentStatus;
+  allow_reviews: boolean;
+  published_at: string | null;
   created_at: string;
   updated_at: string;
-  published_at: string | null;
 }
 
-export interface BookPoem {
+export interface PoemBookItem {
+  id: string;
   book_id: string;
   poem_id: string;
-  order_index: number;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
 }
 
 export interface Reflection {
   id: string;
-  target_type: "poem" | "book";
-  target_id: string;
   user_id: string | null;
   guest_name: string | null;
-  content: string;
-  created_at: string;
-}
-
-export interface SavedItem {
-  id: string;
-  user_id: string;
-  target_type: "poem" | "book";
+  target_type: ReflectionTargetType;
   target_id: string;
+  content: string;
+  status: ReflectionStatus;
   created_at: string;
+  updated_at: string;
 }
 
 export interface Reaction {
   id: string;
   user_id: string;
-  target_type: "poem" | "book";
+  target_type: ReactionTargetType;
   target_id: string;
-  type: "heart"; // 마음에 담기 — 추후 확장
+  reaction_type: ReactionType;
+  created_at: string;
+}
+
+export interface Save {
+  id: string;
+  user_id: string;
+  target_type: SaveTargetType;
+  target_id: string;
   created_at: string;
 }
 
 export interface Highlight {
   id: string;
+  user_id: string;
   poem_id: string;
-  user_id: string | null;
-  guest_name: string | null;
-  text: string;
+  selected_text: string;
+  memo: string | null;
+  is_private: boolean;
   created_at: string;
 }
 
 export interface Follow {
+  id: string;
   follower_id: string;
-  following_id: string;
+  author_id: string;
   created_at: string;
 }
 
 export interface Report {
   id: string;
   reporter_id: string | null;
-  target_type: ReportTarget;
+  target_type: ReportTargetType;
   target_id: string;
   reason: string;
-  detail: string | null;
-  status: "open" | "reviewed" | "dismissed";
+  details: string | null;
+  status: ReportStatus;
   created_at: string;
 }
 
-export interface Tag {
-  name: string; // primary key
-  count: number;
-}
+/* ─── 화면 표현용 합성 타입 ─── */
+export type ProfilePublic = Pick<
+  Profile,
+  "id" | "username" | "display_name" | "avatar_url"
+>;
 
-/* ── 화면 표현용 합성 타입 ── */
 export interface PoemWithAuthor extends Poem {
-  author: Pick<Author, "id" | "username" | "display_name" | "avatar_url">;
+  author: ProfilePublic;
+  tags?: Tag[];
 }
 
-export interface BookWithAuthor extends Book {
-  author: Pick<Author, "id" | "username" | "display_name" | "avatar_url">;
+export interface BookWithAuthor extends PoemBook {
+  author: ProfilePublic;
   poem_count: number;
+  tags?: Tag[];
 }
 
 export interface BookDetail extends BookWithAuthor {

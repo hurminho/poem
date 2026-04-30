@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import type { Status, Visibility } from "@/types";
+import type { ContentStatus, Visibility } from "@/types";
 
-const STATUS_LABEL: Record<Status, string> = {
+const STATUS_LABEL: Record<ContentStatus, string> = {
   draft: "임시저장",
   published: "발행됨",
   archived: "보관함",
@@ -13,7 +13,7 @@ const VIS_LABEL: Record<Visibility, string> = {
   public: "공개",
 };
 
-export function StatusBadge({ status }: { status: Status }) {
+export function StatusBadge({ status }: { status: ContentStatus }) {
   const tone = status === "published" ? "ink" : status === "draft" ? "neutral" : "outline";
   return <Badge tone={tone}>{STATUS_LABEL[status]}</Badge>;
 }

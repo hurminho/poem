@@ -9,6 +9,7 @@ const ITEMS = [
   { href: "/studio/poems", label: "내 시" },
   { href: "/studio/books", label: "내 시집" },
   { href: "/studio/reflections", label: "받은 감상평" },
+  { href: "/settings", label: "설정" },
 ];
 
 export function StudioSidebar() {
@@ -24,8 +25,8 @@ export function StudioSidebar() {
             className={cn(
               "rounded-md px-3 py-2 transition-colors",
               active
-                ? "bg-ink text-paper"
-                : "text-ink-soft hover:bg-line-soft hover:text-ink",
+                ? "bg-text-primary text-background"
+                : "text-text-secondary hover:bg-accent-soft hover:text-text-primary",
             )}
           >
             {it.label}

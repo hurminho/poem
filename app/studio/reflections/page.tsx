@@ -3,7 +3,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ReflectionCard } from "@/components/reflections/reflection-card";
 import { getMyRecentReflections } from "@/lib/db/placeholder";
 
-export const metadata = { title: "받은 감상평 — 포엠" };
+export const metadata = { title: "받은 감상평" };
 
 export default function StudioReflectionsPage() {
   const items = getMyRecentReflections();

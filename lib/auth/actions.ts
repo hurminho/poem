@@ -8,12 +8,12 @@ export async function signInAction(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
   const password = String(formData.get("password") || "");
   if (!email || !password) {
-    redirect(`/auth/login?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
+    redirect(`/login?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
   }
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
-    redirect(`/auth/login?error=${encodeURIComponent(error.message)}`);
+    redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
   revalidatePath("/", "layout");
   redirect("/studio");
@@ -24,7 +24,7 @@ export async function signUpAction(formData: FormData) {
   const password = String(formData.get("password") || "");
   const displayName = String(formData.get("display_name") || "").trim();
   if (!email || !password) {
-    redirect(`/auth/signup?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
+    redirect(`/signup?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
   }
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
@@ -33,9 +33,9 @@ export async function signUpAction(formData: FormData) {
     options: { data: { display_name: displayName } },
   });
   if (error) {
-    redirect(`/auth/signup?error=${encodeURIComponent(error.message)}`);
+    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
   }
-  redirect(`/auth/login?notice=${encodeURIComponent("가입 메일을 확인해주세요.")}`);
+  redirect(`/onboarding?notice=${encodeURIComponent("가입을 환영합니다.")}`);
 }
 
 export async function signOutAction() {

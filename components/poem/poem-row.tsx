@@ -7,13 +7,13 @@ import type { Poem } from "@/types";
 export function PoemRow({ poem }: { poem: Poem }) {
   return (
     <Link href={`/studio/poems/${poem.id}/edit`} className="block group">
-      <Card className="hover:border-accent/60 transition-colors">
+      <Card className="hover:border-accent transition-colors">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="font-serif text-base font-semibold text-ink truncate">
+            <p className="font-serif text-base font-semibold text-text-primary truncate">
               {poem.title || "(제목 없음)"}
             </p>
-            <p className="mt-1 text-sm text-ink-mute line-clamp-2 whitespace-pre-line">
+            <p className="mt-1 text-sm text-text-secondary line-clamp-2 whitespace-pre-line">
               {poem.content || "본문 없음"}
             </p>
           </div>
@@ -22,7 +22,7 @@ export function PoemRow({ poem }: { poem: Poem }) {
               <StatusBadge status={poem.status} />
               <VisibilityBadge visibility={poem.visibility} />
             </div>
-            <span className="text-xs text-ink-mute">
+            <span className="text-xs text-text-secondary">
               {relativeTimeKo(poem.updated_at)}
             </span>
           </div>

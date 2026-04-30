@@ -3,32 +3,54 @@ import { cn } from "@/lib/utils";
 interface BookCoverProps {
   title: string;
   subtitle?: string | null;
-  authorName?: string;
-  theme?: string;
+  authorName?: string | null;
+  theme?: string | null;
+  coverUrl?: string | null;
   className?: string;
   size?: "sm" | "md" | "lg";
 }
 
 const THEMES: Record<string, string> = {
-  linen: "from-[#f3eddd] to-[#e6dcc4] text-ink",
-  ink: "from-[#2c2a25] to-[#1a1815] text-paper",
-  dawn: "from-[#f4e6e0] to-[#e7c9bd] text-ink",
-  forest: "from-[#dde6dc] to-[#b9c8b9] text-ink",
-  paper: "from-[#fbf8f1] to-[#f0e9d6] text-ink",
+  warm_paper: "from-[#F4E9D6] to-[#E5D4B5] text-text-primary",
+  linen:      "from-[#F3EDDD] to-[#E6DCC4] text-text-primary",
+  ink:        "from-[#2C2A25] to-[#1A1815] text-[#F5EFE6]",
+  dawn:       "from-[#F4E6E0] to-[#E7C9BD] text-text-primary",
+  forest:     "from-[#DDE6DC] to-[#B9C8B9] text-text-primary",
+  paper:      "from-[#FBF8F1] to-[#F0E9D6] text-text-primary",
 };
 
 const SIZES = {
-  sm: "aspect-[3/4] text-sm p-3",
-  md: "aspect-[3/4] text-base p-5",
-  lg: "aspect-[3/4] text-lg p-6",
+  sm: "text-sm p-3",
+  md: "text-base p-5",
+  lg: "text-lg p-6",
 };
 
-export function BookCover({ title, subtitle, authorName, theme = "linen", size = "md", className }: BookCoverProps) {
-  const themeCls = THEMES[theme] ?? THEMES.linen;
+export function BookCover({
+  title,
+  subtitle,
+  authorName,
+  theme = "warm_paper",
+  coverUrl,
+  size = "md",
+  className,
+}: BookCoverProps) {
+  const themeCls = THEMES[theme ?? "warm_paper"] ?? THEMES.warm_paper;
+
+  if (coverUrl) {
+    return (
+      <div
+        className={cn("book-cover relative w-full", className)}
+        style={{ backgroundImage: `url(${coverUrl})`, backgroundSize: "cover" }}
+        role="img"
+        aria-label={`${title} 표지`}
+      />
+    );
+  }
+
   return (
     <div
       className={cn(
-        "relative w-full rounded-lg shadow-sm overflow-hidden bg-gradient-to-br border border-line/60",
+        "book-cover relative w-full bg-gradient-to-br",
         themeCls,
         SIZES[size],
         className,

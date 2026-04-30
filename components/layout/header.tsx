@@ -6,29 +6,28 @@ const NAV = [
   { href: "/studio", label: "작업실" },
 ];
 
-export function SiteHeader() {
+export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line/70 bg-paper/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border-soft/80 bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="font-serif text-lg font-bold tracking-tight text-ink group-hover:text-ink-soft transition-colors">
+          <span className="font-serif text-lg font-bold tracking-tight text-text-primary group-hover:text-text-secondary transition-colors">
             포엠
           </span>
         </Link>
-
-        <nav className="flex items-center gap-1 text-sm">
+        <nav aria-label="주 메뉴" className="flex items-center gap-1 text-sm">
           {NAV.map((n) => (
             <Link
               key={n.href}
               href={n.href}
-              className="rounded-md px-3 py-1.5 text-ink-soft hover:bg-line-soft hover:text-ink transition-colors"
+              className="rounded-md px-3 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
             >
               {n.label}
             </Link>
           ))}
           <Link
-            href="/auth/login"
-            className="ml-2 rounded-md bg-ink px-3 py-1.5 text-sm font-medium text-paper hover:bg-ink-soft transition-colors"
+            href="/login"
+            className="ml-2 rounded-md bg-text-primary px-3 py-1.5 text-sm font-medium text-background hover:opacity-90 transition-opacity"
           >
             로그인
           </Link>

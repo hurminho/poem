@@ -7,12 +7,11 @@ const badgeVariants = cva(
   {
     variants: {
       tone: {
-        neutral: "bg-line-soft text-ink-soft",
-        ink: "bg-ink text-paper",
-        outline: "border border-line text-ink-soft",
-        accent: "bg-accent/10 text-accent",
-        warn: "bg-amber-50 text-amber-700",
-        muted: "text-ink-mute",
+        neutral: "bg-accent-soft text-text-secondary",
+        ink: "bg-text-primary text-background",
+        outline: "border border-border-soft text-text-secondary",
+        accent: "bg-accent-soft text-accent",
+        muted: "text-text-secondary",
       },
     },
     defaultVariants: { tone: "neutral" },

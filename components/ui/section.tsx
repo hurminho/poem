@@ -14,9 +14,9 @@ export function Section({ title, description, action, children, className }: Sec
     <section className={cn("space-y-4", className)}>
       <header className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight text-ink">{title}</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-text-primary">{title}</h2>
           {description && (
-            <p className="mt-1 text-sm text-ink-mute">{description}</p>
+            <p className="mt-1 text-sm text-text-secondary">{description}</p>
           )}
         </div>
         {action}
