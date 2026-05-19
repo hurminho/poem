@@ -7,6 +7,14 @@ export type Visibility = "private" | "link" | "public";
 export type ContentStatus = "draft" | "published" | "archived";
 export type ReportStatus = "pending" | "reviewing" | "resolved" | "dismissed";
 export type ReflectionStatus = "visible" | "hidden" | "deleted";
+export type ModerationStatus = "normal" | "hidden" | "under_review";
+
+export type AdminRole =
+  | "super_admin"
+  | "content_admin"
+  | "moderator"
+  | "curator"
+  | "support";
 
 export type ReactionTargetType = "poem" | "book" | "comment";
 export type ReactionType =
@@ -40,6 +48,7 @@ export interface Poem {
   status: ContentStatus;
   allow_comments: boolean;
   allow_copy: boolean;
+  moderation_status: ModerationStatus;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -56,6 +65,7 @@ export interface PoemBook {
   visibility: Visibility;
   status: ContentStatus;
   allow_reviews: boolean;
+  moderation_status: ModerationStatus;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -84,8 +94,30 @@ export interface Reflection {
   target_id: string;
   content: string;
   status: ReflectionStatus;
+  moderation_status: ModerationStatus;
   created_at: string;
   updated_at: string;
+}
+
+export interface AdminUser {
+  id: string;
+  user_id: string;
+  role: AdminRole;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminAuditLog {
+  id: string;
+  admin_id: string | null;
+  action: string;
+  target_type: string;
+  target_id: string | null;
+  before_data: unknown;
+  after_data: unknown;
+  reason: string | null;
+  created_at: string;
 }
 
 export interface Reaction {
@@ -152,4 +184,77 @@ export interface BookWithAuthor extends PoemBook {
 
 export interface BookDetail extends BookWithAuthor {
   poems: Poem[];
+}
+
+/* ─────────────────────────────────────────────────────────────
+   시담의 일상 흐름 — mood · meditation · challenge · community
+   ─────────────────────────────────────────────────────────────
+   현재는 placeholder 모듈에서만 사용되며, DB 스키마는 베타 단계에서
+   필요 시 추가됩니다. UI / 라우팅 / 운영 화면 설계를 위한 타입.
+   ───────────────────────────────────────────────────────────── */
+
+export type MoodKey =
+  | "calm"      // 잔잔
+  | "tired"     // 지친
+  | "warm"      // 따스한
+  | "lonely"    // 외로운
+  | "grateful"  // 감사한
+  | "uneasy"    // 불안
+  | "longing"   // 그리운
+  | "hopeful";  // 희망
+
+export interface Mood {
+  key: MoodKey;
+  label: string;
+  hint: string;
+}
+
+export interface MoodCheckIn {
+  id: string;
+  user_id: string;
+  mood: MoodKey;
+  note: string | null;
+  created_at: string;
+}
+
+export interface MeditationSession {
+  id: string;
+  user_id: string;
+  poem_id: string;
+  duration_seconds: number;
+  /** 5분 / 10분 / 15분 등 사용자가 고른 호흡 길이. */
+  preset_minutes: number;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export type ChallengeStatus = "open" | "active" | "closed";
+
+export interface QuietChallenge {
+  id: string;
+  title: string;
+  description: string;
+  prompt: string;
+  status: ChallengeStatus;
+  starts_at: string;
+  ends_at: string;
+  participant_count: number;
+}
+
+export type CommunityPostType = "thread" | "question" | "share";
+export type CommunityPostModerationStatus = ModerationStatus;
+
+export interface CommunityPost {
+  id: string;
+  author_id: string;
+  type: CommunityPostType;
+  title: string;
+  body: string;
+  reply_count: number;
+  moderation_status: CommunityPostModerationStatus;
+  created_at: string;
+}
+
+export interface CommunityPostWithAuthor extends CommunityPost {
+  author: ProfilePublic;
 }

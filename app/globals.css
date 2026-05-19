@@ -1,55 +1,110 @@
-@import "tailwindcss";
-
 /* Pretendard — 한국어 UI 본 폰트 */
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import "tailwindcss";
 
 /* ──────────────────────────────────────────────────────────
-   포엠 — 3 테마 토큰
-     기본: 따뜻한 종이 (light)
+   시담 — 디자인 토큰
+     기본 (Sage Garden) : 세이지 그린 + 따뜻한 크림 + 파스텔 엽서
      [data-theme="night"]   : 야간 (서재의 등불)
      [data-theme="minimal"] : 미니멀 (흰 종이)
+
+   영감: 정원에서 시를 읽는 사람들, 한지에 그린 산수,
+         녹색 가죽 표지의 만년필 노트.
    ────────────────────────────────────────────────────────── */
 
 :root {
-  /* Light (기본) */
-  --background: #FAF7F0;
-  --surface: #FFFFFF;
-  --text-primary: #27231F;
-  --text-secondary: #7A7168;
-  --border-soft: #E8DFD2;
-  --accent: #8C6A4F;
-  --accent-soft: #EFE4D6;
+  /* Sage Garden (light, 기본) */
+  --background: #F5F2EA;          /* 살구빛 한지 톤 크림 */
+  --surface: #FBF9F2;             /* 시집 종이 한 장 */
+  --surface-elev: #FFFFFF;        /* 카드가 한 단 더 떠 있을 때 */
+  --text-primary: #2A332B;        /* 깊은 이끼색 */
+  --text-secondary: #6D7B6F;      /* 흐린 잎사귀 */
+  --border-soft: #D9DCCD;         /* 식물 줄기 */
+  --accent: #7A9A78;              /* 세이지 그린 (메인) */
+  --accent-soft: #DDE6D5;         /* 잎그늘 연한 톤 */
+
+  /* 파스텔 엽서 — 카드/배지/무드칩 */
+  --pastel-sage: #C6D3B7;
+  --pastel-moss: #B7C6A2;
+  --pastel-sand: #E7DCC0;
+  --pastel-clay: #E2CFC0;
+  --pastel-blush: #EBD5C9;
+  --pastel-mist: #D8DDDA;
+  --pastel-cream: #F1EADB;
+  --pastel-shadow: #B7AFA0;
+
+  /* 보조 잉크 — 사인 펜 잉크 톤 */
+  --ink-forest: #3D5A3D;
+  --ink-amber: #B07A3A;
 }
 
 [data-theme="night"] {
-  --background: #151515;
-  --surface: #1F1E1B;
-  --text-primary: #F5EFE6;
-  --text-secondary: #B8ADA1;
-  --border-soft: #38332D;
-  --accent: #C6A57A;
-  --accent-soft: #2B241D;
+  --background: #1A1F1A;
+  --surface: #232A24;
+  --surface-elev: #2C342D;
+  --text-primary: #ECE8DA;
+  --text-secondary: #A8B3A6;
+  --border-soft: #38423A;
+  --accent: #A7C4A0;
+  --accent-soft: #2E372F;
+
+  --pastel-sage: #4D5E48;
+  --pastel-moss: #3F4F3B;
+  --pastel-sand: #5B5240;
+  --pastel-clay: #5A4A41;
+  --pastel-blush: #5A4640;
+  --pastel-mist: #3E443F;
+  --pastel-cream: #2A2F2A;
+  --pastel-shadow: #6E665A;
+
+  --ink-forest: #C9DCC6;
+  --ink-amber: #E7C28C;
 }
 
 [data-theme="minimal"] {
   --background: #FFFFFF;
-  --surface: #F8F8F8;
-  --text-primary: #111111;
-  --text-secondary: #777777;
-  --border-soft: #E5E5E5;
-  --accent: #222222;
-  --accent-soft: #F0F0F0;
+  --surface: #F8F8F6;
+  --surface-elev: #FFFFFF;
+  --text-primary: #14181A;
+  --text-secondary: #6F7572;
+  --border-soft: #E5E7E1;
+  --accent: #5C7F5A;
+  --accent-soft: #ECEFE7;
+
+  --pastel-sage: #DCE3D3;
+  --pastel-moss: #CFD8C3;
+  --pastel-sand: #EFE7D2;
+  --pastel-clay: #ECDCCE;
+  --pastel-blush: #F1DED3;
+  --pastel-mist: #E3E7E4;
+  --pastel-cream: #F6F1E5;
+  --pastel-shadow: #BFBAB0;
+
+  --ink-forest: #28402A;
+  --ink-amber: #8E6121;
 }
 
 /* Tailwind v4 : @theme 로 변수를 디자인 토큰으로 노출 */
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
+  --color-surface-elev: var(--surface-elev);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-border-soft: var(--border-soft);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
+
+  --color-pastel-sage: var(--pastel-sage);
+  --color-pastel-moss: var(--pastel-moss);
+  --color-pastel-sand: var(--pastel-sand);
+  --color-pastel-clay: var(--pastel-clay);
+  --color-pastel-blush: var(--pastel-blush);
+  --color-pastel-mist: var(--pastel-mist);
+  --color-pastel-cream: var(--pastel-cream);
+
+  --color-ink-forest: var(--ink-forest);
+  --color-ink-amber: var(--ink-amber);
 
   --font-sans: var(--font-sans-ui), "Pretendard Variable", Pretendard,
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
@@ -71,15 +126,16 @@ body {
 }
 
 /* ──────────────────────────────────────────────────────────
-   재사용 클래스 (포엠 디자인 시스템)
+   재사용 클래스 (시담 디자인 시스템)
    ────────────────────────────────────────────────────────── */
 
-/* 시 한 편이 펼쳐지는 가장 바깥의 페이지 — 종이 위 */
+/* 시 한 편이 펼쳐지는 가장 바깥의 페이지 — 한지 위 */
 .poem-page {
   background-color: var(--background);
   background-image:
-    radial-gradient(circle at 18% 8%,  rgba(0,0,0,0.018), transparent 42%),
-    radial-gradient(circle at 82% 92%, rgba(0,0,0,0.018), transparent 42%);
+    radial-gradient(circle at 12% 8%, color-mix(in srgb, var(--pastel-sage) 45%, transparent), transparent 38%),
+    radial-gradient(circle at 88% 14%, color-mix(in srgb, var(--pastel-blush) 38%, transparent), transparent 42%),
+    radial-gradient(circle at 78% 92%, color-mix(in srgb, var(--pastel-sand) 40%, transparent), transparent 46%);
   min-height: 100%;
 }
 
@@ -121,7 +177,7 @@ body {
   letter-spacing: -0.005em;
 }
 
-/* 시집 표지 — book-cover.tsx 컴포넌트가 추가 스타일 합칩니다 */
+/* 시집 표지 */
 .book-cover {
   border-radius: 12px;
   border: 1px solid var(--border-soft);
@@ -145,10 +201,11 @@ body {
   border: 1px solid var(--border-soft);
   border-radius: 14px;
   padding: 20px;
-  transition: border-color 160ms ease, transform 160ms ease;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
 }
 .studio-card:hover {
   border-color: var(--accent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 /* 얇은 구분선 */
@@ -161,4 +218,137 @@ hr.divider {
 :where(button, a, input, textarea, select):focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* ──────────────────────────────────────────────────────────
+   파스텔 엽서 모티프 — 정원·산수·만년필 분위기
+   ────────────────────────────────────────────────────────── */
+
+/* 정원 한 컷 — hero / 카드 배경 */
+.garden-scene {
+  position: relative;
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 20%, color-mix(in srgb, var(--pastel-sage) 80%, transparent) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 25%, color-mix(in srgb, var(--pastel-blush) 70%, transparent) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 65% at 50% 100%, color-mix(in srgb, var(--pastel-sand) 75%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, var(--pastel-cream) 0%, var(--surface) 100%);
+  border: 1px solid var(--border-soft);
+}
+
+/* 산수 한지 — hero 보조 배경 */
+.ink-mountain {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--pastel-cream) 90%, white) 0%,
+      color-mix(in srgb, var(--pastel-sage) 22%, var(--surface)) 60%,
+      var(--surface) 100%);
+  border: 1px solid var(--border-soft);
+}
+.ink-mountain::before,
+.ink-mountain::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 55%;
+  background:
+    radial-gradient(ellipse 60% 100% at 30% 100%, color-mix(in srgb, var(--accent) 35%, transparent) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 100% at 70% 100%, color-mix(in srgb, var(--pastel-moss) 55%, transparent) 0%, transparent 65%);
+  filter: blur(2px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.ink-mountain::after {
+  height: 36%;
+  background:
+    radial-gradient(ellipse 45% 100% at 18% 100%, color-mix(in srgb, var(--ink-forest) 55%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 100% at 60% 100%, color-mix(in srgb, var(--ink-forest) 45%, transparent) 0%, transparent 65%);
+  filter: blur(1px);
+  opacity: 0.55;
+}
+
+/* 파스텔 칩 — 무드 / 태그 */
+.pastel-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--text-primary);
+  background-color: var(--pastel-cream);
+  border: 1px solid color-mix(in srgb, var(--border-soft) 80%, transparent);
+}
+.pastel-chip[data-tone="sage"]   { background-color: var(--pastel-sage); }
+.pastel-chip[data-tone="moss"]   { background-color: var(--pastel-moss); color: white; }
+.pastel-chip[data-tone="sand"]   { background-color: var(--pastel-sand); }
+.pastel-chip[data-tone="clay"]   { background-color: var(--pastel-clay); }
+.pastel-chip[data-tone="blush"]  { background-color: var(--pastel-blush); }
+.pastel-chip[data-tone="mist"]   { background-color: var(--pastel-mist); }
+
+/* 모바일 미리보기 프레임 — 랜딩의 폰 목업 */
+.phone-frame {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 9 / 19;
+  border-radius: 38px;
+  padding: 10px;
+  background: linear-gradient(180deg, #B8C0B0 0%, #8AA08A 100%);
+  box-shadow:
+    0 30px 60px -30px color-mix(in srgb, var(--ink-forest) 50%, transparent),
+    0 1px 0 rgba(255,255,255,0.4) inset;
+}
+.phone-frame > .phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--ink-forest) 12%, transparent);
+}
+.phone-frame .phone-notch {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 78px;
+  height: 22px;
+  background: #1a1f1a;
+  border-radius: 999px;
+  z-index: 3;
+}
+
+/* 잎사귀 — SVG 없이 그라데이션만으로 부드러운 모양 */
+.leaf-blob {
+  position: absolute;
+  border-radius: 70% 30% 60% 40% / 50% 60% 40% 50%;
+  background:
+    radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--pastel-moss) 90%, white) 0%, var(--pastel-sage) 70%);
+  filter: blur(0.5px);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────────────────
+   스크린샷 친화 모드 — html[data-demo="1"]
+   ────────────────────────────────────────────────────────── */
+html[data-demo="1"] [data-site-chrome="header"],
+html[data-demo="1"] [data-site-chrome="footer"] {
+  display: none !important;
+}
+
+html[data-demo="1"] body {
+  background-image: none;
+}
+
+html[data-demo="1"] main {
+  padding-top: 2rem;
 }

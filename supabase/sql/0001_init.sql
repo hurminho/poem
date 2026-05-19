@@ -1,5 +1,5 @@
 -- ────────────────────────────────────────────────────────────
--- 포엠 — 초기 스키마 (PostgreSQL / Supabase)
+-- 시담 — 초기 스키마 (PostgreSQL / Supabase)
 --
 -- 적용 방법: Supabase Dashboard → SQL Editor 에 붙여넣고 한 번에 실행.
 --

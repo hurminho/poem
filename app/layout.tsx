@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Serif_KR, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
-import { AppShell } from "@/components/layout/app-shell";
 
 const sansUi = Noto_Sans_KR({
   variable: "--font-sans-ui",
@@ -19,11 +18,11 @@ const serifPoem = Noto_Serif_KR({
 
 export const metadata: Metadata = {
   title: {
-    default: "포엠 — 당신의 시를 한 권의 작은 시집으로",
-    template: "%s · 포엠",
+    default: "시담 — 시를 짓고, 마음을 나눕니다",
+    template: "%s · 시담",
   },
   description:
-    "포엠은 시를 짓고, 시집으로 묶고, 예쁜 링크로 나누고, 감상평을 받는 조용한 작가의 방입니다.",
+    "시담은 오늘의 마음을 적고, 한 편의 시로 묶고, 시 명상으로 머무는 조용한 문학의 방입니다.",
 };
 
 export default function RootLayout({
@@ -36,7 +35,7 @@ export default function RootLayout({
       className={`${sansUi.variable} ${serifPoem.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-text-primary">
-        <AppShell>{children}</AppShell>
+        {children}
       </body>
     </html>
   );

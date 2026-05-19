@@ -1,6 +1,8 @@
 import * as React from "react";
+import { Suspense } from "react";
 import { Header } from "@/components/layout/header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { DemoModeBoundary } from "@/components/layout/demo-mode";
 import { cn } from "@/lib/utils";
 
 interface AppShellProps {
@@ -12,9 +14,16 @@ interface AppShellProps {
 export function AppShell({ children, bare = false }: AppShellProps) {
   return (
     <div className="min-h-full flex flex-col">
-      <Header />
+      <Suspense fallback={null}>
+        <DemoModeBoundary />
+      </Suspense>
+      <div data-site-chrome="header">
+        <Header />
+      </div>
       <main className={cn("flex-1", !bare && "")}>{children}</main>
-      <SiteFooter />
+      <div data-site-chrome="footer">
+        <SiteFooter />
+      </div>
     </div>
   );
 }
