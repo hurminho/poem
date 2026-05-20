@@ -44,27 +44,38 @@ export default async function TodayPage({ searchParams }: PageProps) {
           description={`${profile?.display_name ?? "당신"}님, 오늘은 어떤 마음으로 도착하셨나요? 마음을 고르면 그 결에 맞춰 화면이 차분해집니다.`}
         />
 
-        <Section
-          title="오늘의 마음"
-          description="여덟 가지 결 중 가장 가까운 마음을 골라주세요."
-        >
-          <TodayMoodPicker selected={moodKey} />
-        </Section>
-
         {mood ? (
-          <Section
-            title="이 마음으로 한 편"
-            description={`‘${mood.label}’의 결에 어울리는 짧은 글로 시작해보세요.`}
-          >
-            <TodayPromptCard mood={mood} />
-          </Section>
+          <>
+            <Section
+              title="이 마음으로 한 편"
+              description={`‘${mood.label}’의 결에 어울리는 짧은 글로 시작해보세요.`}
+            >
+              <TodayPromptCard mood={mood} />
+            </Section>
+
+            <Section
+              title="오늘의 마음"
+              description="다른 결로 바꾸고 싶다면, 아래에서 다시 골라주세요."
+            >
+              <TodayMoodPicker selected={moodKey} />
+            </Section>
+          </>
         ) : (
-          <Section
-            title="바로 시작하기"
-            description="마음을 고르지 않아도 지금 바로 한 편을 써내려갈 수 있어요."
-          >
-            <TodayQuickStart />
-          </Section>
+          <>
+            <Section
+              title="바로 시작하기"
+              description="마음을 고르지 않아도 지금 바로 한 편을 써내려갈 수 있어요."
+            >
+              <TodayQuickStart />
+            </Section>
+
+            <Section
+              title="오늘의 마음"
+              description="여덟 가지 결 중 가장 가까운 마음을 골라보면, 그 결에 어울리는 한 편이 이어집니다."
+            >
+              <TodayMoodPicker selected={moodKey} />
+            </Section>
+          </>
         )}
 
         <Section

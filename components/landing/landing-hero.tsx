@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { PrimaryCTA } from "@/components/ui/primary-cta";
 import { QuietButton } from "@/components/ui/quiet-button";
 import { MOODS } from "@/lib/db/placeholder";
@@ -59,13 +60,18 @@ export function LandingHero({ sampleBookHref }: LandingHeroProps) {
 
             <ul
               className="mt-7 flex flex-wrap gap-2"
-              aria-label="오늘의 마음 미리보기"
+              aria-label="오늘의 마음 — 골라서 바로 한 편으로 이어집니다"
             >
               {PREVIEW_MOODS.map((m, idx) => (
                 <li key={m.key}>
-                  <span className="pastel-chip" data-tone={TONES[idx % TONES.length]}>
+                  <Link
+                    href={`/today?mood=${m.key}`}
+                    className="pastel-chip transition-colors hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60"
+                    data-tone={TONES[idx % TONES.length]}
+                    aria-label={`${m.label} — 이 마음으로 오늘의 한 편 적기`}
+                  >
                     {m.label}
-                  </span>
+                  </Link>
                 </li>
               ))}
             </ul>

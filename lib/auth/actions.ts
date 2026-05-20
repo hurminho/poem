@@ -2,8 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/check";
 import { mapAuthErrorMessage } from "@/lib/auth/errors";
+import { DEMO_SIGNED_OUT_COOKIE } from "@/lib/auth/current";
 
 /** @deprecated 로그인 폼은 /api/auth/login 을 사용합니다. */
 export async function signInAction(formData: FormData) {
@@ -42,8 +45,18 @@ export async function signUpAction(formData: FormData) {
 }
 
 export async function signOutAction() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+  }
+  // 데모(플레이스홀더) 모드에서도 로그아웃이 반영되도록 쿠키를 심어둡니다.
+  const cookieStore = await cookies();
+  cookieStore.set(DEMO_SIGNED_OUT_COOKIE, "1", {
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30,
+  });
   revalidatePath("/", "layout");
   redirect("/");
 }

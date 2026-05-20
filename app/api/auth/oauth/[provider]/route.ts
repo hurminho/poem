@@ -13,8 +13,8 @@ import { isSupabaseConfigured } from "@/lib/supabase/check";
  * 위 URL 로 GET 하면 Supabase 의 OAuth 공급자 동의 페이지로 302 리다이렉트됩니다.
  * 동의가 끝나면 /api/auth/callback 으로 돌아옵니다.
  */
-type AllowedProvider = "kakao" | "google" | "apple";
-const ALLOWED: AllowedProvider[] = ["kakao", "google", "apple"];
+type AllowedProvider = "kakao" | "google";
+const ALLOWED: AllowedProvider[] = ["kakao", "google"];
 
 function safeNextPath(raw: string | null): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/studio";
@@ -74,13 +74,11 @@ export async function GET(
     provider: provider as AllowedProvider,
     options: {
       redirectTo,
-      // 카카오: 이메일·프로필 동의 / 구글: 기본 / 애플: name email
+      // 카카오: 이메일·프로필 동의 / 구글: 기본
       scopes:
         provider === "google"
           ? "openid email profile"
-          : provider === "kakao"
-            ? "profile_nickname account_email"
-            : undefined,
+          : "profile_nickname account_email",
     },
   });
 
