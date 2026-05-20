@@ -1,13 +1,14 @@
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 /**
  * 서버 컴포넌트/Route Handler에서 사용하는 Supabase 클라이언트.
  * 쿠키를 통해 세션을 동기화합니다.
  */
 export async function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co";
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "public-anon-placeholder";
+  const url = getSupabaseUrl() ?? "https://placeholder.supabase.co";
+  const key = getSupabaseAnonKey() ?? "public-anon-placeholder";
   const cookieStore = await cookies();
 
   return createServerClient(url, key, {

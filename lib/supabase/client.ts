@@ -1,6 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 /**
  * 브라우저(Client Component)에서 사용하는 Supabase 클라이언트.
@@ -8,7 +9,7 @@ import { createBrowserClient } from "@supabase/ssr";
  * 개발 초기에는 UI 작업에 지장을 주지 않습니다.
  */
 export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://placeholder.supabase.co";
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "public-anon-placeholder";
+  const url = getSupabaseUrl() ?? "https://placeholder.supabase.co";
+  const key = getSupabaseAnonKey() ?? "public-anon-placeholder";
   return createBrowserClient(url, key);
 }
