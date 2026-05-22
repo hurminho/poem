@@ -6,9 +6,9 @@ import { recommendPoems, MOODS, getMoodByKey } from "@/lib/db/placeholder";
 import type { MoodKey } from "@/types";
 
 export const metadata = {
-  title: "AI가 추천하는 시",
+  title: "마음 추천",
   description:
-    "오늘의 마음에 어울리는 한 편을 시담 작가의 시 가운데서 골라드립니다.",
+    "오늘의 마음에 어울리는 한 편을 시담에 등록된 공개 시 가운데서 골라드립니다.",
 };
 
 interface PageProps {
@@ -46,7 +46,7 @@ export default async function RecommendPage({ searchParams }: PageProps) {
     <div className="poem-page">
       <div className="mx-auto max-w-3xl px-5 py-12 space-y-10">
         <PageTitle
-          eyebrow="AI Recommendation"
+          eyebrow="Recommendation"
           title="오늘의 마음에 닿는 한 편"
           description={`‘${moodInfo.label}’의 결을 함께 읽어볼 시들을 골랐습니다.`}
         />
@@ -181,8 +181,12 @@ function MoodPickerStep() {
   return (
     <div className="poem-page">
       <div className="mx-auto max-w-2xl px-5 py-14 space-y-10">
+        <div className="rounded-2xl border border-border-soft bg-surface px-5 py-4 text-sm text-text-secondary leading-relaxed">
+          시담에 등록된 공개 시를 마음의 결에 맞춰 골라드립니다. (외부 AI·타 시인 작품은 사용하지 않습니다.)
+        </div>
+
         <PageTitle
-          eyebrow="AI Recommendation"
+          eyebrow="Recommendation"
           title="오늘의 마음을 알려주세요"
           description="여덟 가지 결 중에서 가장 가까운 하나를 골라주세요. 그 결에 어울리는 한 편을 시담 작가의 시 가운데서 골라드립니다."
         />

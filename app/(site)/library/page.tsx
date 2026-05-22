@@ -5,7 +5,7 @@ import { SavedBooksList } from "@/components/saves/saved-books-list";
 import { SavedPoemsList } from "@/components/saves/saved-poems-list";
 import { SavedHighlightsList } from "@/components/saves/saved-highlights-list";
 import { LikedPoemsList } from "@/components/reactions/liked-poems-list";
-import { getCurrentUser } from "@/lib/auth/current";
+import { getCurrentProfile } from "@/lib/auth/current";
 import { getSavedBooks, getSavedPoems } from "@/lib/db/saves";
 import { getLikedPoems } from "@/lib/db/reactions";
 
@@ -16,9 +16,9 @@ interface PageProps {
 }
 
 export default async function LibraryPage({ searchParams }: PageProps) {
-  const user = await getCurrentUser();
-  if (!user) {
-    redirect("/login?redirect=/library");
+  const profile = await getCurrentProfile();
+  if (!profile) {
+    redirect("/login?next=/library");
   }
 
   const sp = await searchParams;
@@ -39,9 +39,9 @@ export default async function LibraryPage({ searchParams }: PageProps) {
 
       <LibraryTabs active={tab} />
 
-      {tab === "books" && <SavedBooksList items={await getSavedBooks(user.id)} />}
-      {tab === "poems" && <SavedPoemsList items={await getSavedPoems(user.id)} />}
-      {tab === "liked" && <LikedPoemsList items={await getLikedPoems(user.id)} />}
+      {tab === "books" && <SavedBooksList items={await getSavedBooks(profile.id)} />}
+      {tab === "poems" && <SavedPoemsList items={await getSavedPoems(profile.id)} />}
+      {tab === "liked" && <LikedPoemsList items={await getLikedPoems(profile.id)} />}
       {tab === "highlights" && <SavedHighlightsList />}
     </div>
   );

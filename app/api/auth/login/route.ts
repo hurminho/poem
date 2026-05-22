@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { mapAuthErrorMessage } from "@/lib/auth/errors";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
+import { supabaseNotConfiguredMessage } from "@/lib/supabase/config-error";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 function safeNextPath(raw: string | null): string {
   if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/studio";
@@ -12,10 +14,7 @@ function safeNextPath(raw: string | null): string {
 export async function POST(request: Request) {
   if (!isSupabaseConfigured()) {
     const url = new URL("/login", request.url);
-    url.searchParams.set(
-      "error",
-      "Supabase가 설정되지 않았습니다. .env.local 을 확인해 주세요.",
-    );
+    url.searchParams.set("error", supabaseNotConfiguredMessage());
     return NextResponse.redirect(url);
   }
 
@@ -34,8 +33,8 @@ export async function POST(request: Request) {
   let response = NextResponse.redirect(new URL(next, request.url));
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseAnonKey()!,
     {
       cookies: {
         getAll() {

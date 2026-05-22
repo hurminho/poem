@@ -2,6 +2,8 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
+import { supabaseNotConfiguredMessage } from "@/lib/supabase/config-error";
+import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
 
 /**
  * 소셜 로그인 시작 라우트.
@@ -37,10 +39,7 @@ export async function GET(
 
   if (!isSupabaseConfigured()) {
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set(
-      "error",
-      "Supabase 가 설정되지 않았습니다. .env.local 을 확인해 주세요.",
-    );
+    loginUrl.searchParams.set("error", supabaseNotConfiguredMessage());
     return NextResponse.redirect(loginUrl);
   }
 
@@ -49,8 +48,8 @@ export async function GET(
   let response = NextResponse.redirect(new URL("/login", request.url));
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseAnonKey()!,
     {
       cookies: {
         getAll() {

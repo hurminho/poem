@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PageTitle } from "@/components/ui/page-title";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
+import { ComingSoonBanner } from "@/components/ui/coming-soon-banner";
 import { ChallengeStrip } from "@/components/challenges/challenge-strip";
 import { getActiveChallenges, getAllChallenges } from "@/lib/db/placeholder";
 import { formatDateKo } from "@/lib/utils";
@@ -15,6 +16,11 @@ export default function ChallengesPage() {
   return (
     <div className="poem-page">
       <div className="mx-auto max-w-4xl px-5 py-12 space-y-12">
+        <ComingSoonBanner
+          feature="조용한 챌린지는 준비 중입니다"
+          description="아래 내용은 미리보기입니다. ‘오늘의 한 편’과 작업실에서 지금도 글을 쓰실 수 있습니다."
+        />
+
         <PageTitle
           eyebrow="Quiet challenges"
           title="조용한 챌린지"

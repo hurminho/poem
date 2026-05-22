@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { PRIMARY_NAV } from "@/components/layout/nav-items";
+import { visiblePrimaryNav, FOOTER_NAV } from "@/components/layout/nav-items";
 
 const SECONDARY_AUTHED = [
   { href: "/settings", label: "설정" },
@@ -39,7 +39,7 @@ export function MobileNavToggle({ authed }: { authed: boolean }) {
     };
   }, [open]);
 
-  const items = PRIMARY_NAV.filter((n) => !n.auth || authed);
+  const items = visiblePrimaryNav(authed);
   const secondary = authed ? SECONDARY_AUTHED : SECONDARY_GUEST;
 
   return (
@@ -111,6 +111,31 @@ export function MobileNavToggle({ authed }: { authed: boolean }) {
               </ul>
 
               <hr className="divider my-4" />
+
+              {FOOTER_NAV.length > 0 ? (
+                <>
+                  <p className="px-3 text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+                    준비 중
+                  </p>
+                  <ul className="mt-2 flex flex-col gap-0.5 text-sm">
+                    {FOOTER_NAV.map((n) => (
+                      <li key={n.href}>
+                        <Link
+                          href={n.href}
+                          onClick={() => setOpen(false)}
+                          className="flex items-center gap-2 rounded-md px-3 py-2 text-text-secondary hover:bg-accent-soft hover:text-text-primary"
+                        >
+                          <span>{n.label}</span>
+                          <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-900">
+                            준비 중
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <hr className="divider my-4" />
+                </>
+              ) : null}
 
               <ul className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-text-secondary">
                 {FOOTER_LINKS.map((l) => (

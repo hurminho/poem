@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNavToggle } from "@/components/layout/mobile-nav";
-import { PRIMARY_NAV } from "@/components/layout/nav-items";
+import { visiblePrimaryNav } from "@/components/layout/nav-items";
 
 export async function Header() {
   const profile = await getCurrentProfile();
@@ -23,7 +23,7 @@ export async function Header() {
 
         {/* 데스크톱 메인 네비 */}
         <nav aria-label="주 메뉴" className="hidden lg:flex items-center gap-0.5 text-sm">
-          {PRIMARY_NAV.filter((n) => !n.auth || profile).map((n) => (
+          {visiblePrimaryNav(!!profile).map((n) => (
             <Link
               key={n.href}
               href={n.href}

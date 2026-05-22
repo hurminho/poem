@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ submitted?: string }>;
+  searchParams: Promise<{ submitted?: string; error?: string }>;
 }
 
 const PHASES = [
@@ -44,6 +44,12 @@ export default async function BetaPage({ searchParams }: PageProps) {
           title="시담 베타 테스트"
           description="시를 짓고 묶는 도구가 정말 작가의 자리에 닿는지, 함께 확인해주실 분을 찾습니다."
         />
+
+        {sp.error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50/80 px-5 py-4 text-sm text-[color:#a85a4a]">
+            {sp.error}
+          </div>
+        ) : null}
 
         {submitted ? (
           <div className="rounded-3xl border border-accent bg-accent-soft px-6 py-8 text-center">

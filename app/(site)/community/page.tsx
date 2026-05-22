@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PageTitle } from "@/components/ui/page-title";
 import { Section } from "@/components/ui/section";
 import { Card } from "@/components/ui/card";
+import { ComingSoonBanner } from "@/components/ui/coming-soon-banner";
 import { getCommunityPosts } from "@/lib/db/placeholder";
 import { relativeTimeKo } from "@/lib/utils";
 import { MessageSquareQuote } from "lucide-react";
@@ -20,6 +21,11 @@ export default function CommunityPage() {
   return (
     <div className="poem-page">
       <div className="mx-auto max-w-4xl px-5 py-12 space-y-12">
+        <ComingSoonBanner
+          feature="커뮤니티는 베타 2단계에서 열립니다"
+          description="지금 보이는 글은 데모입니다. 시 쓰기·시집·시 명상·둘러보기는 이용하실 수 있습니다."
+        />
+
         <PageTitle
           eyebrow="Community"
           title="커뮤니티"

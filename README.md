@@ -52,7 +52,7 @@ npm run dev
 
 ## DB 셋업
 
-`supabase/sql/0001_init.sql` (스키마) → `supabase/sql/0002_admin.sql` (운영자) 순서로 Supabase Dashboard SQL Editor 에 실행합니다.
+`supabase/sql/0001_init.sql` (스키마) → `0002_admin.sql` (운영자) → `0003_beta_signups.sql` (베타 신청) 순서로 Supabase Dashboard SQL Editor 에 실행합니다.
 
 만들어지는 테이블:
 

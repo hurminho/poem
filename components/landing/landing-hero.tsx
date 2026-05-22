@@ -55,7 +55,7 @@ export function LandingHero({ sampleBookHref }: LandingHeroProps) {
               className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/40 bg-accent-soft px-4 py-2 text-sm text-ink-forest hover:border-accent transition-colors"
             >
               <Sparkles className="size-4" aria-hidden />
-              AI가 추천하는 시 감상하기
+              마음에 맞는 시 감상하기
             </a>
 
             <ul
