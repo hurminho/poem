@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookCover } from "@/components/book/book-cover";
+import { BookExportActions } from "@/components/book/book-export-actions";
 import { Section } from "@/components/ui/section";
 import { ReflectionSection } from "@/components/reflections/reflection-section";
 import { PrimaryCTA } from "@/components/ui/primary-cta";
@@ -116,6 +117,12 @@ export default async function PublicBookPage({ params }: PageProps) {
           </ol>
         )}
       </Section>
+
+      <BookExportActions
+        bookId={book.id}
+        bookTitle={book.title}
+        isOwner={user?.id === book.author.id}
+      />
 
       {book.allow_reviews && (
         <Section title="감상평" description="조용히 한 줄을 남겨 주세요.">

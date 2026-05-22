@@ -19,6 +19,7 @@ import {
   ScrollText,
   UserCog,
   MessagesSquare,
+  CircleDollarSign,
 } from "lucide-react";
 
 interface NavItem {
@@ -42,6 +43,12 @@ const NAV: NavItem[] = [
   { href: "/admin/curation", label: "큐레이션", icon: Sparkles, roles: ["super_admin", "content_admin", "curator"] },
   { href: "/admin/moderation/hidden-content", label: "숨긴 콘텐츠", icon: EyeOff },
   { href: "/admin/stats", label: "통계", icon: BarChart3 },
+  {
+    href: "/admin/monetization",
+    label: "수익 검증",
+    icon: CircleDollarSign,
+    roles: ["super_admin", "content_admin"],
+  },
   { href: "/admin/audit-logs", label: "감사 로그", icon: ScrollText },
   { href: "/admin/settings", label: "설정", icon: Settings, roles: ["super_admin"] },
 ];

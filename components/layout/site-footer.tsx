@@ -8,6 +8,7 @@ const LEGAL = [
 ];
 
 const RESOURCES = [
+  { href: "/pricing", label: "요금제" },
   { href: "/beta", label: "베타 테스트" },
   { href: "/brand", label: "브랜드" },
 ];

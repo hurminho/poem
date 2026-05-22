@@ -36,7 +36,7 @@ export function LandingHero({ sampleBookHref }: LandingHeroProps) {
               <br />
               <span className="text-accent">한 편의 시</span>로
               <br />
-              천천히 적습니다.
+              천천히 담습니다.
             </h1>
             <p className="mt-5 max-w-md text-sm md:text-base text-text-secondary leading-relaxed">
               시담은 빠른 피드 대신, 정원의 한 자리처럼
@@ -47,6 +47,7 @@ export function LandingHero({ sampleBookHref }: LandingHeroProps) {
             <div className="mt-7 flex flex-wrap items-center gap-2">
               <PrimaryCTA href="/today">오늘의 한 편 쓰기</PrimaryCTA>
               <QuietButton href={sampleBookHref}>샘플 시집 보기</QuietButton>
+              <QuietButton href="/pricing">요금제 보기</QuietButton>
             </div>
 
             {/* AI 추천 시 진입점 */}
