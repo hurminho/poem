@@ -50,7 +50,7 @@ export default async function StudioHomePage() {
             description="작은 한 줄로 시작해도 충분합니다."
             action={
               <Link
-                href="/studio/poems/new"
+                href="/studio/new"
                 className="text-sm text-text-primary underline-offset-4 hover:underline"
               >
                 시 쓰기

@@ -1,41 +1,43 @@
 import { cn } from "@/lib/utils";
+import type { TextAlign } from "@/types";
 
 interface PoemPreviewProps {
   title?: string;
   content: string;
   className?: string;
   /**
-   * 편집기와 본문 줄바꿈을 1:1 로 맞출 때 사용.
-   * (기본 false — 단독 시 페이지에서는 중앙 정렬을 유지합니다.)
+   * 본문 가로 정렬. 지정하지 않으면 'center' 로 폴백합니다.
    */
-  alignWithEditor?: boolean;
+  textAlign?: TextAlign | null;
 }
+
+const ALIGN_CLASS: Record<TextAlign, string> = {
+  left: "text-left",
+  center: "text-center",
+  right: "text-right",
+};
 
 /**
  * 시 본문은 .poem-body 클래스가 명조체 + 줄바꿈 보존 + 큰 행간을 보장합니다.
  *
- * `alignWithEditor=true` 인 경우, 편집기 textarea 와 정확히 같은 정렬·폰트·행간을
- * 사용해 같은 자리에서 줄바꿈되도록 맞춥니다.
+ * 본문/제목 모두 동일한 정렬을 적용해 편집기와 미리보기가 같은 자리에서 줄바꿈됩니다.
  */
 export function PoemPreview({
   title,
   content,
   className,
-  alignWithEditor,
+  textAlign = "center",
 }: PoemPreviewProps) {
+  const align = textAlign ?? "center";
+  const cls = ALIGN_CLASS[align];
   return (
     <article className={cn("max-w-prose mx-auto", className)}>
       {title && (
-        <h1
-          className={cn(
-            "poem-title text-2xl md:text-3xl mb-8",
-            alignWithEditor ? "text-left" : "text-center",
-          )}
-        >
+        <h1 className={cn("poem-title text-2xl md:text-3xl mb-8", cls)}>
           {title}
         </h1>
       )}
-      <div className={cn("poem-body", alignWithEditor ? "text-left" : "text-center")}>
+      <div className={cn("poem-body", cls)}>
         {content || (
           <span className="text-text-secondary italic">아직 본문이 비어 있습니다.</span>
         )}

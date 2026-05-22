@@ -26,7 +26,7 @@ export function DemoModeBoundary() {
       html.removeAttribute("data-demo");
     }
 
-    if (theme === "night" || theme === "minimal" || theme === "light") {
+    if (theme === "night" || theme === "day" || theme === "light") {
       html.setAttribute("data-theme", theme);
     } else if (demo === "1") {
       // 데모 진입 시에는 light 로 안정화.

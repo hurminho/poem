@@ -18,13 +18,11 @@ export function LandingHero({ ctaHref }: LandingHeroProps) {
   return (
     <section className="relative mx-auto max-w-6xl px-5 pt-8 pb-14 md:pt-14 md:pb-20">
       <div className="relative overflow-hidden rounded-[28px] border border-border-soft bg-surface shadow-sm">
-        <div className="grid md:grid-cols-[1.05fr_0.95fr] md:items-stretch">
+        {/* 좌측 텍스트(흰색 카드 영역) : 우측 이미지 = 4 : 6 */}
+        <div className="grid md:grid-cols-[4fr_6fr] md:items-stretch">
           {/* ── TEXT ─────────────────────────────────────────── */}
-          <div className="relative order-2 md:order-1 px-6 py-10 md:px-12 md:py-16">
-            <p className="text-[11px] tracking-[0.42em] uppercase text-text-secondary">
-              시담
-            </p>
-            <h1 className="mt-4 font-serif text-[2.3rem] md:text-[3.4rem] font-semibold text-text-primary leading-[1.18]">
+          <div className="relative order-2 md:order-1 px-6 py-10 md:px-10 md:py-16">
+            <h1 className="mt-4 font-serif text-[2.1rem] md:text-[2.8rem] lg:text-[3.1rem] font-semibold text-text-primary leading-[1.18]">
               오늘의 마음을
               <br />
               <span className="text-accent">한 편의 시</span>에
@@ -40,31 +38,31 @@ export function LandingHero({ ctaHref }: LandingHeroProps) {
               >
                 나의 시 쓰기
               </Link>
+              <br />
               <p className="mt-3 text-xs text-text-secondary">
                 한 편을 쓰고, 작업실에서 시집으로 묶을 수 있어요.
               </p>
             </div>
           </div>
 
-          {/* ── IMAGE ─────────────────────────────────────────── */}
-          <div className="order-1 md:order-2 relative min-h-[260px] md:min-h-[520px]">
+          {/* ── IMAGE (60% 영역) ─────────────────────────────── */}
+          <div className="order-1 md:order-2 relative min-h-[260px] md:min-h-[560px]">
             <Image
               src="/images/landing-garden.png"
               alt="식물과 함께 시를 읽고 쓰는 사람들의 잔잔한 정원"
               fill
               priority
-              sizes="(max-width: 768px) 100vw, 50vw"
+              sizes="(max-width: 768px) 100vw, 60vw"
               className="object-cover"
-              style={{ objectPosition: "center 35%" }}
+              style={{ objectPosition: "center 30%" }}
             />
-            {/* 텍스트 영역과의 자연스러운 연결 — 가로/세로 그라데이션 페이드 */}
+            {/* 좌측(텍스트) 영역과 부드럽게 이어지도록 살짝만 페이드 */}
             <div
               aria-hidden
-              className="absolute inset-0 pointer-events-none"
+              className="hidden md:block absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(to right, color-mix(in srgb, var(--surface) 35%, transparent) 0%, transparent 40%)," +
-                  "linear-gradient(to top, color-mix(in srgb, var(--surface) 55%, transparent) 0%, transparent 35%)",
+                  "linear-gradient(to right, color-mix(in srgb, var(--surface) 28%, transparent) 0%, transparent 28%)",
               }}
             />
             {/* 모바일에서는 위→텍스트로 부드럽게 페이드 */}

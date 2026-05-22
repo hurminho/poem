@@ -103,7 +103,9 @@ export function BookCover({
       {themeStyle.ornament === "frame" && (
         <div className="absolute inset-3 border border-current opacity-20 pointer-events-none rounded-md" />
       )}
-      <div className="h-full flex flex-col justify-center text-center px-2">
+      {/* 제목은 상단 30% 라인 부근(7:3 높이 분할의 윗 자리)에 자리잡고,
+          나머지 70% 는 호흡을 둡니다. 작가명은 하단에 별도로 absolute 배치. */}
+      <div className="h-full flex flex-col text-center px-2 pt-[24%]">
         <p className="font-serif font-semibold leading-snug text-balance">
           {title || "제목 없음"}
         </p>

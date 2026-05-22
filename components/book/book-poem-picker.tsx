@@ -45,7 +45,7 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
       <Card className="p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-serif text-base font-semibold text-text-primary">시 고르기</h3>
-          <Link href="/studio/poems/new" className="text-xs text-accent hover:underline">
+          <Link href="/studio/new" className="text-xs text-accent hover:underline">
             새 시 쓰기 →
           </Link>
         </div>

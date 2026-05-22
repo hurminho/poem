@@ -14,7 +14,7 @@ export function TodayQuickStart() {
         시작이 어려운 날은 짧게 시작하셔도 됩니다. 마음을 고르지 않아도, 바로 한 편을 적을 수 있어요.
       </p>
       <div className="mt-8 flex flex-wrap gap-2">
-        <PrimaryCTA href="/studio/poems/new">바로 한 편 쓰기</PrimaryCTA>
+        <PrimaryCTA href="/studio/new">바로 한 편 쓰기</PrimaryCTA>
         <QuietButton href="/studio/books/new">시집 만들기</QuietButton>
       </div>
     </div>

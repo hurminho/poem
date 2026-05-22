@@ -16,7 +16,7 @@ export type AdminRole =
   | "curator"
   | "support";
 
-export type ReactionTargetType = "poem" | "book" | "comment";
+export type ReactionTargetType = "poem" | "book" | "comment" | "reflection";
 export type ReactionType =
   | "like"
   | "comforted"
@@ -38,6 +38,8 @@ export interface Profile {
   updated_at: string;
 }
 
+export type TextAlign = "left" | "center" | "right";
+
 export interface Poem {
   id: string;
   author_id: string;
@@ -49,6 +51,8 @@ export interface Poem {
   allow_comments: boolean;
   allow_copy: boolean;
   moderation_status: ModerationStatus;
+  /** 본문 가로 정렬 — 0005 마이그레이션 이전 시는 'center' 로 폴백. */
+  text_align?: TextAlign | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;

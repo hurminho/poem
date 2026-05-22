@@ -47,7 +47,7 @@ export default async function ChallengeDetailPage({ params }: PageProps) {
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-2">
             {c.status === "active" ? (
-              <PrimaryCTA href={`/studio/poems/new?challenge=${c.id}`}>
+              <PrimaryCTA href={`/studio/new?challenge=${c.id}`}>
                 참여해 한 편 쓰기
               </PrimaryCTA>
             ) : (

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PageTitle } from "@/components/ui/page-title";
 import { getPublicPoems } from "@/lib/db/poems";
+import { getCurrentProfile } from "@/lib/auth/current";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
@@ -30,7 +31,11 @@ function toneFor(seed: string): string {
 
 export default async function PublicPoemsPage({ searchParams }: PageProps) {
   const sp = await searchParams;
-  const poems = await getPublicPoems(80);
+  const [poems, profile] = await Promise.all([
+    getPublicPoems(80),
+    getCurrentProfile(),
+  ]);
+  const isLoggedIn = !!profile;
 
   // 태그 목록 추출 — 등장 횟수가 많은 순.
   const tagCount = new Map<string, number>();
@@ -92,6 +97,22 @@ export default async function PublicPoemsPage({ searchParams }: PageProps) {
           </ul>
         </section>
 
+        {/* 로그인 안내 — 게스트는 미리보기만 보입니다. */}
+        {!isLoggedIn ? (
+          <div className="rounded-2xl border border-border-soft bg-surface px-5 py-4 text-sm text-text-secondary flex flex-wrap items-center gap-3">
+            <span className="leading-relaxed">
+              로그인하면 시 전체를 끝까지 읽을 수 있어요. 지금은 제목과 첫 두 줄만 보입니다.
+            </span>
+            <Link
+              href="/signup?next=/poems"
+              prefetch
+              className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-xs text-background hover:opacity-90 transition-opacity"
+            >
+              가입하고 이어 읽기
+            </Link>
+          </div>
+        ) : null}
+
         {/* 시 카드들 — masonry 처럼 자연스러운 톤 */}
         {visible.length === 0 ? (
           <p className="text-center text-sm text-text-secondary py-12">
@@ -101,7 +122,7 @@ export default async function PublicPoemsPage({ searchParams }: PageProps) {
           <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {visible.map((poem) => (
               <li key={poem.id}>
-                <PoemCard poem={poem} />
+                <PoemCard poem={poem} isLoggedIn={isLoggedIn} />
               </li>
             ))}
           </ul>
@@ -117,21 +138,26 @@ export default async function PublicPoemsPage({ searchParams }: PageProps) {
 
 interface PoemCardProps {
   poem: Awaited<ReturnType<typeof getPublicPoems>>[number];
+  /** 게스트에게는 제목+2줄까지만, 로그인 사용자는 4줄까지 미리보기. */
+  isLoggedIn: boolean;
 }
 
 /**
  * 감성적인 시 카드 — 큰 종이 한 장처럼.
- * 본문은 처음 4줄까지만 보여주고, 나머지는 자연스럽게 페이드.
  */
-function PoemCard({ poem }: PoemCardProps) {
+function PoemCard({ poem, isLoggedIn }: PoemCardProps) {
   const tone = toneFor(poem.id);
   const lines = (poem.content ?? "").split("\n");
-  const preview = lines.slice(0, 4).join("\n");
-  const truncated = lines.length > 4;
+  const previewLines = isLoggedIn ? 4 : 2;
+  const preview = lines.slice(0, previewLines).join("\n");
+  const truncated = lines.length > previewLines;
+
+  // 게스트는 시 본문 페이지로 못 들어가게 — 클릭하면 회원가입 유도
+  const href = isLoggedIn ? `/poems/${poem.id}` : "/signup?next=/poems";
 
   return (
     <Link
-      href={`/poems/${poem.id}`}
+      href={href}
       prefetch
       className={cn(
         "relative block h-full overflow-hidden rounded-3xl border border-border-soft/70 px-6 py-7 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
@@ -149,9 +175,9 @@ function PoemCard({ poem }: PoemCardProps) {
       >
         {preview}
       </p>
-      {truncated ? (
+      {truncated || !isLoggedIn ? (
         <p className="mt-2 text-xs text-text-secondary">
-          … 더 읽기
+          {isLoggedIn ? "… 더 읽기" : "로그인하면 끝까지 읽을 수 있어요"}
         </p>
       ) : null}
 

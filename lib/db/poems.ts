@@ -16,7 +16,7 @@ export interface PublicPoemCard extends Poem {
   tags: string[];
 }
 
-const POEM_COLS = "id,author_id,title,content,note,visibility,status,allow_comments,allow_copy,published_at,created_at,updated_at";
+const POEM_COLS = "id,author_id,title,content,note,visibility,status,allow_comments,allow_copy,text_align,published_at,created_at,updated_at";
 
 export async function getMyPoems(authorId: string): Promise<Poem[]> {
   if (!isSupabaseConfigured()) return phMyPoems();

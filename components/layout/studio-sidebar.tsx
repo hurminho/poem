@@ -9,7 +9,6 @@ const ITEMS = [
   { href: "/studio/poems", label: "나의 시" },
   { href: "/studio/books", label: "나의 시집" },
   { href: "/studio/reflections", label: "받은 감상평" },
-  { href: "/settings", label: "설정" },
 ];
 
 export function StudioSidebar() {

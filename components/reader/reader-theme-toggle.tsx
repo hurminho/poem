@@ -3,14 +3,14 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type ReaderTheme = "light" | "night" | "minimal";
+type ReaderTheme = "light" | "night" | "day";
 
 const STORAGE_KEY = "foem-reader-theme";
-const VALID: ReaderTheme[] = ["light", "night", "minimal"];
+const VALID: ReaderTheme[] = ["light", "night", "day"];
 const OPTIONS: { value: ReaderTheme; label: string }[] = [
   { value: "light", label: "종이" },
   { value: "night", label: "밤" },
-  { value: "minimal", label: "흰색" },
+  { value: "day", label: "낮" },
 ];
 
 function readStored(): ReaderTheme {

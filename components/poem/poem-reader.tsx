@@ -23,7 +23,11 @@ export function PoemReader({ poem, showNote = true, actions, position }: PoemRea
             {String(position.current).padStart(2, "0")} / {String(position.total).padStart(2, "0")}
           </p>
         )}
-        <PoemPreview title={poem.title} content={poem.content} />
+        <PoemPreview
+          title={poem.title}
+          content={poem.content}
+          textAlign={poem.text_align ?? "center"}
+        />
         {showNote && poem.note && (
           <p className="mt-12 mx-auto max-w-prose text-center poem-muted italic">
             {poem.note}
@@ -33,8 +37,6 @@ export function PoemReader({ poem, showNote = true, actions, position }: PoemRea
           <div className="mt-12 flex flex-wrap items-center justify-center gap-2">{actions}</div>
         ) : (
           <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
-            <QuietButton disabled>마음에 담기</QuietButton>
-            <QuietButton disabled>구절 저장</QuietButton>
             <QuietButton disabled>감상평 남기기</QuietButton>
           </div>
         )}

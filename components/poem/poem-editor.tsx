@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +11,7 @@ import { PoemPreview } from "@/components/poem/poem-preview";
 import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-selector";
 import { TagInput } from "@/components/poem/tag-input";
 import { savePoemAction, autosavePoemAction } from "@/lib/poems/actions";
-import type { Poem, Visibility } from "@/types";
+import type { Poem, TextAlign, Visibility } from "@/types";
 import { cn } from "@/lib/utils";
 
 interface PoemEditorProps {
@@ -41,6 +42,9 @@ export function PoemEditor({
   );
   const [allowComments, setAllowComments] = React.useState(initial?.allow_comments ?? true);
   const [allowCopy, setAllowCopy] = React.useState(initial?.allow_copy ?? false);
+  const [textAlign, setTextAlign] = React.useState<TextAlign>(
+    (initial?.text_align as TextAlign | null | undefined) ?? "center",
+  );
   const [tags, setTags] = React.useState<string[]>(initial?.tags ?? []);
   const [pending, startTransition] = React.useTransition();
   const [actionLabel, setActionLabel] = React.useState<string>("");
@@ -79,6 +83,7 @@ export function PoemEditor({
         visibility,
         allowComments,
         allowCopy,
+        textAlign,
         tags,
       });
       if (res.ok) {
@@ -91,7 +96,7 @@ export function PoemEditor({
       }
     }, AUTOSAVE_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [title, content, note, visibility, allowComments, allowCopy, tags, id]);
+  }, [title, content, note, visibility, allowComments, allowCopy, tags, textAlign, id]);
 
   const submit = (action: "draft" | "publish" | "archive") => {
     const fd = new FormData();
@@ -103,6 +108,7 @@ export function PoemEditor({
     fd.set("visibility", visibility);
     if (allowComments) fd.set("allow_comments", "on");
     if (allowCopy) fd.set("allow_copy", "on");
+    fd.set("text_align", textAlign);
     fd.set("tags", tags.join(","));
     setActionLabel(
       action === "publish" ? "발행 중…" : action === "archive" ? "보관 중…" : "저장 중…",
@@ -159,7 +165,10 @@ export function PoemEditor({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="content">본문</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="content">본문</Label>
+                <AlignToolbar value={textAlign} onChange={setTextAlign} />
+              </div>
               {/* 본문 — 미리보기와 동일한 명조 글꼴 / 동일한 행간 / 동일한 글자 크기.
                   높이는 약 10줄로 제한하고, 그 이후로는 스크롤로 처리합니다. */}
               <Textarea
@@ -167,7 +176,12 @@ export function PoemEditor({
                 placeholder={"줄바꿈은 그대로 보존됩니다.\n천천히 적어주세요."}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="poem-editor-textarea px-5 py-4"
+                className={cn(
+                  "poem-editor-textarea px-5 py-4",
+                  textAlign === "left" && "text-left",
+                  textAlign === "center" && "text-center",
+                  textAlign === "right" && "text-right",
+                )}
               />
             </div>
 
@@ -271,7 +285,7 @@ export function PoemEditor({
         {!previewMode && (
           <p className="poem-muted text-center mb-6 tracking-wider">─ 미리보기 ─</p>
         )}
-        <PoemPreview title={title} content={content} alignWithEditor />
+        <PoemPreview title={title} content={content} textAlign={textAlign} />
         {previewMode && note && (
           <p className="mt-12 mx-auto max-w-prose text-center poem-muted italic">
             {note}
@@ -286,4 +300,49 @@ function formatTime(d: Date): string {
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
+}
+
+const ALIGN_OPTIONS: Array<{ value: TextAlign; label: string; Icon: typeof AlignLeft }> = [
+  { value: "left", label: "왼쪽 정렬", Icon: AlignLeft },
+  { value: "center", label: "가운데 정렬", Icon: AlignCenter },
+  { value: "right", label: "오른쪽 정렬", Icon: AlignRight },
+];
+
+function AlignToolbar({
+  value,
+  onChange,
+}: {
+  value: TextAlign;
+  onChange: (v: TextAlign) => void;
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label="본문 정렬"
+      className="inline-flex rounded-md border border-border-soft bg-surface p-0.5"
+    >
+      {ALIGN_OPTIONS.map((o) => {
+        const active = value === o.value;
+        const { Icon } = o;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            aria-label={o.label}
+            onClick={() => onChange(o.value)}
+            className={cn(
+              "inline-flex h-7 w-8 items-center justify-center rounded-[5px] transition-colors",
+              active
+                ? "bg-text-primary text-background"
+                : "text-text-secondary hover:bg-accent-soft hover:text-text-primary",
+            )}
+          >
+            <Icon className="size-3.5" />
+          </button>
+        );
+      })}
+    </div>
+  );
 }

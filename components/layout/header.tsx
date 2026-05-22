@@ -8,7 +8,7 @@ export async function Header() {
   const profile = await getCurrentProfile();
   const items = desktopHeaderNav(!!profile);
   // 첫 진입은 '시 쓰기'로 — 시집은 /studio 안에서 만듭니다.
-  const ctaHref = profile ? "/studio/poems/new" : "/signup?next=/studio/poems/new";
+  const ctaHref = profile ? "/studio/new" : "/signup?next=/studio/new";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border-soft/80 bg-background/85 backdrop-blur">

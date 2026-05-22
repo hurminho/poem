@@ -28,7 +28,7 @@ export function TodayPromptCard({ mood }: { mood: Mood }) {
       </p>
 
       <div className="mt-8 flex flex-wrap gap-2">
-        <PrimaryCTA href={`/studio/poems/new?mood=${mood.key}`}>
+        <PrimaryCTA href={`/studio/new?mood=${mood.key}`}>
           한 편 쓰기
         </PrimaryCTA>
         <Link

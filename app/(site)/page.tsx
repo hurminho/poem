@@ -28,12 +28,12 @@ function toneFor(seed: string): string {
 export default async function HomePage() {
   const [profile, publicPoems] = await Promise.all([
     getCurrentProfile(),
-    getPublicPoems(9),
+    // 3개씩 × 2줄 = 6편만, 나머지는 '전체 보기' 링크로 유도.
+    getPublicPoems(6),
   ]);
+  const isLoggedIn = !!profile;
   // 첫 진입은 '시 쓰기'로 안내합니다. 시집 만들기는 /studio 안의 QuickActions 에서.
-  const ctaHref = profile
-    ? "/studio/poems/new"
-    : "/signup?next=/studio/poems/new";
+  const ctaHref = isLoggedIn ? "/studio/new" : "/signup?next=/studio/new";
 
   return (
     <div className="poem-page">
@@ -41,7 +41,7 @@ export default async function HomePage() {
       <LandingHero ctaHref={ctaHref} />
 
       {/* 2. 공개된 시 — '누군가의 시' 미리보기 */}
-      <PublicPoemsSection poems={publicPoems} />
+      <PublicPoemsSection poems={publicPoems} isLoggedIn={isLoggedIn} />
 
       {/* 3. FINAL CTA */}
       <FinalCTA ctaHref={ctaHref} />
@@ -54,15 +54,16 @@ export default async function HomePage() {
 /* ────────────────────────────────────────────────────────── */
 interface PublicPoemsSectionProps {
   poems: Awaited<ReturnType<typeof getPublicPoems>>;
+  isLoggedIn: boolean;
 }
 
-function PublicPoemsSection({ poems }: PublicPoemsSectionProps) {
+function PublicPoemsSection({ poems, isLoggedIn }: PublicPoemsSectionProps) {
   return (
     <section className="mx-auto max-w-5xl px-5 pb-20 md:pb-24">
       <header className="mb-6 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-[11px] tracking-[0.3em] uppercase text-text-secondary">
-            Discover · 누군가의 시
+            · 누군가의 시
           </p>
           <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
             오늘 누군가가 두고 간 시
@@ -87,12 +88,17 @@ function PublicPoemsSection({ poems }: PublicPoemsSectionProps) {
         <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {poems.map((poem) => {
             const lines = (poem.content ?? "").split("\n");
-            const preview = lines.slice(0, 4).join("\n");
-            const truncated = lines.length > 4;
+            // 게스트는 첫 2줄, 로그인 사용자는 첫 4줄까지 보여줍니다.
+            const previewLines = isLoggedIn ? 4 : 2;
+            const preview = lines.slice(0, previewLines).join("\n");
+            const truncated = lines.length > previewLines;
+            const href = isLoggedIn
+              ? `/poems/${poem.id}`
+              : "/signup?next=/poems";
             return (
               <li key={poem.id}>
                 <Link
-                  href={`/poems/${poem.id}`}
+                  href={href}
                   prefetch
                   className={cn(
                     "relative block h-full overflow-hidden rounded-3xl border border-border-soft/70 px-6 py-7 shadow-[0_1px_0_rgba(0,0,0,0.02)] transition-all",
@@ -109,8 +115,12 @@ function PublicPoemsSection({ poems }: PublicPoemsSectionProps) {
                   >
                     {preview}
                   </p>
-                  {truncated ? (
-                    <p className="mt-2 text-xs text-text-secondary">… 더 읽기</p>
+                  {truncated || !isLoggedIn ? (
+                    <p className="mt-2 text-xs text-text-secondary">
+                      {isLoggedIn
+                        ? "… 더 읽기"
+                        : "로그인하면 끝까지 읽을 수 있어요"}
+                    </p>
                   ) : null}
                   <div className="mt-6 flex items-center justify-between gap-3">
                     <p className="text-xs text-text-secondary truncate">

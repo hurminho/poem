@@ -14,7 +14,12 @@ interface ToggleResult {
   needsLogin?: boolean;
 }
 
-const VALID_TARGETS: ReactionTargetType[] = ["poem", "book", "comment"];
+const VALID_TARGETS: ReactionTargetType[] = [
+  "poem",
+  "book",
+  "comment",
+  "reflection",
+];
 const VALID_TYPES: ReactionType[] = [
   "like",
   "comforted",
@@ -91,6 +96,11 @@ export async function toggleReactionAction(
 
   if (targetType === "poem") revalidatePath(`/poems/${targetId}`);
   if (targetType === "book") revalidatePath(`/books/${targetId}`);
+  // 감상평 좋아요는 시·시집 페이지에 함께 노출되므로 모두 무효화합니다.
+  if (targetType === "reflection") {
+    revalidatePath("/poems", "layout");
+    revalidatePath("/books", "layout");
+  }
   revalidatePath("/library");
 
   return { ok: true, liked: !existing, count: count ?? 0 };

@@ -6,7 +6,7 @@
    시담 — 디자인 토큰
      기본 (Sage Garden) : 세이지 그린 + 따뜻한 크림 + 파스텔 엽서
      [data-theme="night"]   : 야간 (서재의 등불)
-     [data-theme="minimal"] : 미니멀 (흰 종이)
+     [data-theme="day"]     : 낮 (햇살이 든 창가)
 
    영감: 정원에서 시를 읽는 사람들, 한지에 그린 산수,
          녹색 가죽 표지의 만년필 노트.
@@ -61,27 +61,28 @@
   --ink-amber: #E7C28C;
 }
 
-[data-theme="minimal"] {
-  --background: #FFFFFF;
-  --surface: #F8F8F6;
+/* 낮 — 햇볕이 잘 드는 창가 같은 톤 (이전 "흰색"/"minimal" 자리). */
+[data-theme="day"] {
+  --background: #FEFAF0;          /* 따끈한 햇볕이 닿은 종이 */
+  --surface: #FFFBEC;             /* 거의 흰색에 노란 기운 살짝 */
   --surface-elev: #FFFFFF;
-  --text-primary: #14181A;
-  --text-secondary: #6F7572;
-  --border-soft: #E5E7E1;
-  --accent: #5C7F5A;
-  --accent-soft: #ECEFE7;
+  --text-primary: #2A2A24;        /* 부드러운 진갈색 */
+  --text-secondary: #7A7563;
+  --border-soft: #EDE4C9;
+  --accent: #C9A23A;              /* 햇살 같은 황금 톤 — 강조 */
+  --accent-soft: #F8EDC8;
 
-  --pastel-sage: #DCE3D3;
-  --pastel-moss: #CFD8C3;
-  --pastel-sand: #EFE7D2;
-  --pastel-clay: #ECDCCE;
-  --pastel-blush: #F1DED3;
-  --pastel-mist: #E3E7E4;
-  --pastel-cream: #F6F1E5;
-  --pastel-shadow: #BFBAB0;
+  --pastel-sage: #E2E6CB;
+  --pastel-moss: #D5DCB6;
+  --pastel-sand: #F3E6BD;
+  --pastel-clay: #F2D9B7;
+  --pastel-blush: #F7D9C2;
+  --pastel-mist: #EDE6D2;
+  --pastel-cream: #FAF1D8;
+  --pastel-shadow: #BFB394;
 
-  --ink-forest: #28402A;
-  --ink-amber: #8E6121;
+  --ink-forest: #5C7F5A;
+  --ink-amber: #B07A3A;
 }
 
 /* Tailwind v4 : @theme 로 변수를 디자인 토큰으로 노출 */
@@ -123,6 +124,18 @@ body {
     "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* 한국어는 단어 단위로 줄바꿈하고, 영어/링크는 자연스럽게 줄바꿈되도록. */
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 모바일에서 입력 폼이 자동 확대되는 것을 방지 (iOS 16px 룰) */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────

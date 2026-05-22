@@ -4,11 +4,17 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
-import type { Visibility, ContentStatus } from "@/types";
+import type { Visibility, ContentStatus, TextAlign } from "@/types";
 
 type SaveAction = "draft" | "publish" | "archive";
 
 const ALLOWED_VIS: Visibility[] = ["private", "link", "public"];
+const ALLOWED_ALIGN: TextAlign[] = ["left", "center", "right"];
+
+function asAlign(v: FormDataEntryValue | null, fallback: TextAlign): TextAlign {
+  const s = String(v ?? "");
+  return (ALLOWED_ALIGN as string[]).includes(s) ? (s as TextAlign) : fallback;
+}
 
 function asVisibility(v: FormDataEntryValue | null, fallback: Visibility): Visibility {
   const s = String(v ?? "");
@@ -34,6 +40,7 @@ export async function savePoemAction(formData: FormData) {
   let visibility = asVisibility(formData.get("visibility"), "private");
   const allow_comments = formData.get("allow_comments") === "on";
   const allow_copy = formData.get("allow_copy") === "on";
+  const text_align = asAlign(formData.get("text_align"), "center");
   const tagsRaw = String(formData.get("tags") || "");
   const tagNames = tagsRaw
     .split(",")
@@ -41,7 +48,7 @@ export async function savePoemAction(formData: FormData) {
     .filter(Boolean);
 
   if (!title || !content.trim()) {
-    const back = id ? `/studio/poems/${id}/edit` : "/studio/poems/new";
+    const back = id ? `/studio/poems/${id}/edit` : "/studio/new";
     redirect(back + "?error=" + encodeURIComponent("제목과 본문을 모두 입력해주세요."));
   }
 
@@ -65,6 +72,7 @@ export async function savePoemAction(formData: FormData) {
     status,
     allow_comments,
     allow_copy,
+    text_align,
     ...(action === "publish" ? { published_at } : {}),
   };
 
@@ -77,7 +85,7 @@ export async function savePoemAction(formData: FormData) {
   } else {
     const { data, error } = await supabase.from("poems").insert(payload).select("id").single();
     if (error || !data) {
-      redirect("/studio/poems/new?error=" + encodeURIComponent(error?.message ?? "저장에 실패했습니다."));
+      redirect("/studio/new?error=" + encodeURIComponent(error?.message ?? "저장에 실패했습니다."));
     }
     savedId = data.id;
   }
@@ -90,9 +98,26 @@ export async function savePoemAction(formData: FormData) {
   revalidatePath("/studio/poems");
   if (savedId) revalidatePath(`/poems/${savedId}`);
 
-  const notice =
-    action === "publish" ? "발행했습니다." : action === "archive" ? "보관함으로 옮겼습니다." : "임시저장 했습니다.";
-  redirect(`/studio/poems/${savedId}/edit?notice=` + encodeURIComponent(notice));
+  // 발행 후에는 '나의 시 > 발행됨' 탭으로 이동시켜 작가가 본인 작품을 한눈에 봅니다.
+  if (action === "publish") {
+    redirect(
+      `/studio/poems?status=published&notice=${encodeURIComponent(
+        "발행했습니다. ‘발행됨’ 탭에서 확인해 보세요.",
+      )}`,
+    );
+  }
+  if (action === "archive") {
+    redirect(
+      `/studio/poems?status=archived&notice=${encodeURIComponent(
+        "보관함으로 옮겼습니다.",
+      )}`,
+    );
+  }
+  redirect(
+    `/studio/poems/${savedId}/edit?notice=${encodeURIComponent(
+      "임시저장 했습니다.",
+    )}`,
+  );
 }
 
 /**
@@ -158,6 +183,7 @@ export async function autosavePoemAction(input: {
   visibility?: Visibility;
   allowComments?: boolean;
   allowCopy?: boolean;
+  textAlign?: TextAlign;
   tags?: string[];
 }): Promise<AutoSaveResult> {
   if (!isSupabaseConfigured()) {
@@ -184,6 +210,12 @@ export async function autosavePoemAction(input: {
     ? (input.visibility as Visibility)
     : "private";
 
+  const textAlign: TextAlign = (
+    ["left", "center", "right"] as const
+  ).includes(input.textAlign as TextAlign)
+    ? (input.textAlign as TextAlign)
+    : "center";
+
   const payload = {
     author_id: user.id,
     title: title || "(제목 없음)",
@@ -193,15 +225,17 @@ export async function autosavePoemAction(input: {
     status: "draft" as ContentStatus,
     allow_comments: input.allowComments ?? true,
     allow_copy: input.allowCopy ?? false,
+    text_align: textAlign,
   };
 
   let savedId = id;
   if (id) {
-    // 발행된 시는 자동 임시 저장으로 상태를 바꾸지 않습니다 — 본문/제목만 갱신.
+    // 발행된 시는 자동 임시 저장으로 상태를 바꾸지 않습니다 — 본문/제목/정렬만 갱신.
     const updateOnlyContent = {
       title: payload.title,
       content: payload.content,
       note: payload.note,
+      text_align: payload.text_align,
     };
     const { error } = await supabase
       .from("poems")

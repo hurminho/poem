@@ -4,7 +4,7 @@ import { PenLine, BookPlus } from "lucide-react";
 export function QuickActions() {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-      <Link href="/studio/poems/new" className="studio-card flex items-center gap-3">
+      <Link href="/studio/new" className="studio-card flex items-center gap-3">
         <div className="size-10 rounded-full bg-accent-soft flex items-center justify-center">
           <PenLine className="size-5 text-text-secondary" aria-hidden />
         </div>

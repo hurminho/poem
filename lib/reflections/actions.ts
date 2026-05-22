@@ -102,6 +102,57 @@ export async function submitReflectionAction(formData: FormData): Promise<Submit
 }
 
 /**
+ * 작성자 본인이 자신이 남긴 감상평을 수정합니다.
+ * 게스트 감상평(user_id null)은 수정할 수 없습니다.
+ */
+export async function updateReflectionAction(
+  reflectionId: string,
+  content: string,
+): Promise<SubmitResult> {
+  if (!isSupabaseConfigured()) {
+    return { ok: false, error: "Supabase 환경변수가 설정되지 않았습니다." };
+  }
+  const trimmed = content.trim();
+  if (!reflectionId) return { ok: false, error: "잘못된 요청입니다." };
+  if (!trimmed) return { ok: false, error: "내용을 입력해주세요." };
+  if (trimmed.length > 500) {
+    return { ok: false, error: "감상평은 500자 이하로 적어주세요." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "로그인이 필요합니다." };
+
+  const { data: ref } = await supabase
+    .from("reflections")
+    .select("id, target_type, target_id, user_id")
+    .eq("id", reflectionId)
+    .maybeSingle<{
+      id: string;
+      target_type: ReflectionTargetType;
+      target_id: string;
+      user_id: string | null;
+    }>();
+  if (!ref) return { ok: false, error: "감상평을 찾을 수 없습니다." };
+  if (ref.user_id !== user.id) {
+    return { ok: false, error: "본인이 남긴 감상평만 수정할 수 있어요." };
+  }
+
+  const { error } = await supabase
+    .from("reflections")
+    .update({ content: trimmed })
+    .eq("id", reflectionId)
+    .eq("user_id", user.id);
+  if (error) return { ok: false, error: error.message };
+
+  if (ref.target_type === "poem") revalidatePath(`/poems/${ref.target_id}`);
+  if (ref.target_type === "book") revalidatePath(`/books/${ref.target_id}`);
+  return { ok: true };
+}
+
+/**
  * 시/시집 작성자가 자신의 콘텐츠에 달린 감상평을 숨김 처리합니다.
  * status = 'hidden' 으로만 표시하고 데이터는 보존합니다.
  */

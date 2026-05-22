@@ -47,11 +47,9 @@ export function HeaderUserMenu({
             <div className="text-text-primary text-sm font-medium truncate">
               {displayName}
             </div>
-            {username ? (
-              <div className="truncate">@{username}</div>
-            ) : (
-              <div className="truncate">프로필 미설정</div>
-            )}
+            <div className="truncate">
+              {username ? `@${username}` : "프로필 미설정"}
+            </div>
           </div>
           <ul className="py-1 text-sm">
             <li>
@@ -61,35 +59,6 @@ export function HeaderUserMenu({
                 onClick={() => setOpen(false)}
               >
                 마이페이지
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/studio"
-                className="block px-4 py-2 hover:bg-accent-soft text-text-primary"
-                onClick={() => setOpen(false)}
-              >
-                작업실
-              </Link>
-            </li>
-            {username ? (
-              <li>
-                <Link
-                  href={`/authors/${username}`}
-                  className="block px-4 py-2 hover:bg-accent-soft text-text-primary"
-                  onClick={() => setOpen(false)}
-                >
-                  내 작가 페이지
-                </Link>
-              </li>
-            ) : null}
-            <li>
-              <Link
-                href="/library"
-                className="block px-4 py-2 hover:bg-accent-soft text-text-primary"
-                onClick={() => setOpen(false)}
-              >
-                내 서재
               </Link>
             </li>
             <li>

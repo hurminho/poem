@@ -57,7 +57,7 @@ export default async function MyPoemsPage({ searchParams }: PageProps) {
             : "모든 작업물을 한곳에서 관리합니다."
         }
         action={
-          <PrimaryCTA href="/studio/poems/new" className="h-10 px-5">
+          <PrimaryCTA href="/studio/new" className="h-10 px-5">
             시 쓰기
           </PrimaryCTA>
         }

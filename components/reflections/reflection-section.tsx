@@ -1,6 +1,6 @@
 import { ReflectionList } from "@/components/reflections/reflection-list";
 import { ReflectionForm } from "@/components/reflections/reflection-form";
-import { getReflectionsFor } from "@/lib/db/reflections";
+import { getReflectionsFor, getReflectionLikes } from "@/lib/db/reflections";
 import { getCurrentUser, getCurrentProfile } from "@/lib/auth/current";
 
 interface Props {
@@ -34,12 +34,29 @@ export async function ReflectionSection({
     getCurrentProfile(),
   ]);
 
+  const { countByReflectionId, likedByReflectionId } = await getReflectionLikes(
+    reflections.map((r) => r.id),
+    user?.id ?? null,
+  );
+  const likeCountById: Record<string, number> = {};
+  for (const [id, c] of countByReflectionId.entries()) likeCountById[id] = c;
+  const likedIds = new Set(
+    [...likedByReflectionId.entries()]
+      .filter(([, v]) => v)
+      .map(([k]) => k),
+  );
+
   return (
     <section className="space-y-5">
       {showHeading && (
         <h2 className="font-serif text-base font-semibold text-text-primary">감상평</h2>
       )}
-      <ReflectionList reflections={reflections} />
+      <ReflectionList
+        reflections={reflections}
+        currentUserId={user?.id ?? null}
+        likeCountById={likeCountById}
+        likedIds={likedIds}
+      />
       {!formDisabled && (
         <ReflectionForm
           targetType={targetType}
