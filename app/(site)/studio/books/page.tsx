@@ -7,7 +7,7 @@ import { getCurrentProfile } from "@/lib/auth/current";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
 import { getMyBooks } from "@/lib/db/books";
 
-export const metadata = { title: "내 시집" };
+export const metadata = { title: "나의 시집" };
 
 interface PageProps {
   searchParams: Promise<{ notice?: string; error?: string }>;
@@ -34,7 +34,7 @@ export default async function MyBooksPage({ searchParams }: PageProps) {
       ) : null}
 
       <Section
-        title="내 시집"
+        title="나의 시집"
         description="여러 편의 시를 한 권으로 묶어 봅니다."
         action={<PrimaryCTA href="/studio/books/new" className="h-10 px-5">시집 만들기</PrimaryCTA>}
       >

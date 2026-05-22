@@ -10,7 +10,7 @@ import { getMyPoems } from "@/lib/db/poems";
 import type { ContentStatus } from "@/types";
 import { cn } from "@/lib/utils";
 
-export const metadata = { title: "내 시" };
+export const metadata = { title: "나의 시" };
 
 const FILTERS: { value: "all" | ContentStatus; label: string }[] = [
   { value: "all", label: "전체" },
@@ -47,7 +47,7 @@ export default async function MyPoemsPage({ searchParams }: PageProps) {
       ) : null}
 
       <Section
-        title="내 시"
+        title="나의 시"
         description="모든 작업물을 한곳에서 관리합니다."
         action={<PrimaryCTA href="/studio/poems/new" className="h-10 px-5">시 쓰기</PrimaryCTA>}
       >

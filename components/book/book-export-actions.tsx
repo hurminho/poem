@@ -32,7 +32,7 @@ export function BookExportActions({
         Export · 작은 도구들
       </p>
       <p className="mt-2 font-serif text-base font-semibold text-text-primary">
-        {isOwner ? "내 시집을 더 완성도 있게" : "이 시집을 손에 잡히는 형태로"}
+        {isOwner ? "나의 시집을 더 완성도 있게" : "이 시집을 손에 잡히는 형태로"}
       </p>
       <p className="mt-1 text-sm text-text-secondary leading-relaxed">
         정식 출시 후 유료 기능으로 제공될 예정입니다. 베타 기간에는 우선 체험 신청을 받습니다.

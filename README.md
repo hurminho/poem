@@ -41,7 +41,7 @@ npm run dev
 
 ## 데모 흐름 (사업계획서 시연 순서)
 
-1. `/` — 랜딩에서 ‘내 시집 만들기’로 시작합니다.
+1. `/` — 랜딩에서 ‘시 쓰기’로 시작합니다.
 2. `/studio/poems/new` — 시 한 편을 적고
 3. `/studio/books/new` 또는 `/studio/books/[id]/edit` — **시집에 묶고**
 4. `/books/[id]` — 공개 페이지로 공유합니다 (감상평, PDF 내보내기 안내 포함).
@@ -98,10 +98,10 @@ npm run dev
 /settings                    프로필 설정
 
 /studio                      작업실
-/studio/poems                내 시
+/studio/poems                나의 시
 /studio/poems/new            새 시 — PoemEditor
 /studio/poems/[id]/edit
-/studio/books                내 시집
+/studio/books                나의 시집
 /studio/books/new            BookForm + BookPoemPicker
 /studio/books/[id]/edit
 /studio/reflections          받은 감상평
@@ -141,10 +141,9 @@ CSS 변수로 3 테마를 정의해 두었습니다 (`globals.css`):
 | ------------------------- | ----------------------- |
 | Today's writing           | 오늘의 한 편            |
 | Mood check-in             | 오늘의 마음             |
-| Meditation                | 시 명상                 |
 | Quiet challenge           | 조용한 챌린지           |
 | Library                   | 내 서재                 |
-| My books                  | 내 시집                 |
+| My books                  | 나의 시집               |
 | Studio / Dashboard        | 작업실                  |
 | Explore                   | 둘러보기                |
 | Community                 | 커뮤니티                |

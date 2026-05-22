@@ -32,7 +32,7 @@ export default async function PricingPage() {
       <div className="mx-auto max-w-5xl px-5 py-12 space-y-14">
         <PageTitle
           eyebrow="Pricing · 요금제"
-          title="시담 — 내 시집을 짓는 자리"
+          title="시담 — 나의 시집을 짓는 자리"
           description="시담은 누구나 자신의 시집을 만들고, 묶고, 나눌 수 있는 작은 출판 자리입니다. 핵심 기능은 무료입니다. 더 잘 다듬고 싶을 때만, 작은 도구를 더해 보세요."
         />
 
@@ -128,7 +128,7 @@ export default async function PricingPage() {
         {/* ── 단건 유료 기능 ─────────────────────────────────── */}
         <Section
           title="작은 도구들"
-          description="내 시집을 더 완성도 있게 만들고 싶다면 — 단건으로도 추가할 수 있도록 준비 중입니다."
+          description="나의 시집을 더 완성도 있게 만들고 싶다면 — 단건으로도 추가할 수 있도록 준비 중입니다."
         >
           <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {PAID_PRODUCTS.map((p) => (

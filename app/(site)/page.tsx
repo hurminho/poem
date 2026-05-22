@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "시담 — 내가 쓴 시를, 한 권의 시집으로 담아보세요."
+  title: "시담 — 오늘의 마음을 시 한 편에 담습니다."
 };
 
 export default async function HomePage() {
@@ -84,8 +84,8 @@ const FLOW_STEPS = [
   },
   {
     icon: Share2,
-    title: "공유하거나 판매합니다",
-    text: "링크로 나누고, 정식 출시 후엔 PDF로도.",
+    title: "시잡을 공유합니다",
+    text: "링크로 나누고, 전자 파일로도.",
   },
 ];
 
@@ -260,7 +260,7 @@ function MonetizationPreview() {
     {
       icon: UserSquare2,
       title: "작가 페이지",
-      text: "내 시집을 한 자리에 모아두는 페이지.",
+      text: "나의 시집을 한 자리에 모아두는 페이지.",
       badge: "베타",
     },
   ];

@@ -25,9 +25,9 @@ export function LandingHero({ sampleBookHref, ctaHref }: LandingHeroProps) {
             시담
           </p>
           <h1 className="mt-4 font-serif text-[2.4rem] md:text-[3.6rem] font-semibold text-text-primary leading-[1.15]">
-            내가 쓴 시를,
+            오늘의 마음을,
             <br />
-            <span className="text-accent">한 권의 시집</span>으로.
+            <span className="text-accent">한 편의 시</span>에 담습니다.
           </h1>
 
           <div className="mt-8 flex flex-wrap items-center gap-2.5">

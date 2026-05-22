@@ -44,7 +44,7 @@ export async function getMyPoemById(id: string, authorId: string): Promise<Poem 
   return (data as Poem) ?? null;
 }
 
-/** 내 시 + 연결된 태그 이름 목록 */
+/** 나의 시 + 연결된 태그 이름 목록 */
 export async function getMyPoemWithTags(
   id: string,
   authorId: string,

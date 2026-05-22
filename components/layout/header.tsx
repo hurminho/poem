@@ -6,7 +6,7 @@ import { desktopHeaderNav } from "@/components/layout/nav-items";
 
 export async function Header() {
   const profile = await getCurrentProfile();
-  const items = desktopHeaderNav();
+  const items = desktopHeaderNav(!!profile);
   // 첫 진입은 '시 쓰기'로 — 시집은 /studio 안에서 만듭니다.
   const ctaHref = profile ? "/studio/poems/new" : "/signup?next=/studio/poems/new";
 
@@ -22,16 +22,16 @@ export async function Header() {
           </span>
         </Link>
 
-        {/* 데스크톱 메인 네비 — 둘러보기 · 요금제만 */}
+        {/* 데스크톱 메인 네비 — 로그인 여부에 따라 다른 항목 */}
         <nav
           aria-label="주 메뉴"
-          className="hidden md:flex items-center gap-1 text-sm"
+          className="hidden lg:flex items-center gap-0.5 text-sm"
         >
           {items.map((n) => (
             <Link
               key={n.href}
               href={n.href}
-              className="rounded-md px-3 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors whitespace-nowrap"
+              className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors whitespace-nowrap"
             >
               {n.label}
             </Link>
@@ -56,7 +56,7 @@ export async function Header() {
             <>
               <Link
                 href="/login"
-                className="hidden md:inline-flex h-9 items-center rounded-md px-3 text-sm text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
+                className="hidden lg:inline-flex h-9 items-center rounded-md px-3 text-sm text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
               >
                 로그인
               </Link>

@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/studio", label: "작업실", exact: true },
-  { href: "/studio/poems", label: "내 시" },
-  { href: "/studio/books", label: "내 시집" },
+  { href: "/studio/poems", label: "나의 시" },
+  { href: "/studio/books", label: "나의 시집" },
   { href: "/studio/reflections", label: "받은 감상평" },
   { href: "/settings", label: "설정" },
 ];
