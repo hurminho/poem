@@ -21,11 +21,11 @@ const PALETTE = [
 
 const SCREENSHOTS = [
   { label: "오늘의 한 편", href: "/today", desc: "마음을 고르고 한 편을 시작하는 화면" },
-  { label: "시 명상 모드", href: "/meditation", desc: "호흡과 함께 한 편에 머무는 자리" },
+  { label: "시집 만들기", href: "/studio/books/new", desc: "표지와 차례로 시집을 묶는 자리" },
   { label: "시집 펼치기", href: "/explore", desc: "한 권의 작은 책을 천천히 넘겨보는 자리" },
   { label: "내 서재", href: "/library", desc: "마음에 담아둔 시·시집을 모은 자리" },
-  { label: "조용한 챌린지", href: "/challenges", desc: "‘하루 한 줄’처럼 함께 쓰는 자리" },
-  { label: "마이페이지", href: "/me", desc: "쌓인 마음과 작업의 통계" },
+  { label: "요금제", href: "/pricing", desc: "정식 출시 후 적용될 예정 가격" },
+  { label: "마이페이지", href: "/me", desc: "쌓인 작업의 통계" },
 ];
 
 const APP_DESCRIPTION = `시는 천천히 도착합니다.
@@ -135,7 +135,6 @@ export default function BrandPage() {
               "minimal",
               "classic",
               "modern",
-              "meditation",
               "city",
               "archive",
             ].map((t) => (

@@ -12,7 +12,6 @@ import type {
   Mood,
   MoodKey,
   MoodCheckIn,
-  MeditationSession,
   QuietChallenge,
   CommunityPost,
   CommunityPostWithAuthor,
@@ -374,30 +373,6 @@ export const placeholderMoods: MoodCheckIn[] = [
 ];
 
 /* ─────────────────────────────────────
-   시 명상 세션 (2건)
-   ───────────────────────────────────── */
-export const placeholderMeditations: MeditationSession[] = [
-  {
-    id: "med-1",
-    user_id: profileSidam.id,
-    poem_id: "p2",
-    duration_seconds: 312,
-    preset_minutes: 5,
-    completed_at: "2026-05-09T08:35:00Z",
-    created_at: "2026-05-09T08:30:00Z",
-  },
-  {
-    id: "med-2",
-    user_id: profileSidam.id,
-    poem_id: "p-haru-1",
-    duration_seconds: 600,
-    preset_minutes: 10,
-    completed_at: "2026-05-08T07:20:00Z",
-    created_at: "2026-05-08T07:10:00Z",
-  },
-];
-
-/* ─────────────────────────────────────
    조용한 챌린지 (2건 active + 1건 closed)
    ───────────────────────────────────── */
 export const placeholderChallenges: QuietChallenge[] = [
@@ -624,12 +599,6 @@ export function getMoodByKey(key: MoodKey): Mood | undefined {
   return MOODS.find((m) => m.key === key);
 }
 
-export function getMyMeditationSessions(): MeditationSession[] {
-  return [...placeholderMeditations].sort(
-    (a, b) => +new Date(b.created_at) - +new Date(a.created_at),
-  );
-}
-
 export function getActiveChallenges(): QuietChallenge[] {
   return placeholderChallenges.filter((c) => c.status === "active");
 }
@@ -739,17 +708,4 @@ export function recommendPoems(
   return scored
     .sort((a, b) => b.score - a.score || a.poem.title.localeCompare(b.poem.title))
     .slice(0, limit);
-}
-
-export function getRecommendedMeditationPoem(): PoemWithAuthor | null {
-  const candidates = placeholderPoems.filter(
-    (p) => p.status === "published" && p.visibility === "public",
-  );
-  if (candidates.length === 0) return null;
-  // 데모를 위해 결정론적: 가장 최근 발행된 시.
-  const latest = candidates.sort(
-    (a, b) =>
-      +new Date(b.published_at ?? 0) - +new Date(a.published_at ?? 0),
-  )[0];
-  return attachAuthor(latest);
 }

@@ -187,7 +187,7 @@ export interface BookDetail extends BookWithAuthor {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   시담의 일상 흐름 — mood · meditation · challenge · community
+   시담의 일상 흐름 — mood · challenge · community
    ─────────────────────────────────────────────────────────────
    현재는 placeholder 모듈에서만 사용되며, DB 스키마는 베타 단계에서
    필요 시 추가됩니다. UI / 라우팅 / 운영 화면 설계를 위한 타입.
@@ -214,17 +214,6 @@ export interface MoodCheckIn {
   user_id: string;
   mood: MoodKey;
   note: string | null;
-  created_at: string;
-}
-
-export interface MeditationSession {
-  id: string;
-  user_id: string;
-  poem_id: string;
-  duration_seconds: number;
-  /** 5분 / 10분 / 15분 등 사용자가 고른 호흡 길이. */
-  preset_minutes: number;
-  completed_at: string | null;
   created_at: string;
 }
 

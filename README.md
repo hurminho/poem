@@ -37,15 +37,15 @@ npm install
 npm run dev
 ```
 
-`.env.local` 이 비어 있어도 UI는 **placeholder 데이터**로 동작합니다(데모용 작가 계정 1개 + 시 5편 + 시집 2권 + 감상평 5편 + 마음 체크인 3건 + 명상 세션 2건 + 조용한 챌린지 2건).
+`.env.local` 이 비어 있어도 UI는 **placeholder 데이터**로 동작합니다(데모용 작가 계정 1개 + 시 5편 + 시집 2권 + 감상평 5편 + 마음 체크인 3건).
 
 ## 데모 흐름 (사업계획서 시연 순서)
 
-1. `/today` — **오늘의 마음**을 고르고
-2. `/studio/poems/new` — **오늘의 한 편**을 적고
+1. `/` — 랜딩에서 ‘내 시집 만들기’로 시작합니다.
+2. `/studio/poems/new` — 시 한 편을 적고
 3. `/studio/books/new` 또는 `/studio/books/[id]/edit` — **시집에 묶고**
-4. `/meditation` — **시 명상**으로 한 번 더 머물고
-5. `/books/[id]/read` 또는 `/poems/[id]` — **감상평**을 남기고
+4. `/books/[id]` — 공개 페이지로 공유합니다 (감상평, PDF 내보내기 안내 포함).
+5. `/pricing` — 베타 기간에는 결제 없이 유료 기능 관심 신청을 받습니다.
 6. `/admin/dashboard` — 운영자가 흐름을 한눈에 확인합니다.
 
 각 화면은 `?demo=1` 쿼리를 붙이면 **헤더·푸터를 숨긴 스크린샷 모드**로 표시됩니다.
@@ -79,9 +79,9 @@ npm run dev
 ```text
 /                            랜딩
 /today                       오늘의 마음 + 오늘의 한 편 시작 자리
-/recommend                   AI 추천 — 오늘의 마음에 어울리는 시담 작가의 시 한 편
-/meditation                  시 명상 모드 (호흡 3·5·10·15분 + 한국어 음성 낭독 옵션)
-/challenges                  조용한 챌린지 모음
+/recommend                   마음 추천 — 오늘의 마음에 어울리는 시담 작가의 시 한 편
+/pricing                     요금제 / 단건 유료 기능 안내
+/challenges                  조용한 챌린지 모음 (준비 중)
 /challenges/[id]             챌린지 상세
 /community                   커뮤니티
 /me                          마이페이지

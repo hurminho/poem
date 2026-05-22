@@ -15,7 +15,7 @@ export function TodayQuickStart() {
       </p>
       <div className="mt-8 flex flex-wrap gap-2">
         <PrimaryCTA href="/studio/poems/new">바로 한 편 쓰기</PrimaryCTA>
-        <QuietButton href="/meditation">시 한 편 먼저 읽기</QuietButton>
+        <QuietButton href="/studio/books/new">시집 만들기</QuietButton>
       </div>
     </div>
   );

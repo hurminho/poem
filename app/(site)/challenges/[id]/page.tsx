@@ -53,7 +53,7 @@ export default async function ChallengeDetailPage({ params }: PageProps) {
             ) : (
               <PrimaryCTA href="/challenges">다른 챌린지 보기</PrimaryCTA>
             )}
-            <QuietButton href="/meditation">먼저 한 편 머물기</QuietButton>
+            <QuietButton href="/explore">먼저 다른 시집 둘러보기</QuietButton>
           </div>
         </section>
 

@@ -10,18 +10,13 @@ import { isSupabaseConfigured } from "@/lib/supabase/check";
 import { getMyPoems } from "@/lib/db/poems";
 import { getMyBooks } from "@/lib/db/books";
 import { getReflectionsByAuthor } from "@/lib/db/reflections";
-import {
-  getMyMoodCheckIns,
-  getMyMeditationSessions,
-  getMoodByKey,
-} from "@/lib/db/placeholder";
+import { getMyMoodCheckIns, getMoodByKey } from "@/lib/db/placeholder";
 import { relativeTimeKo } from "@/lib/utils";
 import {
   PenLine,
   BookText,
   MessageSquareQuote,
   Heart,
-  Wind,
 } from "lucide-react";
 
 export const metadata = { title: "마이페이지" };
@@ -37,14 +32,12 @@ export default async function MyPage() {
     getReflectionsByAuthor(authorId),
   ]);
   const moods = getMyMoodCheckIns();
-  const meditations = getMyMeditationSessions();
 
   const stats = [
     { label: "쓴 시", value: poems.length, icon: PenLine },
     { label: "묶은 시집", value: books.length, icon: BookText },
     { label: "받은 감상평", value: reflections.length, icon: MessageSquareQuote },
     { label: "마음 체크인", value: moods.length, icon: Heart },
-    { label: "명상 세션", value: meditations.length, icon: Wind },
   ];
 
   const lastMood = moods[0] ? getMoodByKey(moods[0].mood) : null;
@@ -94,7 +87,7 @@ export default async function MyPage() {
 
         {/* 활동 통계 */}
         <Section title="작은 통계" description="시담에서 쌓아온 자리들.">
-          <ul className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {stats.map((s) => {
               const Icon = s.icon;
               return (
@@ -131,14 +124,6 @@ export default async function MyPage() {
                 {moods[0].note ? (
                   <p className="mt-1 text-sm text-text-secondary line-clamp-2">{moods[0].note}</p>
                 ) : null}
-              </li>
-            ) : null}
-            {meditations[0] ? (
-              <li className="reflection-card">
-                <p className="text-xs text-text-secondary">시 명상 · {relativeTimeKo(meditations[0].created_at)}</p>
-                <p className="mt-1 text-sm text-text-primary">
-                  {meditations[0].preset_minutes}분 호흡 · {Math.floor(meditations[0].duration_seconds / 60)}분 머물렀습니다
-                </p>
               </li>
             ) : null}
             {poems[0] ? (

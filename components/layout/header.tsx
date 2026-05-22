@@ -2,57 +2,68 @@ import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNavToggle } from "@/components/layout/mobile-nav";
-import { visiblePrimaryNav } from "@/components/layout/nav-items";
+import { desktopHeaderNav } from "@/components/layout/nav-items";
 
 export async function Header() {
   const profile = await getCurrentProfile();
+  const items = desktopHeaderNav();
+  const ctaHref = profile ? "/studio/books/new" : "/signup?next=/studio/books/new";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border-soft/80 bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-5">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 group" aria-label="시담 홈">
-            <span className="grid size-8 place-items-center rounded-full bg-text-primary text-background font-serif text-sm font-bold">
-              詩
-            </span>
-            <span className="font-serif text-lg font-bold tracking-tight text-text-primary group-hover:text-text-secondary transition-colors">
-              시담
-            </span>
-          </Link>
-        </div>
+        <Link href="/" className="flex items-center gap-2 group" aria-label="시담 홈">
+          <span className="grid size-8 place-items-center rounded-full bg-text-primary text-background font-serif text-sm font-bold">
+            詩
+          </span>
+          <span className="font-serif text-lg font-bold tracking-tight text-text-primary group-hover:text-text-secondary transition-colors">
+            시담
+          </span>
+        </Link>
 
-        {/* 데스크톱 메인 네비 */}
-        <nav aria-label="주 메뉴" className="hidden lg:flex items-center gap-0.5 text-sm">
-          {visiblePrimaryNav(!!profile).map((n) => (
+        {/* 데스크톱 메인 네비 — 둘러보기 · 요금제만 */}
+        <nav
+          aria-label="주 메뉴"
+          className="hidden md:flex items-center gap-1 text-sm"
+        >
+          {items.map((n) => (
             <Link
               key={n.href}
               href={n.href}
-              className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors whitespace-nowrap"
+              className="rounded-md px-3 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors whitespace-nowrap"
             >
               {n.label}
             </Link>
           ))}
         </nav>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           {profile ? (
-            <HeaderUserMenu
-              displayName={profile.display_name}
-              username={profile.username}
-            />
+            <>
+              <Link
+                href={ctaHref}
+                className="hidden sm:inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
+              >
+                시집 만들기
+              </Link>
+              <HeaderUserMenu
+                displayName={profile.display_name}
+                username={profile.username}
+              />
+            </>
           ) : (
             <>
               <Link
                 href="/login"
-                className="hidden sm:inline rounded-md px-3 py-1.5 text-sm text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
+                className="hidden md:inline-flex h-9 items-center rounded-md px-3 text-sm text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
               >
                 로그인
               </Link>
               <Link
-                href="/signup"
-                className="rounded-md bg-text-primary px-3 py-1.5 text-sm font-medium text-background hover:opacity-90 transition-opacity"
+                href={ctaHref}
+                className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
               >
-                가입
+                시집 만들기
               </Link>
             </>
           )}

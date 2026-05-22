@@ -48,13 +48,13 @@ export function MobileNavToggle({ authed }: { authed: boolean }) {
         type="button"
         aria-label="메뉴 열기"
         onClick={() => setOpen(true)}
-        className="lg:hidden inline-flex size-9 items-center justify-center rounded-md text-text-secondary hover:bg-accent-soft hover:text-text-primary"
+        className="md:hidden inline-flex size-9 items-center justify-center rounded-md text-text-secondary hover:bg-accent-soft hover:text-text-primary"
       >
         <Menu className="size-5" />
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 md:hidden">
           <button
             aria-label="메뉴 닫기"
             type="button"

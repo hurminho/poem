@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { PrimaryCTA } from "@/components/ui/primary-cta";
-import { QuietButton } from "@/components/ui/quiet-button";
 import type { Mood } from "@/types";
 
 const PROMPTS: Record<Mood["key"], string> = {
@@ -32,9 +31,6 @@ export function TodayPromptCard({ mood }: { mood: Mood }) {
         <PrimaryCTA href={`/studio/poems/new?mood=${mood.key}`}>
           한 편 쓰기
         </PrimaryCTA>
-        <QuietButton href="/meditation">
-          먼저 시 한 편 머물기
-        </QuietButton>
         <Link
           href="/today"
           className="text-sm text-text-secondary hover:text-text-primary self-center px-2"

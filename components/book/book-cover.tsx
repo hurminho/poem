@@ -32,7 +32,7 @@ const THEMES: Record<string, ThemeStyle> = {
   minimal:    { cls: "from-white to-[#f6f6f6] text-text-primary", ornament: "rule" },
   classic:    { cls: "from-[#F0E6D2] to-[#C9B790] text-[#33291a]", ornament: "frame" },
   modern:     { cls: "from-[#222222] to-[#3a3a3a] text-[#f5f5f5]", ornament: "dot" },
-  meditation: { cls: "from-[#E5EFE6] to-[#B9C8B9] text-[#243027]", ornament: "rule" },
+  garden:     { cls: "from-[#E5EFE6] to-[#B9C8B9] text-[#243027]", ornament: "rule" },
   city:       { cls: "from-[#3b3f55] to-[#1c1f2e] text-[#dde0e8]", ornament: "rule" },
   archive:    { cls: "from-[#F0EAD6] to-[#D6C9A6] text-[#312a1a]", ornament: "frame" },
 
@@ -60,7 +60,7 @@ export const COVER_THEMES = [
   { value: "minimal",    label: "미니멀" },
   { value: "classic",    label: "고전" },
   { value: "modern",     label: "모던" },
-  { value: "meditation", label: "묵상" },
+  { value: "garden",     label: "정원" },
   { value: "city",       label: "도시" },
   { value: "archive",    label: "아카이브" },
 ];

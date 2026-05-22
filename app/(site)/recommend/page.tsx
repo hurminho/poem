@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, Wind, ChevronRight, ShieldCheck } from "lucide-react";
+import { Sparkles, ChevronRight, ShieldCheck } from "lucide-react";
 import { PageTitle } from "@/components/ui/page-title";
 import { Section } from "@/components/ui/section";
 import { recommendPoems, MOODS, getMoodByKey } from "@/lib/db/placeholder";
@@ -127,13 +127,6 @@ export default async function RecommendPage({ searchParams }: PageProps) {
                     className="inline-flex h-10 items-center gap-1.5 rounded-full bg-text-primary px-5 text-sm font-medium text-background hover:opacity-90"
                   >
                     전문 읽기 <ChevronRight className="size-4" />
-                  </Link>
-                  <Link
-                    href={`/meditation?poem=${poem.id}&minutes=5`}
-                    className="inline-flex h-10 items-center gap-1.5 rounded-full border border-border-soft bg-surface px-5 text-sm text-text-primary hover:border-accent"
-                  >
-                    <Wind className="size-4" />
-                    이 시로 명상하기
                   </Link>
                 </div>
               </li>
