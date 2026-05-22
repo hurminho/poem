@@ -7,7 +7,8 @@ import { desktopHeaderNav } from "@/components/layout/nav-items";
 export async function Header() {
   const profile = await getCurrentProfile();
   const items = desktopHeaderNav();
-  const ctaHref = profile ? "/studio/books/new" : "/signup?next=/studio/books/new";
+  // 첫 진입은 '시 쓰기'로 — 시집은 /studio 안에서 만듭니다.
+  const ctaHref = profile ? "/studio/poems/new" : "/signup?next=/studio/poems/new";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border-soft/80 bg-background/85 backdrop-blur">
@@ -44,7 +45,7 @@ export async function Header() {
                 href={ctaHref}
                 className="hidden sm:inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
               >
-                시집 만들기
+                시 쓰기
               </Link>
               <HeaderUserMenu
                 displayName={profile.display_name}
@@ -63,7 +64,7 @@ export async function Header() {
                 href={ctaHref}
                 className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
               >
-                시집 만들기
+                시 쓰기
               </Link>
             </>
           )}

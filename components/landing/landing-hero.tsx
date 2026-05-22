@@ -22,25 +22,20 @@ export function LandingHero({ sampleBookHref, ctaHref }: LandingHeroProps) {
         {/* ── TEXT ─────────────────────────────────────────── */}
         <div className="order-2 md:order-1">
           <p className="text-[11px] tracking-[0.42em] uppercase text-text-secondary">
-            Sidam · 詩談
+            시담
           </p>
           <h1 className="mt-4 font-serif text-[2.4rem] md:text-[3.6rem] font-semibold text-text-primary leading-[1.15]">
             내가 쓴 시를,
             <br />
             <span className="text-accent">한 권의 시집</span>으로.
           </h1>
-          <p className="mt-5 max-w-md text-[15px] md:text-base text-text-secondary leading-relaxed">
-            흩어진 문장을 모아 표지를 만들고,
-            <br className="hidden sm:inline" />
-            링크로 공유하고, 판매까지 준비해보세요.
-          </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-2.5">
             <Link
               href={ctaHref}
               className="inline-flex h-12 items-center rounded-full bg-text-primary px-6 text-[15px] font-medium text-background hover:opacity-90 transition-opacity"
             >
-              내 시집 만들기
+              시 쓰기
             </Link>
             <Link
               href={sampleBookHref}
@@ -49,6 +44,9 @@ export function LandingHero({ sampleBookHref, ctaHref }: LandingHeroProps) {
               샘플 시집 보기
             </Link>
           </div>
+          <p className="mt-3 text-xs text-text-secondary">
+            한 편을 쓰고, 작업실에서 시집으로 묶을 수 있어요.
+          </p>
         </div>
 
         {/* ── BOOKS — 책상 위에 놓인 시집들 ─────────────── */}

@@ -21,9 +21,11 @@ export interface PrimaryNavItem {
 }
 
 export const PRIMARY_NAV: PrimaryNavItem[] = [
-  // 데스크톱 헤더에 그대로 노출되는 핵심 두 메뉴
+  // 데스크톱 헤더에 그대로 노출되는 핵심 메뉴
   { href: "/explore", label: "둘러보기", hint: "공개된 시집과 작가", desktop: true },
-  { href: "/pricing", label: "요금제", hint: "정식 출시 후 가격 안내", desktop: true },
+  // 요금제는 홈 화면 "공유에서 한 걸음 더, 판매까지" 섹션에서만 접근합니다
+  // (헤더에는 노출하지 않고, 모바일 드로어에서는 보조 메뉴로 유지).
+  { href: "/pricing", label: "요금제", hint: "정식 출시 후 가격 안내" },
 
   // 모바일 드로어에서만 노출되는 작가 동선
   { href: "/today", label: "오늘의 한 편", hint: "마음을 정리하고 한 편을 적습니다", auth: true },

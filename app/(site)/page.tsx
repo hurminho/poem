@@ -19,9 +19,7 @@ import {
 } from "lucide-react";
 
 export const metadata = {
-  title: "시담 — 내가 쓴 시를, 한 권의 시집으로",
-  description:
-    "흩어진 문장을 모아 표지를 만들고, 링크로 공유하고, 판매까지 준비해보세요.",
+  title: "시담 — 내가 쓴 시를, 한 권의 시집으로 담아보세요."
 };
 
 export default async function HomePage() {
@@ -31,7 +29,8 @@ export default async function HomePage() {
   ]);
   const books = allBooks.slice(0, 4);
   const sample = books[0];
-  const ctaHref = profile ? "/studio/books/new" : "/signup?next=/studio/books/new";
+  // 첫 진입은 '시 쓰기'로 안내합니다. 시집 만들기는 /studio 안의 QuickActions 에서.
+  const ctaHref = profile ? "/studio/poems/new" : "/signup?next=/studio/poems/new";
   const sampleHref = sample ? `/books/${sample.id}` : "/explore";
 
   return (
@@ -47,14 +46,14 @@ export default async function HomePage() {
 
       {/* 4. CREATOR TOOLS */}
       <FeatureGrid
-        eyebrow="Creator tools"
+        eyebrow=""
         title="시집을 만드는 작은 도구"
         items={CREATOR_TOOLS}
       />
 
       {/* 5. READER EXPERIENCE */}
       <FeatureGrid
-        eyebrow="Reader experience"
+        eyebrow=""
         title="읽는 사람의 자리"
         items={READER_TOOLS}
         tone="soft"
@@ -131,9 +130,6 @@ function SampleBooks({ books }: { books: Awaited<ReturnType<typeof getPublicBook
     <section className="mx-auto max-w-5xl px-5 pb-20 md:pb-24">
       <header className="mb-6 flex items-end justify-between gap-4">
         <div>
-          <p className="text-[11px] tracking-[0.3em] uppercase text-text-secondary">
-            Sample books
-          </p>
           <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
             지금 묶인 작은 시집들
           </h2>
@@ -271,23 +267,24 @@ function MonetizationPreview() {
 
   return (
     <section className="mx-auto max-w-5xl px-5 pb-20 md:pb-24">
-      <header className="mb-6">
-        <p className="text-[11px] tracking-[0.3em] uppercase text-text-secondary">
-          Coming soon
-        </p>
-        <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
-          공유에서 한 걸음 더, 판매까지
-        </h2>
-        <p className="mt-2 text-sm text-text-secondary leading-relaxed max-w-xl">
-          베타 기간에는 결제가 발생하지 않습니다. 정식 출시 후 적용될 가격은{" "}
-          <Link
-            href="/pricing"
-            className="text-text-primary underline-offset-4 hover:underline"
-          >
-            요금제
-          </Link>{" "}
-          에서 미리 확인하실 수 있어요.
-        </p>
+      <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-[11px] tracking-[0.3em] uppercase text-text-secondary">
+            Coming soon
+          </p>
+          <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
+            공유에서 한 걸음 더, 판매까지
+          </h2>
+          <p className="mt-2 text-sm text-text-secondary leading-relaxed max-w-xl">
+            베타 기간에는 결제가 발생하지 않습니다.
+          </p>
+        </div>
+        <Link
+          href="/pricing"
+          className="self-start inline-flex h-10 items-center rounded-full border border-border-soft bg-surface px-5 text-sm text-text-primary hover:border-accent transition-colors md:self-end whitespace-nowrap"
+        >
+          요금제 보기 →
+        </Link>
       </header>
 
       <ul className="grid gap-4 md:grid-cols-3">
@@ -332,12 +329,15 @@ function FinalCTA({
       <p className="font-serif text-[1.9rem] md:text-3xl text-text-primary leading-snug">
         첫 시집을 만들어보세요.
       </p>
+      <p className="mt-3 text-sm text-text-secondary">
+        시작은 한 편의 시부터.
+      </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
         <Link
           href={ctaHref}
           className="inline-flex h-12 items-center rounded-full bg-text-primary px-6 text-[15px] font-medium text-background hover:opacity-90 transition-opacity"
         >
-          내 시집 만들기
+          시 쓰기
         </Link>
         <Link
           href={sampleHref}
