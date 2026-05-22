@@ -155,8 +155,12 @@ body {
   color: var(--text-primary);
 }
 
-/* 시 본문 — 명조체 + 줄바꿈 보존 + 넉넉한 행간 */
-.poem-body {
+/* 시 본문 — 명조체 + 줄바꿈 보존 + 넉넉한 행간
+   .poem-editor-textarea 와 정확히 동일한 메트릭을 공유합니다
+   (글꼴/크기/행간/letter-spacing). 편집 영역과 미리보기가 같은 줄에서
+   같은 자리에 줄바꿈되도록 보장합니다. */
+.poem-body,
+textarea.poem-editor-textarea {
   font-family: var(--font-serif-poem), "Noto Serif KR", "KoPub Batang",
     "Nanum Myeongjo", ui-serif, Georgia, serif;
   font-weight: 400;
@@ -164,10 +168,24 @@ body {
   line-height: 2.05;
   letter-spacing: -0.01em;
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 17px;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 @media (min-width: 768px) {
-  .poem-body { font-size: 20px; }
+  .poem-body,
+  textarea.poem-editor-textarea { font-size: 19px; }
+}
+
+/* 본문 편집기 — 약 10줄 높이를 기본으로, 그 이상은 내부 스크롤로 처리합니다. */
+textarea.poem-editor-textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  /* line-height(2.05) × 11 ≒ 10줄 정도까지 보이고 그 이상은 내부 스크롤. */
+  min-height: calc(2.05em * 6);
+  max-height: calc(2.05em * 11);
+  overflow-y: auto;
 }
 
 /* 작가의 말, 메타, 보조 텍스트 */

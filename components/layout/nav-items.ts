@@ -18,6 +18,11 @@ export interface PrimaryNavItem {
   auth?: boolean;
   /** 데스크톱 헤더에 표시할지. (auth=true 이면 로그인 사용자에게만 노출됩니다.) */
   desktop?: boolean;
+  /**
+   * desktop=true 인 항목 중에서 로그인 여부와 상관없이 항상 노출하고 싶을 때.
+   * (예: 누군가의 시 — 게스트/로그인 모두에게 보입니다.)
+   */
+  desktopForAll?: boolean;
   /** true 이면 헤더/모바일 메인 메뉴에서 완전히 숨깁니다. */
   comingSoon?: boolean;
   /** 모바일 드로어에서 보여줄 짧은 설명. */
@@ -25,6 +30,15 @@ export interface PrimaryNavItem {
 }
 
 export const PRIMARY_NAV: PrimaryNavItem[] = [
+  // 데스크톱 헤더 (로그인/비로그인 공통) — 누군가의 시는 모두에게 노출
+  {
+    href: "/poems",
+    label: "누군가의 시",
+    hint: "전체 공개된 시들을 태그별로",
+    desktop: true,
+    desktopForAll: true,
+  },
+
   // 비로그인 데스크톱 헤더 항목
   { href: "/explore", label: "둘러보기", hint: "공개된 시집과 작가", desktop: true },
 
@@ -64,12 +78,14 @@ export const PRIMARY_NAV: PrimaryNavItem[] = [
 
 /**
  * 데스크톱 헤더용 — 로그인 여부에 따라 다르게:
- *   - 비로그인: '둘러보기' 한 개
+ *   - 공통:    누군가의 시 (항상)
+ *   - 비로그인: 둘러보기
  *   - 로그인:  작업실 · 나의 시 · 나의 시집 · 받은 감상평
  */
 export function desktopHeaderNav(authed: boolean): PrimaryNavItem[] {
   return PRIMARY_NAV.filter((n) => {
     if (n.comingSoon || !n.desktop) return false;
+    if (n.desktopForAll) return true;
     return authed ? !!n.auth : !n.auth;
   });
 }

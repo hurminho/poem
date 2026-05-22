@@ -6,7 +6,15 @@ import {
   getMyPoems as phMyPoems,
   getPublicPoemById as phPublicPoemById,
   getPoemsByAuthor as phPoemsByAuthor,
+  getPublicPoems as phPublicPoems,
 } from "@/lib/db/placeholder";
+
+/** 누군가의 시 — 한 편(시) 단위로 보여줄 때 쓰는 카드 데이터.
+ *  태그는 화면용 이름 문자열만 들고 있어요 (PoemWithAuthor.tags 는 Tag[] 라 구분). */
+export interface PublicPoemCard extends Poem {
+  author: ProfilePublic;
+  tags: string[];
+}
 
 const POEM_COLS = "id,author_id,title,content,note,visibility,status,allow_comments,allow_copy,published_at,created_at,updated_at";
 
@@ -84,6 +92,51 @@ export async function getPublicPoemById(id: string): Promise<PoemWithAuthor | nu
   const row = data as unknown as Poem & { profiles: ProfilePublic };
   const { profiles, ...poem } = row;
   return { ...poem, author: profiles };
+}
+
+/**
+ * '누군가의 시' 페이지용 — 발행 + 전체 공개 시들에 작가와 태그를 붙여 돌려줍니다.
+ *
+ * Supabase 모드에서는 poems / profiles / poem_tags / tags 를 한 번에 join 합니다.
+ * placeholder 모드에서는 데모 데이터에서 같은 형태를 만들어 돌려줍니다.
+ */
+export async function getPublicPoems(
+  limit = 60,
+): Promise<PublicPoemCard[]> {
+  if (!isSupabaseConfigured()) return phPublicPoems(limit);
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("poems")
+    .select(
+      `${POEM_COLS},
+       profiles!poems_author_id_fkey(id,username,display_name,avatar_url),
+       poem_tags(tags(name))`,
+    )
+    .eq("status", "published")
+    .eq("visibility", "public")
+    .order("published_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.warn("[poems.getPublicPoems] error:", error.message);
+    return [];
+  }
+
+  type Row = Poem & {
+    profiles: ProfilePublic;
+    poem_tags: Array<{ tags: { name: string } | { name: string }[] | null }>;
+  };
+
+  return (data as unknown as Row[]).map((row) => {
+    const { profiles, poem_tags, ...poem } = row;
+    const tags = (poem_tags ?? [])
+      .map((pt) =>
+        Array.isArray(pt.tags) ? pt.tags[0]?.name : pt.tags?.name,
+      )
+      .filter((n): n is string => Boolean(n));
+    return { ...poem, author: profiles, tags };
+  });
 }
 
 /** 작가 페이지의 발행된 시 목록 (전체 공개만) */

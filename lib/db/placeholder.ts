@@ -332,7 +332,19 @@ export const placeholderTags: (Tag & { count: number })[] = [
   { id: "t-love", name: "사랑", slug: "love", created_at: "2026-02-01T00:00:00Z", count: 5 },
   { id: "t-farewell", name: "이별", slug: "farewell", created_at: "2026-02-01T00:00:00Z", count: 4 },
   { id: "t-memory", name: "기억", slug: "memory", created_at: "2026-02-01T00:00:00Z", count: 3 },
+  { id: "t-morning", name: "아침", slug: "morning", created_at: "2026-02-01T00:00:00Z", count: 3 },
+  { id: "t-letter", name: "편지", slug: "letter", created_at: "2026-02-01T00:00:00Z", count: 2 },
 ];
+
+/** 데모용 시-태그 매핑 (Supabase 미연결 시 사용). */
+export const placeholderPoemTagNames: Record<string, string[]> = {
+  p1: ["일상", "잔잔"],
+  p2: ["겨울", "일상"],
+  p3: ["밤", "그리움"],
+  p4: ["편지", "사랑"],
+  "p-haru-1": ["아침", "일상"],
+  "p-minseo-1": ["기억", "도서관"],
+};
 
 /* ─────────────────────────────────────
    오늘의 마음 (mood) — 8가지 감정 + 3건의 체크인
@@ -485,6 +497,31 @@ export function getMyRecentReflections(): Reflection[] {
         (r.target_type === "book" && myBookIds.has(r.target_id)),
     )
     .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+}
+
+/**
+ * 누군가의 시 — 전체 공개로 발행된 시들에 작가 + 태그 이름을 붙여 돌려줍니다.
+ *  (Tag[] 가 아닌 string[] 로 — 카드 표시에만 사용.)
+ */
+export function getPublicPoems(
+  limit = 60,
+): Array<Poem & { author: ProfilePublic; tags: string[] }> {
+  return placeholderPoems
+    .filter((p) => p.status === "published" && p.visibility === "public")
+    .sort(
+      (a, b) =>
+        +new Date(b.published_at ?? b.created_at) -
+        +new Date(a.published_at ?? a.created_at),
+    )
+    .slice(0, limit)
+    .map((p) => {
+      const { author } = attachAuthor(p);
+      return {
+        ...p,
+        author,
+        tags: placeholderPoemTagNames[p.id] ?? [],
+      };
+    });
 }
 
 export function getPublicBooks(): BookWithAuthor[] {

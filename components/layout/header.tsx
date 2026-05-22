@@ -31,6 +31,7 @@ export async function Header() {
             <Link
               key={n.href}
               href={n.href}
+              prefetch
               className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors whitespace-nowrap"
             >
               {n.label}
@@ -43,6 +44,7 @@ export async function Header() {
             <>
               <Link
                 href={ctaHref}
+                prefetch
                 className="hidden sm:inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
               >
                 시 쓰기
@@ -62,6 +64,7 @@ export async function Header() {
               </Link>
               <Link
                 href={ctaHref}
+                prefetch
                 className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
               >
                 시 쓰기

@@ -13,6 +13,14 @@ export async function updateSession(request: NextRequest) {
 
   if (!url || !key) return response;
 
+  // 비로그인 방문자에게는 Supabase getUser() 라운드트립을 건너뜁니다.
+  // Supabase 인증 쿠키(sb-...)가 없으면 갱신할 세션도 없으므로 즉시 통과시켜
+  // 페이지 전환 지연을 줄입니다.
+  const hasSupabaseAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-"));
+  if (!hasSupabaseAuthCookie) return response;
+
   try {
     const supabase = createServerClient(url, key, {
     cookies: {

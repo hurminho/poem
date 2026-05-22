@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Section } from "@/components/ui/section";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PoemRow } from "@/components/poem/poem-row";
+import { PoemCoverCard } from "@/components/poem/poem-cover-card";
 import { PrimaryCTA } from "@/components/ui/primary-cta";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
@@ -13,10 +14,10 @@ import { cn } from "@/lib/utils";
 export const metadata = { title: "나의 시" };
 
 const FILTERS: { value: "all" | ContentStatus; label: string }[] = [
-  { value: "all", label: "전체" },
-  { value: "draft", label: "임시저장" },
   { value: "published", label: "발행됨" },
+  { value: "draft", label: "임시저장" },
   { value: "archived", label: "보관함" },
+  { value: "all", label: "전체" },
 ];
 
 interface PageProps {
@@ -25,13 +26,15 @@ interface PageProps {
 
 export default async function MyPoemsPage({ searchParams }: PageProps) {
   const sp = await searchParams;
-  const filter = (sp.status ?? "all") as "all" | ContentStatus;
+  const filter = (sp.status ?? "published") as "all" | ContentStatus;
 
   const profile = await getCurrentProfile();
   if (isSupabaseConfigured() && !profile) redirect("/login?next=/studio/poems");
 
   const all = await getMyPoems(profile?.id ?? "");
   const poems = filter === "all" ? all : all.filter((p) => p.status === filter);
+
+  const authorName = profile?.display_name ?? "";
 
   return (
     <div className="space-y-8">
@@ -48,8 +51,16 @@ export default async function MyPoemsPage({ searchParams }: PageProps) {
 
       <Section
         title="나의 시"
-        description="모든 작업물을 한곳에서 관리합니다."
-        action={<PrimaryCTA href="/studio/poems/new" className="h-10 px-5">시 쓰기</PrimaryCTA>}
+        description={
+          filter === "published"
+            ? "발행한 시 — 표지를 눌러 작품을 펼쳐봅니다."
+            : "모든 작업물을 한곳에서 관리합니다."
+        }
+        action={
+          <PrimaryCTA href="/studio/poems/new" className="h-10 px-5">
+            시 쓰기
+          </PrimaryCTA>
+        }
       >
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
@@ -69,8 +80,29 @@ export default async function MyPoemsPage({ searchParams }: PageProps) {
         </div>
 
         {poems.length === 0 ? (
-          <EmptyState title="해당하는 시가 없어요" />
+          filter === "published" ? (
+            <EmptyState
+              title="아직 발행한 시가 없어요"
+              description="첫 시를 적고 ‘발행하기’ 를 눌러보세요."
+            />
+          ) : (
+            <EmptyState title="해당하는 시가 없어요" />
+          )
+        ) : filter === "published" ? (
+          // 발행된 시 — 표지 + 제목 형태로 나열, 클릭하면 시 페이지로 이동
+          <ul className="grid gap-x-4 gap-y-8 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {poems.map((p) => (
+              <li key={p.id}>
+                <PoemCoverCard
+                  poem={p}
+                  authorName={authorName}
+                  href={`/poems/${p.id}`}
+                />
+              </li>
+            ))}
+          </ul>
         ) : (
+          // 임시저장·보관함·전체 — 편집 동선이 더 중요하므로 행 형태 유지
           <ul className="grid gap-3">
             {poems.map((p) => (
               <li key={p.id}>

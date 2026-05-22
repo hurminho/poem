@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface LandingHeroProps {
-  /** 샘플 시집 한 권 — '샘플 시집 보기' 버튼이 이쪽으로 갑니다. */
-  sampleBookHref: string;
   /** 로그인 여부에 따라 CTA의 다음 동선이 달라집니다. */
   ctaHref: string;
 }
@@ -16,7 +14,7 @@ interface LandingHeroProps {
  *
  * 가독성을 위해 이미지 위에 따뜻한 크림 그라데이션을 살짝 얹습니다.
  */
-export function LandingHero({ sampleBookHref, ctaHref }: LandingHeroProps) {
+export function LandingHero({ ctaHref }: LandingHeroProps) {
   return (
     <section className="relative mx-auto max-w-6xl px-5 pt-8 pb-14 md:pt-14 md:pb-20">
       <div className="relative overflow-hidden rounded-[28px] border border-border-soft bg-surface shadow-sm">
@@ -27,30 +25,25 @@ export function LandingHero({ sampleBookHref, ctaHref }: LandingHeroProps) {
               시담
             </p>
             <h1 className="mt-4 font-serif text-[2.3rem] md:text-[3.4rem] font-semibold text-text-primary leading-[1.18]">
-              오늘의 마음을,
+              오늘의 마음을
               <br />
-              <span className="text-accent">한 편의 시</span>
+              <span className="text-accent">한 편의 시</span>에
               <br />
-              에 담습니다.
+              담습니다.
             </h1>
 
-            <div className="mt-8 flex flex-wrap items-center gap-2.5">
+            <div className="mt-8">
               <Link
                 href={ctaHref}
-                className="inline-flex h-12 items-center rounded-full bg-text-primary px-6 text-[15px] font-medium text-background hover:opacity-90 transition-opacity"
+                prefetch
+                className="inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-full bg-[color:var(--accent)] px-10 sm:px-12 text-base font-semibold text-background shadow-[0_8px_20px_-8px_rgba(122,154,120,0.6)] hover:bg-[color:var(--ink-forest)] transition-colors"
               >
-                시 쓰기
+                나의 시 쓰기
               </Link>
-              <Link
-                href={sampleBookHref}
-                className="inline-flex h-12 items-center rounded-full border border-border-soft bg-surface px-6 text-[15px] text-text-primary hover:border-accent transition-colors"
-              >
-                샘플 시집 보기
-              </Link>
+              <p className="mt-3 text-xs text-text-secondary">
+                한 편을 쓰고, 작업실에서 시집으로 묶을 수 있어요.
+              </p>
             </div>
-            <p className="mt-3 text-xs text-text-secondary">
-              한 편을 쓰고, 작업실에서 시집으로 묶을 수 있어요.
-            </p>
           </div>
 
           {/* ── IMAGE ─────────────────────────────────────────── */}

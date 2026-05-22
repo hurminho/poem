@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
@@ -12,13 +13,24 @@ import type { Profile } from "@/types";
  */
 export const DEMO_SIGNED_OUT_COOKIE = "sidam_demo_signed_out";
 
-/** 현재 로그인 사용자의 auth.users row를 가져옵니다. (없으면 null) */
-export async function getCurrentUser() {
+/** 현재 로그인 사용자의 auth.users row를 가져옵니다. (없으면 null)
+ *  React `cache` 로 감싸 같은 요청 안에서 Header / 페이지가 동시에 호출해도
+ *  Supabase 에 한 번만 다녀옵니다.
+ */
+export const getCurrentUser = cache(async () => {
   if (!isSupabaseConfigured()) return null;
+  // 인증 쿠키가 아예 없는 게스트 방문자는 Supabase 호출을 생략합니다.
+  try {
+    const cookieStore = await cookies();
+    const hasAuth = cookieStore.getAll().some((c) => c.name.startsWith("sb-"));
+    if (!hasAuth) return null;
+  } catch {
+    /* 정적 컨텍스트 → 그냥 진행 */
+  }
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   return data.user ?? null;
-}
+});
 
 /**
  * 현재 사용자의 profiles row를 가져옵니다.
@@ -27,7 +39,7 @@ export async function getCurrentUser() {
  * - Supabase 연결 + 비로그인 → null
  * - Supabase 연결 + 로그인 → profiles row
  */
-export async function getCurrentProfile(): Promise<Profile | null> {
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   if (!isSupabaseConfigured()) {
     try {
       const cookieStore = await cookies();
@@ -40,7 +52,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   const user = await getCurrentUser();
   if (!user) return null;
   return await getProfileById(user.id);
-}
+});
 
 /**
  * 현재 페이지 경로(referer)를 가능한 한 보존하면서 로그인 페이지로 보냅니다.

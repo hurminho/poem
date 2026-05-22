@@ -139,6 +139,97 @@ async function syncPoemTags(poemId: string, names: string[]): Promise<void> {
     .insert(tagIds.map((tag_id) => ({ poem_id: poemId, tag_id })));
 }
 
+/**
+ * 자동 임시 저장 — redirect 없이 결과를 돌려주는 가벼운 액션.
+ * PoemEditor 가 3분마다 호출해서 작가가 잃어버릴 일 없이 적도록 도와줍니다.
+ */
+export interface AutoSaveResult {
+  ok: boolean;
+  id?: string;
+  savedAt?: string;
+  error?: string;
+}
+
+export async function autosavePoemAction(input: {
+  id?: string | null;
+  title: string;
+  content: string;
+  note?: string;
+  visibility?: Visibility;
+  allowComments?: boolean;
+  allowCopy?: boolean;
+  tags?: string[];
+}): Promise<AutoSaveResult> {
+  if (!isSupabaseConfigured()) {
+    // 데모 모드 — 실제 저장은 못 하지만 UI 상태는 ‘저장됨’으로 만들어 줍니다.
+    return { ok: true, id: input.id ?? undefined, savedAt: new Date().toISOString() };
+  }
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "not_authenticated" };
+
+  const title = input.title.trim();
+  const content = input.content;
+  // 제목·본문이 모두 비어 있으면 굳이 저장하지 않습니다.
+  if (!title && !content.trim()) {
+    return { ok: false, error: "empty" };
+  }
+
+  const id = input.id?.trim() || null;
+  const visibility: Visibility = (
+    ["private", "link", "public"] as const
+  ).includes(input.visibility as Visibility)
+    ? (input.visibility as Visibility)
+    : "private";
+
+  const payload = {
+    author_id: user.id,
+    title: title || "(제목 없음)",
+    content,
+    note: input.note?.trim() || null,
+    visibility,
+    status: "draft" as ContentStatus,
+    allow_comments: input.allowComments ?? true,
+    allow_copy: input.allowCopy ?? false,
+  };
+
+  let savedId = id;
+  if (id) {
+    // 발행된 시는 자동 임시 저장으로 상태를 바꾸지 않습니다 — 본문/제목만 갱신.
+    const updateOnlyContent = {
+      title: payload.title,
+      content: payload.content,
+      note: payload.note,
+    };
+    const { error } = await supabase
+      .from("poems")
+      .update(updateOnlyContent)
+      .eq("id", id)
+      .eq("author_id", user.id);
+    if (error) return { ok: false, error: error.message };
+  } else {
+    const { data, error } = await supabase
+      .from("poems")
+      .insert(payload)
+      .select("id")
+      .single();
+    if (error || !data) return { ok: false, error: error?.message ?? "insert_failed" };
+    savedId = data.id;
+  }
+
+  if (savedId && (input.tags ?? []).length > 0) {
+    await syncPoemTags(savedId, input.tags ?? []);
+  }
+
+  return {
+    ok: true,
+    id: savedId ?? undefined,
+    savedAt: new Date().toISOString(),
+  };
+}
+
 export async function deletePoemAction(formData: FormData) {
   if (!isSupabaseConfigured()) redirect("/studio/poems");
   const id = String(formData.get("id") || "").trim();

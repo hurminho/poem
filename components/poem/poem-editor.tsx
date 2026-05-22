@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { PoemPreview } from "@/components/poem/poem-preview";
 import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-selector";
 import { TagInput } from "@/components/poem/tag-input";
-import { savePoemAction } from "@/lib/poems/actions";
+import { savePoemAction, autosavePoemAction } from "@/lib/poems/actions";
 import type { Poem, Visibility } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -21,13 +21,24 @@ interface PoemEditorProps {
   tagSuggestions?: string[];
 }
 
-type AutoSaveState = "idle" | "saving" | "saved" | "dirty";
+type AutoSaveState = "idle" | "saving" | "saved" | "error";
 
-export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: PoemEditorProps) {
+/** 본문 자동 임시 저장 주기 (밀리초). 3분. */
+const AUTOSAVE_INTERVAL_MS = 3 * 60 * 1000;
+
+export function PoemEditor({
+  initial,
+  notice,
+  errorMessage,
+  tagSuggestions,
+}: PoemEditorProps) {
+  const [id, setId] = React.useState<string | null>(initial?.id ?? null);
   const [title, setTitle] = React.useState(initial?.title ?? "");
   const [content, setContent] = React.useState(initial?.content ?? "");
   const [note, setNote] = React.useState(initial?.note ?? "");
-  const [visibility, setVisibility] = React.useState<Visibility>(initial?.visibility ?? "private");
+  const [visibility, setVisibility] = React.useState<Visibility>(
+    initial?.visibility ?? "private",
+  );
   const [allowComments, setAllowComments] = React.useState(initial?.allow_comments ?? true);
   const [allowCopy, setAllowCopy] = React.useState(initial?.allow_copy ?? false);
   const [tags, setTags] = React.useState<string[]>(initial?.tags ?? []);
@@ -35,37 +46,56 @@ export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: Po
   const [actionLabel, setActionLabel] = React.useState<string>("");
   const [previewMode, setPreviewMode] = React.useState(false);
 
-  const [autoSave, setAutoSave] = React.useState<AutoSaveState>(initial ? "saved" : "idle");
-  const dirtyRef = React.useRef(false);
+  const [autoSave, setAutoSave] = React.useState<AutoSaveState>(
+    initial?.id ? "saved" : "idle",
+  );
+  const [savedAtLabel, setSavedAtLabel] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (!initial) return;
-    dirtyRef.current = true;
-    // 자동 저장 시뮬레이션: 입력 직후 dirty → 잠시 후 saving → saved.
-    // setState 자체는 setTimeout 콜백에서 일어나도록 미뤄 cascade render 를 피합니다.
-    const t0 = setTimeout(() => setAutoSave("dirty"), 0);
-    const t1 = setTimeout(() => {
-      setAutoSave("saving");
-      setTimeout(() => {
-        if (dirtyRef.current) {
-          dirtyRef.current = false;
-          setAutoSave("saved");
-        }
-      }, 600);
-    }, 1500);
-    return () => {
-      clearTimeout(t0);
-      clearTimeout(t1);
-    };
-    // 사용자 입력에 반응합니다 (자동 저장 시뮬레이션).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, content, note, visibility, allowComments, allowCopy, tags.join(",")]);
+  // 마지막으로 저장한 본문 스냅샷. 변경이 있을 때만 자동 저장합니다.
+  const lastSavedRef = React.useRef({
+    title: initial?.title ?? "",
+    content: initial?.content ?? "",
+    note: initial?.note ?? "",
+  });
 
   const status = initial?.status ?? "draft";
 
+  // 3분마다 자동 임시 저장 — 발행 상태와 무관하게 본문/제목만 안전하게 저장합니다.
+  React.useEffect(() => {
+    const timer = setInterval(async () => {
+      const t = title;
+      const c = content;
+      const n = note ?? "";
+      const last = lastSavedRef.current;
+      if (last.title === t && last.content === c && last.note === n) return;
+      if (!t.trim() && !c.trim()) return;
+
+      setAutoSave("saving");
+      const res = await autosavePoemAction({
+        id,
+        title: t,
+        content: c,
+        note: n,
+        visibility,
+        allowComments,
+        allowCopy,
+        tags,
+      });
+      if (res.ok) {
+        lastSavedRef.current = { title: t, content: c, note: n };
+        if (!id && res.id) setId(res.id);
+        setAutoSave("saved");
+        setSavedAtLabel(formatTime(new Date(res.savedAt ?? Date.now())));
+      } else {
+        setAutoSave("error");
+      }
+    }, AUTOSAVE_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [title, content, note, visibility, allowComments, allowCopy, tags, id]);
+
   const submit = (action: "draft" | "publish" | "archive") => {
     const fd = new FormData();
-    if (initial?.id) fd.set("id", initial.id);
+    if (id) fd.set("id", id);
     fd.set("action", action);
     fd.set("title", title);
     fd.set("content", content);
@@ -84,9 +114,9 @@ export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: Po
 
   const autoSaveText: Record<AutoSaveState, string> = {
     idle: "아직 저장되지 않음",
-    dirty: "아직 저장되지 않음",
-    saving: "저장 중…",
-    saved: "저장됨",
+    saving: "자동 저장 중…",
+    saved: savedAtLabel ? `자동 저장됨 · ${savedAtLabel}` : "저장됨",
+    error: "자동 저장 실패 — 잠시 후 다시 시도",
   };
 
   return (
@@ -130,13 +160,14 @@ export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: Po
 
             <div className="space-y-1.5">
               <Label htmlFor="content">본문</Label>
+              {/* 본문 — 미리보기와 동일한 명조 글꼴 / 동일한 행간 / 동일한 글자 크기.
+                  높이는 약 10줄로 제한하고, 그 이후로는 스크롤로 처리합니다. */}
               <Textarea
                 id="content"
                 placeholder={"줄바꿈은 그대로 보존됩니다.\n천천히 적어주세요."}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                rows={16}
-                className="font-serif text-base leading-loose px-5 py-4"
+                className="poem-editor-textarea px-5 py-4"
               />
             </div>
 
@@ -210,7 +241,7 @@ export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: Po
               >
                 미리보기
               </Button>
-              {initial?.id ? (
+              {id ? (
                 <Button
                   type="button"
                   variant="ghost"
@@ -221,6 +252,9 @@ export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: Po
                 </Button>
               ) : null}
             </div>
+            <p className="text-[11px] text-text-secondary">
+              3분마다 자동 임시 저장됩니다.
+            </p>
           </div>
         </Card>
       )}
@@ -237,7 +271,7 @@ export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: Po
         {!previewMode && (
           <p className="poem-muted text-center mb-6 tracking-wider">─ 미리보기 ─</p>
         )}
-        <PoemPreview title={title} content={content} />
+        <PoemPreview title={title} content={content} alignWithEditor />
         {previewMode && note && (
           <p className="mt-12 mx-auto max-w-prose text-center poem-muted italic">
             {note}
@@ -246,4 +280,10 @@ export function PoemEditor({ initial, notice, errorMessage, tagSuggestions }: Po
       </Card>
     </div>
   );
+}
+
+function formatTime(d: Date): string {
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
 }
