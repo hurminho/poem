@@ -7,9 +7,12 @@ import { signOutAction } from "@/lib/auth/actions";
 export function HeaderUserMenu({
   displayName,
   username,
+  isAdmin = false,
 }: {
   displayName: string;
   username: string | null;
+  /** admin_users 에 active 로 등록된 운영자일 때 true */
+  isAdmin?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -61,6 +64,17 @@ export function HeaderUserMenu({
                 마이페이지
               </Link>
             </li>
+            {isAdmin ? (
+              <li>
+                <Link
+                  href="/admin"
+                  className="block px-4 py-2 hover:bg-accent-soft text-text-primary font-medium"
+                  onClick={() => setOpen(false)}
+                >
+                  운영자 콘솔
+                </Link>
+              </li>
+            ) : null}
             <li>
               <Link
                 href="/settings"

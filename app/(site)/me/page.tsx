@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { QuietButton } from "@/components/ui/quiet-button";
 import { PrimaryCTA } from "@/components/ui/primary-cta";
 import { getCurrentProfile } from "@/lib/auth/current";
+import { getAdminContext } from "@/lib/admin/auth";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
 import { getMyPoems } from "@/lib/db/poems";
 import { getMyBooks } from "@/lib/db/books";
@@ -22,7 +23,10 @@ import {
 export const metadata = { title: "마이페이지" };
 
 export default async function MyPage() {
-  const profile = await getCurrentProfile();
+  const [profile, adminCtx] = await Promise.all([
+    getCurrentProfile(),
+    getAdminContext(),
+  ]);
   if (isSupabaseConfigured() && !profile) redirect("/login?next=/me");
 
   const authorId = profile?.id ?? "";
@@ -56,6 +60,25 @@ export default async function MyPage() {
             </div>
           }
         />
+
+        {adminCtx ? (
+          <div className="rounded-2xl border border-border-soft bg-accent-soft/60 px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-serif text-sm font-semibold text-text-primary">
+                운영자 계정
+              </p>
+              <p className="mt-0.5 text-xs text-text-secondary">
+                시·시집·사용자·신고를 관리하는 운영자 콘솔로 이동합니다.
+              </p>
+            </div>
+            <Link
+              href="/admin"
+              className="inline-flex h-10 items-center rounded-full bg-text-primary px-5 text-sm font-medium text-background hover:opacity-90 transition-opacity"
+            >
+              운영자 콘솔 열기
+            </Link>
+          </div>
+        ) : null}
 
         {/* 프로필 카드 */}
         <Card className="p-6 flex flex-col sm:flex-row items-start gap-5">

@@ -24,7 +24,13 @@ const FOOTER_LINKS = [
   { href: "/brand", label: "브랜드" },
 ];
 
-export function MobileNavToggle({ authed }: { authed: boolean }) {
+export function MobileNavToggle({
+  authed,
+  isAdmin = false,
+}: {
+  authed: boolean;
+  isAdmin?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -52,7 +58,13 @@ export function MobileNavToggle({ authed }: { authed: boolean }) {
   }, [open]);
 
   const items = visiblePrimaryNav(authed);
-  const secondary = authed ? SECONDARY_AUTHED : SECONDARY_GUEST;
+  const secondary = authed
+    ? [
+        ...SECONDARY_AUTHED.slice(0, 1),
+        ...(isAdmin ? [{ href: "/admin", label: "운영자 콘솔" }] : []),
+        ...SECONDARY_AUTHED.slice(1),
+      ]
+    : SECONDARY_GUEST;
 
   const drawer = open ? (
     <div

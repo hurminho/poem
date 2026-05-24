@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -21,7 +22,7 @@ export interface AdminContext {
  * RLS 정책 상 admin 본인만 자기 row 를 select 할 수 있게 되어 있지만, 운영 도구 신뢰성을
  * 위해 server-side에서는 service_role 로 정확히 검증합니다.
  */
-export async function getAdminContext(): Promise<AdminContext | null> {
+export const getAdminContext = cache(async (): Promise<AdminContext | null> => {
   if (!isSupabaseConfigured()) return null;
   const user = await getCurrentUser();
   if (!user) return null;
@@ -63,6 +64,12 @@ export async function getAdminContext(): Promise<AdminContext | null> {
     profile: profileRes.data as Profile,
     admin: adminRes.data as AdminUser,
   };
+});
+
+/** 현재 로그인 사용자가 active admin 인지 간단히 확인합니다. */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const ctx = await getAdminContext();
+  return ctx !== null;
 }
 
 /**

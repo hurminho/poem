@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth/current";
+import { getAdminContext } from "@/lib/admin/auth";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNavToggle } from "@/components/layout/mobile-nav";
 import { desktopHeaderNav } from "@/components/layout/nav-items";
 
 export async function Header() {
-  const profile = await getCurrentProfile();
+  const [profile, adminCtx] = await Promise.all([
+    getCurrentProfile(),
+    getAdminContext(),
+  ]);
+  const isAdmin = !!adminCtx;
   const items = desktopHeaderNav(!!profile);
   // 첫 진입은 '시 쓰기'로 — 시집은 /studio 안에서 만듭니다.
   const ctaHref = profile ? "/studio/new" : "/signup?next=/studio/new";
@@ -52,6 +57,7 @@ export async function Header() {
               <HeaderUserMenu
                 displayName={profile.display_name}
                 username={profile.username}
+                isAdmin={isAdmin}
               />
             </>
           ) : (
@@ -71,7 +77,7 @@ export async function Header() {
               </Link>
             </>
           )}
-          <MobileNavToggle authed={!!profile} />
+          <MobileNavToggle authed={!!profile} isAdmin={isAdmin} />
         </div>
       </div>
     </header>
