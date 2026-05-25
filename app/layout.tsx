@@ -51,6 +51,11 @@ export const metadata: Metadata = {
     description: defaultDescription,
     images: ["/images/landing-garden.png"],
   },
+  verification: {
+    other: {
+      "naver-site-verification": "7665ad6ee4bbd484ce51401f9e07b762318977c1",
+    },
+  },
 };
 
 export default function RootLayout({

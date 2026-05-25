@@ -4,14 +4,25 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
-import type { Visibility, ContentStatus } from "@/types";
+import type { Visibility, ContentStatus, BookAuthorPosition } from "@/types";
 
 type SaveAction = "draft" | "publish" | "archive";
 const ALLOWED_VIS: Visibility[] = ["private", "link", "public"];
+const ALLOWED_POS: BookAuthorPosition[] = ["top", "middle", "bottom"];
 
 function asVisibility(v: FormDataEntryValue | null, fallback: Visibility): Visibility {
   const s = String(v ?? "");
   return (ALLOWED_VIS as string[]).includes(s) ? (s as Visibility) : fallback;
+}
+
+function asAuthorPosition(
+  v: FormDataEntryValue | null,
+  fallback: BookAuthorPosition,
+): BookAuthorPosition {
+  const s = String(v ?? "");
+  return (ALLOWED_POS as string[]).includes(s)
+    ? (s as BookAuthorPosition)
+    : fallback;
 }
 
 export async function saveBookAction(formData: FormData) {
@@ -31,6 +42,7 @@ export async function saveBookAction(formData: FormData) {
   const subtitle = String(formData.get("subtitle") || "").trim();
   const description = String(formData.get("description") || "").trim();
   const cover_theme = String(formData.get("cover_theme") || "warm_paper").trim();
+  const author_position = asAuthorPosition(formData.get("author_position"), "bottom");
   let visibility = asVisibility(formData.get("visibility"), "private");
   const allow_reviews = formData.get("allow_reviews") === "on";
   const poemIds = String(formData.get("poem_ids") || "")
@@ -63,6 +75,7 @@ export async function saveBookAction(formData: FormData) {
     subtitle: subtitle || null,
     description: description || null,
     cover_theme,
+    author_position,
     visibility,
     status,
     allow_reviews,

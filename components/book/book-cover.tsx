@@ -1,9 +1,12 @@
 import { cn } from "@/lib/utils";
+import type { BookAuthorPosition } from "@/types";
 
 interface BookCoverProps {
   title: string;
   subtitle?: string | null;
   authorName?: string | null;
+  /** 표지 위 작가 필명의 위치 — 기본 'bottom' */
+  authorPosition?: BookAuthorPosition | null;
   theme?: string | null;
   coverUrl?: string | null;
   className?: string;
@@ -69,6 +72,7 @@ export function BookCover({
   title,
   subtitle,
   authorName,
+  authorPosition = "bottom",
   theme = "warm_paper",
   coverUrl,
   size = "md",
@@ -76,6 +80,7 @@ export function BookCover({
 }: BookCoverProps) {
   const themeKey = theme && THEMES[theme] ? theme : "warm_paper";
   const themeStyle = THEMES[themeKey];
+  const pos: BookAuthorPosition = authorPosition ?? "bottom";
 
   if (coverUrl) {
     return (
@@ -97,14 +102,19 @@ export function BookCover({
         className,
       )}
     >
-      <div className="absolute inset-x-4 top-3 text-[10px] tracking-widest opacity-60 uppercase">
-        시담
-      </div>
       {themeStyle.ornament === "frame" && (
         <div className="absolute inset-3 border border-current opacity-20 pointer-events-none rounded-md" />
       )}
-      {/* 제목은 상단 30% 라인 부근(7:3 높이 분할의 윗 자리)에 자리잡고,
-          나머지 70% 는 호흡을 둡니다. 작가명은 하단에 별도로 absolute 배치. */}
+
+      {/* 작가명 — 상단 위치일 때 */}
+      {authorName && pos === "top" && (
+        <div className="absolute inset-x-4 top-3 text-[10px] tracking-widest opacity-70 text-center">
+          {authorName}
+        </div>
+      )}
+
+      {/* 제목 — 상단 30% 라인 부근(7:3 높이 분할의 윗 자리)에 자리잡고
+         나머지 70% 는 호흡을 둡니다. */}
       <div className="h-full flex flex-col text-center px-2 pt-[24%]">
         <p className="font-serif font-semibold leading-snug text-balance">
           {title || "제목 없음"}
@@ -118,8 +128,17 @@ export function BookCover({
         {subtitle && (
           <p className="mt-3 font-serif text-xs opacity-75 text-balance">{subtitle}</p>
         )}
+
+        {/* 작가명 — 중앙 위치일 때 (제목 아래에 살짝 떨어져 표시) */}
+        {authorName && pos === "middle" && (
+          <p className="mt-5 text-[11px] tracking-widest opacity-70">
+            {authorName}
+          </p>
+        )}
       </div>
-      {authorName && (
+
+      {/* 작가명 — 하단 위치(기본) */}
+      {authorName && pos === "bottom" && (
         <div className="absolute inset-x-4 bottom-3 text-[10px] tracking-widest opacity-70 text-center">
           {authorName}
         </div>

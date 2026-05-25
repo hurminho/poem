@@ -46,6 +46,7 @@ export default async function PublicBookPage({ params }: PageProps) {
             theme={book.cover_theme}
             coverUrl={book.cover_url}
             authorName={book.author.display_name}
+            authorPosition={book.author_position ?? "bottom"}
             size="lg"
           />
         </div>

@@ -68,7 +68,7 @@ export async function getSavedBooks(userId: string): Promise<SavedBookEntry[]> {
        target_id,
        book:poem_books!saves_target_id_book_fkey (
          id, author_id, title, subtitle, description,
-         cover_url, cover_theme, visibility, status,
+         cover_url, cover_theme, author_position, visibility, status,
          allow_reviews, moderation_status, published_at,
          created_at, updated_at,
          author:profiles!poem_books_author_id_fkey (
@@ -105,7 +105,7 @@ async function getSavedBooksFallback(userId: string): Promise<SavedBookEntry[]> 
     .from("poem_books")
     .select(
       `id, author_id, title, subtitle, description,
-       cover_url, cover_theme, visibility, status,
+       cover_url, cover_theme, author_position, visibility, status,
        allow_reviews, moderation_status, published_at,
        created_at, updated_at,
        author:profiles!poem_books_author_id_fkey (

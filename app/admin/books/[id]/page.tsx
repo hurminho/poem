@@ -77,6 +77,7 @@ export default async function AdminBookDetailPage({ params, searchParams }: Page
           title={book.title}
           subtitle={book.subtitle}
           authorName={book.author?.display_name}
+          authorPosition={book.author_position ?? "bottom"}
           theme={book.cover_theme}
           coverUrl={book.cover_url}
           size="md"

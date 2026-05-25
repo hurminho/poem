@@ -8,47 +8,42 @@ import {
   BetaInterestModal,
   useBetaInterest,
 } from "@/components/monetization/beta-interest-modal";
-import { isPremiumCoverTheme } from "@/lib/monetization/products";
+import type { BookAuthorPosition } from "@/types";
 
 interface Props {
   value: string;
   onChange: (next: string) => void;
   /** 표지에 표시할 미리보기용 제목 */
   previewTitle?: string;
-  /** 사용자가 Creator/Author 플랜이면 true → 프리미엄도 바로 선택 가능 */
-  hasPremiumAccess?: boolean;
+  /** 표지에 표시할 미리보기용 작가 필명 */
+  previewAuthorName?: string;
+  /** 표지 위 작가 필명의 위치 */
+  authorPosition?: BookAuthorPosition;
   className?: string;
 }
 
 /**
  * 12종 표지 테마를 작은 시집 형태로 보여줍니다.
- *
- * 일부 표지는 "프리미엄" 으로 표시되며, 프리미엄 접근 권한이 없으면
- * 클릭 시 베타 관심 모달이 열립니다 (결제 없음).
+ * 마지막 자리는 '디자이너와 협업' 카드로, 클릭 시 베타 관심 모달이 열립니다.
  */
 export function BookCoverSelector({
   value,
   onChange,
   previewTitle,
-  hasPremiumAccess = false,
+  previewAuthorName,
+  authorPosition = "bottom",
   className,
 }: Props) {
   const { open, setOpen, trigger } = useBetaInterest({
-    interestType: "premium_cover",
-    productName: "프리미엄 표지",
+    interestType: "designer_cover",
+    productName: "디자이너 협업 표지",
     clickEventType: "click_premium_cover",
     productType: "feature",
-    price: 1900,
+    price: null,
   });
 
-  function handleSelect(theme: string) {
-    const premium = isPremiumCoverTheme(theme);
-    if (premium && !hasPremiumAccess) {
-      trigger();
-      return;
-    }
-    onChange(theme);
-  }
+  // 12개 자리 중 마지막 1개는 '디자이너와 협업' 카드로 대체합니다.
+  const visibleThemes = COVER_THEMES.slice(0, 11);
 
   return (
     <>
@@ -57,53 +52,75 @@ export function BookCoverSelector({
         role="radiogroup"
         aria-label="표지 테마"
       >
-        {COVER_THEMES.map((t) => {
+        {visibleThemes.map((t) => {
           const active = value === t.value;
-          const premium = isPremiumCoverTheme(t.value);
-          const locked = premium && !hasPremiumAccess;
-
           return (
             <button
               key={t.value}
               type="button"
               role="radio"
               aria-checked={active}
-              onClick={() => handleSelect(t.value)}
+              onClick={() => onChange(t.value)}
               className={cn(
                 "relative block rounded-xl p-1.5 transition-all text-left",
                 active
                   ? "ring-2 ring-accent bg-accent-soft/40"
                   : "hover:bg-accent-soft/30",
               )}
-              aria-label={
-                premium ? `${t.label} · 프리미엄 표지` : t.label
-              }
+              aria-label={t.label}
             >
               <BookCover
                 title={previewTitle || "—"}
+                authorName={previewAuthorName ?? null}
+                authorPosition={authorPosition}
                 theme={t.value}
                 size="sm"
-                className={cn("w-full", locked && "opacity-90")}
+                className="w-full"
               />
               <div className="mt-2 flex items-center gap-1.5">
                 <p className="text-xs text-text-secondary">{t.label}</p>
-                {premium ? (
-                  <span className="inline-flex items-center gap-0.5 rounded-full bg-accent-soft px-1.5 py-0.5 text-[9px] font-medium text-ink-forest">
-                    <Sparkles className="size-2.5" aria-hidden />
-                    프리미엄
-                  </span>
-                ) : null}
               </div>
             </button>
           );
         })}
+
+        {/* 4번째 줄 마지막 자리 — '디자이너와 협업' 카드 */}
+        <button
+          type="button"
+          onClick={trigger}
+          className={cn(
+            "relative block rounded-xl p-1.5 text-left transition-all hover:bg-accent-soft/30",
+          )}
+          aria-label="디자이너와 협업 표지 — 베타 신청"
+        >
+          <div
+            className={cn(
+              "book-cover relative w-full overflow-hidden rounded-md border border-dashed border-border-soft bg-accent-soft/30 text-text-primary",
+            )}
+          >
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center">
+              <Sparkles className="size-4 text-[color:var(--ink-amber)]" aria-hidden />
+              <p className="font-serif text-xs font-semibold leading-snug">
+                디자이너와
+                <br />
+                협업
+              </p>
+              <p className="text-[10px] text-text-secondary leading-snug">
+                준비 중 · 신청
+              </p>
+            </div>
+          </div>
+          <div className="mt-2 flex items-center gap-1.5">
+            <p className="text-xs text-text-secondary">디자이너와 협업</p>
+          </div>
+        </button>
       </div>
 
       <BetaInterestModal
         open={open}
-        interestType="premium_cover"
-        productName="프리미엄 표지"
-        helperText="베타 기간 동안에는 우선 체험 신청자에게 무료로 열어드립니다."
+        interestType="designer_cover"
+        productName="디자이너 협업 표지"
+        helperText="디자이너가 한 권의 책처럼 다듬은 표지를 베타 신청자에게 우선 제공할 예정입니다."
         onClose={() => setOpen(false)}
       />
     </>

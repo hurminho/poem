@@ -58,6 +58,8 @@ export interface Poem {
   updated_at: string;
 }
 
+export type BookAuthorPosition = "top" | "middle" | "bottom";
+
 export interface PoemBook {
   id: string;
   author_id: string;
@@ -66,6 +68,8 @@ export interface PoemBook {
   description: string | null;
   cover_url: string | null;
   cover_theme: string;
+  /** 표지 위 작가 필명의 위치 — 0006 마이그레이션 이전 시집은 'bottom' 으로 폴백. */
+  author_position?: BookAuthorPosition | null;
   visibility: Visibility;
   status: ContentStatus;
   allow_reviews: boolean;

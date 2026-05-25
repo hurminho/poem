@@ -139,6 +139,29 @@ export async function getPublicPoems(
   });
 }
 
+/**
+ * 누군가의 시 페이지에서 좌/우 네비게이션에 쓸 전체 공개 시 id 순서 목록.
+ * published_at 내림차순 — getPublicPoems 와 동일한 정렬.
+ */
+export async function getPublicPoemIdsOrdered(limit = 500): Promise<string[]> {
+  if (!isSupabaseConfigured()) {
+    return phPublicPoems(limit).map((p) => p.id);
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("poems")
+    .select("id, published_at, created_at")
+    .eq("status", "published")
+    .eq("visibility", "public")
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    console.warn("[poems.getPublicPoemIdsOrdered] error:", error.message);
+    return [];
+  }
+  return ((data ?? []) as Array<{ id: string }>).map((r) => r.id);
+}
+
 /** 작가 페이지의 발행된 시 목록 (전체 공개만) */
 export async function getPublicPoemsByAuthor(authorId: string): Promise<Poem[]> {
   if (!isSupabaseConfigured()) return phPoemsByAuthor(authorId);

@@ -1,5 +1,5 @@
 import { BookCover } from "@/components/book/book-cover";
-import type { Poem } from "@/types";
+import type { BookAuthorPosition, Poem } from "@/types";
 
 interface Props {
   title: string;
@@ -7,6 +7,7 @@ interface Props {
   description?: string | null;
   coverTheme: string;
   authorName?: string | null;
+  authorPosition?: BookAuthorPosition;
   poems: Poem[];
 }
 
@@ -20,6 +21,7 @@ export function BookPreview({
   description,
   coverTheme,
   authorName,
+  authorPosition = "bottom",
   poems,
 }: Props) {
   return (
@@ -30,6 +32,7 @@ export function BookPreview({
             title={title || "제목"}
             subtitle={subtitle}
             authorName={authorName}
+            authorPosition={authorPosition}
             theme={coverTheme}
             size="md"
           />

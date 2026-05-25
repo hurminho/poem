@@ -20,6 +20,7 @@ export function BookCard({ book, href, showStatus = false, showAuthor = false }:
         theme={book.cover_theme}
         coverUrl={book.cover_url}
         authorName={author?.display_name}
+        authorPosition={book.author_position ?? "bottom"}
         size="md"
         className="group-hover:shadow-md transition-shadow"
       />

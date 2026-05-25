@@ -13,7 +13,7 @@ import { BookPreview } from "@/components/book/book-preview";
 import { BookPublicLinkCard } from "@/components/book/book-public-link-card";
 import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-selector";
 import { saveBookAction } from "@/lib/books/actions";
-import type { PoemBook, Poem, Visibility } from "@/types";
+import type { PoemBook, Poem, Visibility, BookAuthorPosition } from "@/types";
 import { cn } from "@/lib/utils";
 
 interface BookFormProps {
@@ -31,6 +31,9 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
   const [subtitle, setSubtitle] = React.useState(initial?.subtitle ?? "");
   const [description, setDescription] = React.useState(initial?.description ?? "");
   const [coverTheme, setCoverTheme] = React.useState(initial?.cover_theme ?? "warm_paper");
+  const [authorPosition, setAuthorPosition] = React.useState<BookAuthorPosition>(
+    (initial?.author_position as BookAuthorPosition | undefined) ?? "bottom",
+  );
   const [visibility, setVisibility] = React.useState<Visibility>(initial?.visibility ?? "private");
   const [allowReviews, setAllowReviews] = React.useState(initial?.allow_reviews ?? true);
   const [selectedPoemIds, setSelectedPoemIds] = React.useState<string[]>(initial?.poem_ids ?? []);
@@ -58,7 +61,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
       clearTimeout(t1);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, subtitle, description, coverTheme, visibility, allowReviews, selectedPoemIds.join(",")]);
+  }, [title, subtitle, description, coverTheme, authorPosition, visibility, allowReviews, selectedPoemIds.join(",")]);
 
   const status = initial?.status ?? "draft";
   const isPublished = status === "published";
@@ -76,6 +79,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
     fd.set("subtitle", subtitle ?? "");
     fd.set("description", description ?? "");
     fd.set("cover_theme", coverTheme);
+    fd.set("author_position", authorPosition);
     fd.set("visibility", visibility);
     if (allowReviews) fd.set("allow_reviews", "on");
     fd.set("poem_ids", selectedPoemIds.join(","));
@@ -116,6 +120,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
           description={description}
           coverTheme={coverTheme}
           authorName={authorName}
+          authorPosition={authorPosition}
           poems={selectedPoems}
         />
       </div>
@@ -129,6 +134,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
           title={title}
           subtitle={subtitle}
           authorName={authorName}
+          authorPosition={authorPosition}
           theme={coverTheme}
           size="lg"
         />
@@ -244,13 +250,57 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
       </div>
 
       <div className="space-y-6">
-        <Card className="p-5 space-y-3">
+        <Card className="p-5 space-y-4">
           <h3 className="font-serif text-base font-semibold text-text-primary">표지 고르기</h3>
           <BookCoverSelector
             value={coverTheme}
             onChange={setCoverTheme}
             previewTitle={title}
+            previewAuthorName={authorName}
+            authorPosition={authorPosition}
           />
+
+          {/* 작가 필명 위치 — 미리보기 표지에 즉시 반영됩니다. */}
+          <div className="space-y-2 pt-1">
+            <div className="flex items-baseline justify-between">
+              <Label className="text-xs">작가 필명 위치</Label>
+              <span className="text-[11px] text-text-secondary">
+                {authorName ? authorName : "필명을 설정하면 표지에 표시돼요"}
+              </span>
+            </div>
+            <div
+              role="radiogroup"
+              aria-label="작가 필명 위치"
+              className="grid grid-cols-3 gap-2"
+            >
+              {(
+                [
+                  { v: "top", label: "표지 상단" },
+                  { v: "middle", label: "제목 아래" },
+                  { v: "bottom", label: "표지 하단" },
+                ] as { v: BookAuthorPosition; label: string }[]
+              ).map((opt) => {
+                const active = authorPosition === opt.v;
+                return (
+                  <button
+                    key={opt.v}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setAuthorPosition(opt.v)}
+                    className={cn(
+                      "rounded-lg border px-2 py-2 text-xs transition-colors",
+                      active
+                        ? "border-accent bg-accent-soft/50 text-text-primary"
+                        : "border-border-soft text-text-secondary hover:bg-accent-soft/30",
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </Card>
 
         <Card className="p-5 space-y-3">

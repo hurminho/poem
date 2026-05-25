@@ -6,7 +6,8 @@ import { ReaderThemeToggle } from "@/components/reader/reader-theme-toggle";
 import { ReaderActions } from "@/components/reader/reader-actions";
 import { ShareButton } from "@/components/ui/share-button";
 import { LikeButton } from "@/components/reactions/like-button";
-import { getPublicPoemById } from "@/lib/db/poems";
+import { PoemNavSwipe } from "@/components/poem/poem-nav-swipe";
+import { getPublicPoemById, getPublicPoemIdsOrdered } from "@/lib/db/poems";
 import { getCurrentUser } from "@/lib/auth/current";
 import { countReactionsFor, hasReacted } from "@/lib/db/reactions";
 
@@ -27,12 +28,29 @@ export default async function SinglePoemPage({ params }: PageProps) {
 
   const user = await getCurrentUser();
   const isLoggedIn = !!user;
-  const [liked, likeCount] = await Promise.all([
+  // 게스트에게는 좌/우 네비를 노출하지 않습니다 — 다른 시도 차피 가입해야 보입니다.
+  const [liked, likeCount, orderedIds] = await Promise.all([
     user
       ? hasReacted(user.id, "poem", poem.id, "like")
       : Promise.resolve(false),
     countReactionsFor("poem", poem.id, "like"),
+    isLoggedIn ? getPublicPoemIdsOrdered(500) : Promise.resolve<string[]>([]),
   ]);
+
+  // ordered list 는 published_at 내림차순 (최신이 앞).
+  // 화면 직관(왼쪽으로 쓸기 = 다음 시) 에 맞춰 prev/next 를 다음과 같이 매핑합니다.
+  //   prevId = 더 최근 발행된 시 (현재 인덱스 − 1) → 우측 ▶︎
+  //   nextId = 더 오래 발행된 시 (현재 인덱스 + 1) → 좌측 ◀︎ (= 왼쪽으로 쓸기)
+  let prevId: string | null = null;
+  let nextId: string | null = null;
+  if (isLoggedIn) {
+    const idx = orderedIds.indexOf(poem.id);
+    if (idx !== -1) {
+      prevId = idx > 0 ? (orderedIds[idx - 1] ?? null) : null;
+      nextId =
+        idx < orderedIds.length - 1 ? (orderedIds[idx + 1] ?? null) : null;
+    }
+  }
 
   // 게스트는 본문 전체가 아닌 첫 두 줄까지만 노출.
   const teaserPoem = isLoggedIn
@@ -106,6 +124,10 @@ export default async function SinglePoemPage({ params }: PageProps) {
           <ReflectionSection targetType="poem" targetId={poem.id} kind="poem" />
         </div>
       )}
+
+      {isLoggedIn && (prevId || nextId) ? (
+        <PoemNavSwipe prevId={prevId} nextId={nextId} />
+      ) : null}
     </div>
   );
 }

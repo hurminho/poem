@@ -55,7 +55,7 @@ export default async function PublicPoemsPage({ searchParams }: PageProps) {
     <div className="poem-page">
       <div className="mx-auto max-w-5xl px-5 py-12 space-y-12">
         <PageTitle
-          eyebrow="Discover · 누군가의 시"
+          eyebrow="· 누군가의 시"
           title="오늘은 누군가의 시 한 편을"
           description="작가들이 전체 공개로 두고 간 시들을 천천히 펼쳐봅니다. 태그를 골라 결을 맞춰 보세요."
         />
@@ -131,6 +131,44 @@ export default async function PublicPoemsPage({ searchParams }: PageProps) {
         <p className="text-center text-xs text-text-secondary pt-4">
           전체 공개로 발행된 시들만 보입니다. 비공개·링크 공유 시는 보이지 않아요.
         </p>
+
+        {/* 저작권 안내 */}
+        <section
+          aria-labelledby="copyright-notice"
+          className="mt-12 rounded-2xl border border-border-soft bg-surface/70 px-6 py-6"
+        >
+          <p
+            id="copyright-notice"
+            className="font-serif text-sm font-semibold text-text-primary"
+          >
+            저작권 안내
+          </p>
+          <ul className="mt-3 space-y-2 text-xs leading-relaxed text-text-secondary">
+            <li>
+              이곳에 실린 모든 시의 저작권은 각 시를 쓴 작가에게 있습니다. 시담은
+              작가의 동의 아래 단순한 게재 자리를 제공할 뿐입니다.
+            </li>
+            <li>
+              시의 일부 또는 전부를 무단으로 복제·전송·배포·2차 가공·상업적 이용하는
+              것은 저작권법에 따라 금지됩니다. 인용·공유가 필요한 경우 반드시 출처
+              (시담 · 작가 필명 · 작품 URL)를 함께 표기해 주세요.
+            </li>
+            <li>
+              저작권 침해가 의심되는 게시물을 발견하시면{" "}
+              <Link
+                href="/legal/copyright"
+                className="text-text-primary underline-offset-4 hover:underline"
+              >
+                저작권 정책
+              </Link>{" "}
+              페이지 또는 hello@sidam.app 으로 알려주세요.
+            </li>
+          </ul>
+          <p className="mt-4 text-[11px] text-text-secondary">
+            © {new Date().getFullYear()} 시담 — Sidam. 각 작품의 © 표기는 작가
+            본인에게 있습니다.
+          </p>
+        </section>
       </div>
     </div>
   );
