@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { getAdminContext } from "@/lib/admin/auth";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
@@ -19,9 +20,14 @@ export async function Header() {
     <header className="sticky top-0 z-40 border-b border-border-soft/80 bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-5">
         <Link href="/" className="flex items-center gap-2 group" aria-label="시담 홈">
-          <span className="grid size-8 place-items-center rounded-full bg-text-primary text-background font-serif text-sm font-bold">
-            詩
-          </span>
+          <Image
+            src="/icons/icon-192.png"
+            alt=""
+            width={32}
+            height={32}
+            priority
+            className="size-8 rounded-md"
+          />
           <span className="font-serif text-lg font-bold tracking-tight text-text-primary group-hover:text-text-secondary transition-colors">
             시담
           </span>

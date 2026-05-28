@@ -5,7 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PoemRow } from "@/components/poem/poem-row";
 import { PoemCoverCard } from "@/components/poem/poem-cover-card";
 import { PrimaryCTA } from "@/components/ui/primary-cta";
-import { getCurrentProfile } from "@/lib/auth/current";
+import { getCurrentProfile, getCurrentUser } from "@/lib/auth/current";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
 import { getMyPoems } from "@/lib/db/poems";
 import type { ContentStatus } from "@/types";
@@ -28,10 +28,17 @@ export default async function MyPoemsPage({ searchParams }: PageProps) {
   const sp = await searchParams;
   const filter = (sp.status ?? "published") as "all" | ContentStatus;
 
-  const profile = await getCurrentProfile();
+  const [profile, user] = await Promise.all([
+    getCurrentProfile(),
+    getCurrentUser(),
+  ]);
   if (isSupabaseConfigured() && !profile) redirect("/login?next=/studio/poems");
 
-  const all = await getMyPoems(profile?.id ?? "");
+  // 작성자 식별은 auth.users.id (= profile.id) 를 직접 사용합니다.
+  // 두 값은 같지만, auth 토큰을 기준으로 잡아 두면 프로필 누락 같은
+  // 예외 상황에서도 다른 사용자의 시가 노출되지 않습니다.
+  const authorId = user?.id ?? profile?.id ?? "";
+  const all = await getMyPoems(authorId);
   const poems = filter === "all" ? all : all.filter((p) => p.status === filter);
 
   const authorName = profile?.display_name ?? "";

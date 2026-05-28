@@ -7,7 +7,7 @@ import { QuickActions } from "@/components/studio/quick-actions";
 import { PoemRow } from "@/components/poem/poem-row";
 import { BookCard } from "@/components/book/book-card";
 import { ReflectionCard } from "@/components/reflections/reflection-card";
-import { getCurrentProfile } from "@/lib/auth/current";
+import { getCurrentProfile, getCurrentUser } from "@/lib/auth/current";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
 import { getMyPoems } from "@/lib/db/poems";
 import { getMyBooks } from "@/lib/db/books";
@@ -16,10 +16,13 @@ import { getReflectionsByAuthor } from "@/lib/db/reflections";
 export const metadata = { title: "작업실" };
 
 export default async function StudioHomePage() {
-  const profile = await getCurrentProfile();
+  const [profile, user] = await Promise.all([
+    getCurrentProfile(),
+    getCurrentUser(),
+  ]);
   if (isSupabaseConfigured() && !profile) redirect("/login?next=/studio");
 
-  const authorId = profile?.id ?? "";
+  const authorId = user?.id ?? profile?.id ?? "";
   const [recentPoems, recentBooks, recentReflections] = await Promise.all([
     getMyPoems(authorId).then((xs) => xs.slice(0, 3)),
     getMyBooks(authorId).then((xs) => xs.slice(0, 3)),

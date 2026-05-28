@@ -2,10 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Pencil, Check, X } from "lucide-react";
+import { Heart, Pencil, Check, X, Trash2 } from "lucide-react";
 import { cn, relativeTimeKo } from "@/lib/utils";
 import { toggleReactionAction } from "@/lib/reactions/actions";
-import { updateReflectionAction } from "@/lib/reflections/actions";
+import {
+  deleteReflectionAction,
+  updateReflectionAction,
+} from "@/lib/reflections/actions";
 import type { Reflection } from "@/types";
 
 interface Props {
@@ -71,6 +74,26 @@ export function ReflectionCard({
   const [editPending, startEdit] = React.useTransition();
   const [editError, setEditError] = React.useState<string | null>(null);
 
+  // 삭제 — 본인이 남긴 감상평을 영구히 내립니다.
+  const [removed, setRemoved] = React.useState(false);
+  const [removePending, startRemove] = React.useTransition();
+  const onRemove = () => {
+    const ok = window.confirm(
+      "이 감상평을 삭제할까요? 한 번 지우면 되돌릴 수 없습니다.",
+    );
+    if (!ok) return;
+    startRemove(async () => {
+      const res = await deleteReflectionAction(reflection.id);
+      if (!res.ok) {
+        setHint(res.error ?? "삭제에 실패했어요.");
+        setTimeout(() => setHint(null), 1500);
+        return;
+      }
+      setRemoved(true);
+      router.refresh();
+    });
+  };
+
   const beginEdit = () => {
     setDraft(savedContent);
     setEditing(true);
@@ -102,6 +125,8 @@ export function ReflectionCard({
       router.refresh();
     });
   };
+
+  if (removed) return null;
 
   return (
     <article className="reflection-card relative">
@@ -195,13 +220,24 @@ export function ReflectionCard({
           </span>
 
           {canEdit ? (
-            <button
-              type="button"
-              onClick={beginEdit}
-              className="inline-flex h-7 items-center gap-1 rounded-full border border-border-soft px-2.5 text-xs text-text-secondary hover:border-accent hover:text-text-primary"
-            >
-              <Pencil className="size-3.5" /> 수정
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={beginEdit}
+                className="inline-flex h-7 items-center gap-1 rounded-full border border-border-soft px-2.5 text-xs text-text-secondary hover:border-accent hover:text-text-primary"
+              >
+                <Pencil className="size-3.5" /> 수정
+              </button>
+              <button
+                type="button"
+                onClick={onRemove}
+                disabled={removePending}
+                className="inline-flex h-7 items-center gap-1 rounded-full border border-border-soft px-2.5 text-xs text-text-secondary hover:border-rose-300 hover:text-rose-700 disabled:opacity-60"
+              >
+                <Trash2 className="size-3.5" />
+                {removePending ? "삭제 중…" : "삭제"}
+              </button>
+            </>
           ) : null}
         </div>
       )}

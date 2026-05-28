@@ -20,6 +20,10 @@ const POEM_COLS = "id,author_id,title,content,note,visibility,status,allow_comme
 
 export async function getMyPoems(authorId: string): Promise<Poem[]> {
   if (!isSupabaseConfigured()) return phMyPoems();
+  // authorId 가 비어 있으면 절대 데이터를 노출하지 않습니다 — 모든 사용자의
+  // 시를 잠깐이라도 보여주는 것을 방지하는 안전장치.
+  if (!authorId) return [];
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("poems")
@@ -30,7 +34,11 @@ export async function getMyPoems(authorId: string): Promise<Poem[]> {
     console.warn("[poems.getMyPoems] error:", error.message);
     return [];
   }
-  return (data ?? []) as Poem[];
+  // 벨트 + 멜빵 — 혹시 RLS / WHERE 가 잘못 풀려 다른 사람의 시가 끼어와도
+  // 클라이언트로 보내기 전에 한 번 더 거릅니다.
+  return (data ?? []).filter(
+    (p) => (p as Poem).author_id === authorId,
+  ) as Poem[];
 }
 
 export async function getMyPoemById(id: string, authorId: string): Promise<Poem | null> {
