@@ -69,17 +69,20 @@ export async function GET(
     process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
   const redirectTo = `${siteUrl.replace(/\/$/, "")}/api/auth/callback?next=${encodeURIComponent(next)}`;
 
-  // 카카오는 Supabase 기본값이 `account_email,profile_image` 를 함께 요청하지만
-  // Kakao Developers 콘솔에서 두 항목이 모두 "동의항목"으로 활성화되어 있지 않으면
-  // KOE205 가 발생합니다. 시담은 이메일 식별만 있으면 충분하므로 profile_image 를
-  // 빼고 `account_email` 만 명시적으로 요청합니다 — 사용자는 Kakao Developers 의
-  // [카카오 로그인 → 동의항목]에서 `카카오계정(이메일)`만 "필수 동의"로 켜두면 됩니다.
+  // 카카오는 Supabase 기본 scope 이 `account_email,profile_image,profile_nickname`
+  // 인데, `account_email` 은 Kakao Developers 의 비즈 앱 전환 + 개인정보 활용 심사를
+  // 거쳐야 비로소 "권한 없음" 이 풀립니다. 시담은 베타 단계이므로 아직 사업자 전환
+  // 없이 사용할 수 있는 닉네임/프로필 사진만 요청합니다 — 이메일은 추후 비즈 앱
+  // 전환 후 활성화 예정입니다.
+  //   ← Kakao 측에서 활성화된 동의항목과 일치해야 합니다.
   const oauthOptions: Parameters<typeof supabase.auth.signInWithOAuth>[0] = {
     provider: provider as AllowedProvider,
     options: {
       redirectTo,
       ...(provider === "google" ? { scopes: "openid email profile" } : {}),
-      ...(provider === "kakao" ? { scopes: "account_email" } : {}),
+      ...(provider === "kakao"
+        ? { scopes: "profile_nickname profile_image" }
+        : {}),
     },
   };
 
