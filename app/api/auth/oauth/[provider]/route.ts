@@ -69,16 +69,17 @@ export async function GET(
     process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
   const redirectTo = `${siteUrl.replace(/\/$/, "")}/api/auth/callback?next=${encodeURIComponent(next)}`;
 
-  // 카카오는 "Consent Items"가 Kakao Developers 콘솔에서 활성화되어 있어야만
-  // 해당 scope 을 요청할 수 있습니다. 활성화되지 않은 항목을 요청하면 KOE205 가 납니다.
-  // 그래서 코드에서는 scope 을 강제하지 않고 (provider 기본값), 카카오는 Supabase
-  // Dashboard → Authentication → Providers → Kakao 의 "Additional Scopes" 설정과
-  // Kakao Developers 콘솔의 동의항목 활성화 상태를 그대로 따릅니다.
+  // 카카오는 Supabase 기본값이 `account_email,profile_image` 를 함께 요청하지만
+  // Kakao Developers 콘솔에서 두 항목이 모두 "동의항목"으로 활성화되어 있지 않으면
+  // KOE205 가 발생합니다. 시담은 이메일 식별만 있으면 충분하므로 profile_image 를
+  // 빼고 `account_email` 만 명시적으로 요청합니다 — 사용자는 Kakao Developers 의
+  // [카카오 로그인 → 동의항목]에서 `카카오계정(이메일)`만 "필수 동의"로 켜두면 됩니다.
   const oauthOptions: Parameters<typeof supabase.auth.signInWithOAuth>[0] = {
     provider: provider as AllowedProvider,
     options: {
       redirectTo,
       ...(provider === "google" ? { scopes: "openid email profile" } : {}),
+      ...(provider === "kakao" ? { scopes: "account_email" } : {}),
     },
   };
 

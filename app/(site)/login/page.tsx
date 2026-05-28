@@ -43,6 +43,14 @@ export default async function LoginPage({ searchParams }: PageProps) {
           {sp.notice && <p className="text-sm text-text-secondary">{sp.notice}</p>}
           {sp.error && <p className="text-sm text-[color:#a85a4a]">{sp.error}</p>}
           <Button type="submit" className="w-full">로그인</Button>
+          <div className="pt-1 text-right">
+            <Link
+              href="/login/forgot"
+              className="text-xs text-text-secondary underline-offset-4 hover:text-text-primary hover:underline"
+            >
+              비밀번호를 잊으셨나요?
+            </Link>
+          </div>
         </form>
       </Card>
 
