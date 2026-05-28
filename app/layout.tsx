@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Noto_Serif_KR, Noto_Sans_KR } from "next/font/google";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
@@ -56,6 +56,13 @@ export const metadata: Metadata = {
       "naver-site-verification": "7665ad6ee4bbd484ce51401f9e07b762318977c1",
     },
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FAF7F0" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c1f2e" },
+  ],
 };
 
 export default function RootLayout({
