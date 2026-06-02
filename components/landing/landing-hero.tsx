@@ -2,8 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface LandingHeroProps {
-  /** 로그인 여부에 따라 CTA의 다음 동선이 달라집니다. */
-  ctaHref: string;
+  /** 1차 CTA — 첫 시집 만들기로 안내합니다. */
+  primaryHref: string;
+  primaryLabel?: string;
+  /** 2차 CTA — 샘플 시집 보기. 미지정 시 숨김. */
+  secondaryHref?: string;
+  secondaryLabel?: string;
 }
 
 /**
@@ -14,7 +18,12 @@ interface LandingHeroProps {
  *
  * 가독성을 위해 이미지 위에 따뜻한 크림 그라데이션을 살짝 얹습니다.
  */
-export function LandingHero({ ctaHref }: LandingHeroProps) {
+export function LandingHero({
+  primaryHref,
+  primaryLabel = "내 첫 시집 만들기",
+  secondaryHref,
+  secondaryLabel = "샘플 시집 보기",
+}: LandingHeroProps) {
   return (
     <section className="relative mx-auto max-w-6xl px-5 pt-8 pb-14 md:pt-14 md:pb-20">
       <div className="relative overflow-hidden rounded-[28px] border border-border-soft bg-surface shadow-sm">
@@ -23,27 +32,31 @@ export function LandingHero({ ctaHref }: LandingHeroProps) {
           {/* ── TEXT ─────────────────────────────────────────── */}
           <div className="relative z-10 order-2 md:order-1 px-6 py-10 md:px-8 md:py-16">
             <h1 className="mt-4 font-serif text-[2.1rem] md:text-[2.8rem] lg:text-[3.1rem] font-semibold text-text-primary leading-[1.18]">
-              오늘의 마음을
+              내가 쓴 시를,
               <br />
-              <span className="text-accent">한 편의 시</span>에
-              <br />
-              담습니다.
+              <span className="text-accent">한 권의 시집</span>
+              으로.
             </h1>
-            <br />
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
-                href={ctaHref}
+                href={primaryHref}
                 prefetch
-                className="inline-flex h-14 w-full sm:w-auto items-center justify-center rounded-full bg-[color:var(--accent)] px-10 sm:px-12 text-base font-semibold text-background shadow-[0_8px_20px_-8px_rgba(122,154,120,0.6)] hover:bg-[color:var(--ink-forest)] transition-colors"
+                className="inline-flex h-14 items-center justify-center rounded-full bg-[color:var(--accent)] px-10 sm:px-12 text-base font-semibold text-background shadow-[0_8px_20px_-8px_rgba(122,154,120,0.6)] hover:bg-[color:var(--ink-forest)] transition-colors"
               >
-                나의 시 쓰기
+                {primaryLabel}
               </Link>
-              <br />
-              <br />
-              <p className="mt-3 text-xs text-text-secondary">
-                한 편을 쓰고, 작업실에서 시집으로 묶을 수 있어요.
-              </p>
+              {secondaryHref ? (
+                <Link
+                  href={secondaryHref}
+                  className="inline-flex h-14 items-center justify-center rounded-full border border-border-soft bg-surface px-8 text-base text-text-primary hover:border-accent transition-colors"
+                >
+                  {secondaryLabel}
+                </Link>
+              ) : null}
             </div>
+            <p className="mt-4 text-xs text-text-secondary">
+              한 줄짜리 시 한 편으로도 한 권이 됩니다.
+            </p>
           </div>
 
           {/* ── IMAGE (70% 영역) ─────────────────────────────── */}

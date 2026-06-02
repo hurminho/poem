@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,17 @@ export function SignupForm({ error }: SignupFormProps) {
 
   const [password, setPassword] = React.useState("");
   const [passwordConfirm, setPasswordConfirm] = React.useState("");
+
+  const [agreeAge14, setAgreeAge14] = React.useState(false);
+  const [agreeTerms, setAgreeTerms] = React.useState(false);
+  const [agreePrivacy, setAgreePrivacy] = React.useState(false);
+
+  const allAgreed = agreeAge14 && agreeTerms && agreePrivacy;
+  function toggleAll(next: boolean) {
+    setAgreeAge14(next);
+    setAgreeTerms(next);
+    setAgreePrivacy(next);
+  }
 
   const passwordMismatch =
     passwordConfirm.length > 0 && password !== passwordConfirm;
@@ -146,6 +158,81 @@ export function SignupForm({ error }: SignupFormProps) {
         ) : null}
       </div>
 
+      <div className="space-y-2 rounded-lg border border-border-soft bg-[color:var(--paper-soft,#faf7f1)]/60 p-3">
+        <label className="flex items-center gap-2 text-sm font-medium text-text-primary cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={allAgreed}
+            onChange={(e) => toggleAll(e.target.checked)}
+            className="h-4 w-4 rounded border-border-soft accent-[color:var(--ink-forest)]"
+          />
+          전체 동의
+        </label>
+
+        <hr className="border-border-soft" />
+
+        <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer select-none">
+          <input
+            type="checkbox"
+            name="agree_age_14"
+            checked={agreeAge14}
+            onChange={(e) => setAgreeAge14(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-border-soft accent-[color:var(--ink-forest)]"
+            required
+          />
+          <span>
+            <span className="text-[color:#a85a4a]">[필수]</span>{" "}
+            만 14세 이상입니다.
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer select-none">
+          <input
+            type="checkbox"
+            name="agree_terms"
+            checked={agreeTerms}
+            onChange={(e) => setAgreeTerms(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-border-soft accent-[color:var(--ink-forest)]"
+            required
+          />
+          <span>
+            <span className="text-[color:#a85a4a]">[필수]</span>{" "}
+            <Link
+              href="/legal/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-primary underline underline-offset-4"
+            >
+              시담 이용약관
+            </Link>
+            에 동의합니다.
+          </span>
+        </label>
+
+        <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer select-none">
+          <input
+            type="checkbox"
+            name="agree_privacy"
+            checked={agreePrivacy}
+            onChange={(e) => setAgreePrivacy(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-border-soft accent-[color:var(--ink-forest)]"
+            required
+          />
+          <span>
+            <span className="text-[color:#a85a4a]">[필수]</span>{" "}
+            <Link
+              href="/legal/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-primary underline underline-offset-4"
+            >
+              개인정보 처리방침
+            </Link>
+            에 동의합니다.
+          </span>
+        </label>
+      </div>
+
       {error && <p className="text-sm text-[color:#a85a4a]">{error}</p>}
 
       <Button
@@ -156,7 +243,8 @@ export function SignupForm({ error }: SignupFormProps) {
           password.length < 8 ||
           !displayName.trim() ||
           nameState === "taken" ||
-          nameState === "checking"
+          nameState === "checking" ||
+          !allAgreed
         }
       >
         가입하기

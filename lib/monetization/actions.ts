@@ -28,11 +28,21 @@ const VALID_EVENT_TYPES = new Set([
   "click_author_plan",
   "click_pro_publisher_plan",
   "submit_beta_interest",
+  // 첫 시집 만들기(Activation) 퍼널 — Phase 1 핵심 KPI.
+  "start_flow_started",
+  "first_poem_created",
+  "first_book_created",
+  "book_link_copied",
+  "guest_reflection_created",
+  "import_text_used",
+  "prompt_used",
 ]);
 
 const VALID_PRODUCT_TYPES = new Set([
   "plan",
   "feature",
+  // 제품 분석(monetization 무관) 이벤트도 같은 테이블에 쌓습니다.
+  "activation",
 ]);
 
 export interface TrackInput {

@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { PoemPreview } from "@/components/poem/poem-preview";
 import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-selector";
 import { TagInput } from "@/components/poem/tag-input";
+import { WritingPrompts } from "@/components/poem/writing-prompts";
 import { savePoemAction, autosavePoemAction } from "@/lib/poems/actions";
 import type { Poem, TextAlign, Visibility } from "@/types";
 import { cn } from "@/lib/utils";
@@ -154,6 +155,24 @@ export function PoemEditor({
           ) : null}
 
           <div className="space-y-5">
+            <WritingPrompts
+              visible={content.trim().length === 0}
+              onPickPrompt={(p) => {
+                setContent(p.starter);
+                // 본문 영역에 자연스럽게 포커스를 옮겨, 사용자가 바로 이어 쓸 수 있게.
+                window.requestAnimationFrame(() => {
+                  const el = document.getElementById("content") as
+                    | HTMLTextAreaElement
+                    | null;
+                  if (el) {
+                    el.focus();
+                    const end = el.value.length;
+                    el.setSelectionRange(end, end);
+                  }
+                });
+              }}
+            />
+
             <div className="space-y-1.5">
               <Label htmlFor="title">제목</Label>
               <Input

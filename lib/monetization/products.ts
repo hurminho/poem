@@ -208,6 +208,14 @@ const EVENT_LABELS: Record<string, string> = {
   click_author_plan: "Author 플랜 클릭",
   click_pro_publisher_plan: "Pro Publisher 플랜 클릭",
   submit_beta_interest: "베타 관심 신청 완료",
+  // 첫 시집 만들기 퍼널
+  start_flow_started: "첫 시집 위저드 시작",
+  first_poem_created: "첫 시 발행",
+  first_book_created: "첫 시집 발행",
+  book_link_copied: "시집 링크 복사",
+  guest_reflection_created: "비로그인 감상평 작성",
+  import_text_used: "기존 글 가져오기 사용",
+  prompt_used: "쓰기 프롬프트 사용",
 };
 
 export function eventLabel(eventType: string): string {

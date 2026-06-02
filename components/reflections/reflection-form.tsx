@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { submitReflectionAction } from "@/lib/reflections/actions";
+import { REFLECTION_CHIPS } from "@/lib/reflections/chips";
+import { trackActivation } from "@/lib/analytics/events";
 
 interface Props {
   targetType: "poem" | "book";
@@ -67,12 +69,28 @@ export function ReflectionForm({
     startTransition(async () => {
       const res = await submitReflectionAction(fd);
       if (res.ok) {
+        if (!isLoggedIn) {
+          trackActivation("guest_reflection_created", {
+            targetType,
+            targetId,
+          });
+        }
         setContent("");
         setName("");
         setMessage({ kind: "ok", text: "감상평이 남겨졌습니다." });
       } else {
         setMessage({ kind: "error", text: res.error ?? "전송에 실패했습니다." });
       }
+    });
+  };
+
+  const pickChip = (chip: string) => {
+    setContent((prev) => {
+      const trimmed = prev.trim();
+      if (!trimmed) return chip;
+      // 이미 있으면 추가하지 않음.
+      if (trimmed.includes(chip)) return prev;
+      return `${trimmed} ${chip}`;
     });
   };
 
@@ -103,6 +121,19 @@ export function ReflectionForm({
 
       <div className="space-y-1.5">
         <Label htmlFor="reflection">감상평</Label>
+        <ul className="flex flex-wrap gap-1.5" aria-label="감상평 추천 문구">
+          {REFLECTION_CHIPS.map((chip) => (
+            <li key={chip}>
+              <button
+                type="button"
+                onClick={() => pickChip(chip)}
+                className="rounded-full border border-border-soft bg-background/70 px-3 py-1 text-[11px] text-text-secondary hover:border-accent hover:text-text-primary transition-colors"
+              >
+                {chip}
+              </button>
+            </li>
+          ))}
+        </ul>
         <Textarea
           id="reflection"
           rows={3}

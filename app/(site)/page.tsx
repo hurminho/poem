@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { FinalCTA } from "@/components/landing/landing-final-cta";
+import { SampleBookCard } from "@/components/landing/sample-book-card";
+import { SAMPLE_BOOKS } from "@/lib/landing/sample-books";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { getPublicPoems } from "@/lib/db/poems";
 import { cn } from "@/lib/utils";
@@ -32,20 +34,65 @@ export default async function HomePage() {
     getPublicPoems(6),
   ]);
   const isLoggedIn = !!profile;
-  // 첫 진입은 '시 쓰기'로 안내합니다. 시집 만들기는 /studio 안의 QuickActions 에서.
-  const ctaHref = isLoggedIn ? "/studio/new" : "/signup?next=/studio/new";
+  // 1차 CTA — 첫 시집 만들기 위저드로 직행.
+  const primaryHref = isLoggedIn ? "/start" : "/signup?next=/start";
 
   return (
     <div className="poem-page">
       {/* 1. HERO */}
-      <LandingHero ctaHref={ctaHref} />
+      <LandingHero
+        primaryHref={primaryHref}
+        primaryLabel="내 첫 시집 만들기"
+        secondaryHref="/samples"
+        secondaryLabel="샘플 시집 보기"
+      />
 
-      {/* 2. 공개된 시 — '누군가의 시' 미리보기 */}
+      {/* 2. 샘플 시집 — 큰 표지 그리드 */}
+      <SampleBooksSection />
+
+      {/* 3. 공개된 시 — '누군가의 시' 미리보기 */}
       <PublicPoemsSection poems={publicPoems} isLoggedIn={isLoggedIn} />
 
-      {/* 3. FINAL CTA */}
-      <FinalCTA ctaHref={ctaHref} />
+      {/* 4. FINAL CTA */}
+      <FinalCTA ctaHref={primaryHref} ctaLabel="내 첫 시집 만들기" />
     </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* 샘플 시집 섹션                                              */
+/* ────────────────────────────────────────────────────────── */
+function SampleBooksSection() {
+  return (
+    <section className="mx-auto max-w-5xl px-5 pb-16 md:pb-20">
+      <header className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-[11px] tracking-[0.3em] uppercase text-text-secondary">
+            · 샘플 시집
+          </p>
+          <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
+            이런 시집을 만들 수 있어요
+          </h2>
+          <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
+            짧은 다섯 편이면 한 권이 됩니다. 표지부터 살펴보세요.
+          </p>
+        </div>
+        <Link
+          href="/samples"
+          className="self-start md:self-end inline-flex h-10 items-center rounded-full border border-border-soft bg-surface px-5 text-sm text-text-primary hover:border-accent transition-colors whitespace-nowrap"
+        >
+          전체 샘플 보기 →
+        </Link>
+      </header>
+
+      <ul className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+        {SAMPLE_BOOKS.map((b) => (
+          <li key={b.slug}>
+            <SampleBookCard book={b} />
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
 import { mapAuthErrorMessage } from "@/lib/auth/errors";
 import { DEMO_SIGNED_OUT_COOKIE } from "@/lib/auth/current";
+import { LEGAL_VERSIONS } from "@/lib/legal/versions";
 
 /** @deprecated 로그인 폼은 /api/auth/login 을 사용합니다. */
 export async function signInAction(formData: FormData) {
@@ -30,6 +31,9 @@ export async function signUpAction(formData: FormData) {
   const password = String(formData.get("password") || "");
   const passwordConfirm = String(formData.get("password_confirm") || "");
   const displayName = String(formData.get("display_name") || "").trim();
+  const agreeAge14 = formData.get("agree_age_14") === "on";
+  const agreeTerms = formData.get("agree_terms") === "on";
+  const agreePrivacy = formData.get("agree_privacy") === "on";
 
   if (!email || !password) {
     redirect(`/signup?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
@@ -42,6 +46,16 @@ export async function signUpAction(formData: FormData) {
   }
   if (password !== passwordConfirm) {
     redirect(`/signup?error=${encodeURIComponent("비밀번호가 일치하지 않습니다.")}`);
+  }
+  if (!agreeAge14) {
+    redirect(
+      `/signup?error=${encodeURIComponent("만 14세 이상만 시담에 가입할 수 있습니다.")}`,
+    );
+  }
+  if (!agreeTerms || !agreePrivacy) {
+    redirect(
+      `/signup?error=${encodeURIComponent("이용약관과 개인정보 처리방침에 동의해주세요.")}`,
+    );
   }
 
   if (!isSupabaseConfigured()) {
@@ -64,10 +78,21 @@ export async function signUpAction(formData: FormData) {
     );
   }
 
+  // 동의 정보는 raw_user_meta_data 로 전달 → DB 트리거(handle_new_user)가
+  // public.user_consents 에 SECURITY DEFINER 권한으로 함께 기록합니다.
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { display_name: displayName } },
+    options: {
+      data: {
+        display_name: displayName,
+        consents: {
+          terms_of_service: LEGAL_VERSIONS.terms_of_service,
+          privacy_policy: LEGAL_VERSIONS.privacy_policy,
+          age_14_plus: LEGAL_VERSIONS.age_14_plus,
+        },
+      },
+    },
   });
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);

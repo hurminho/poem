@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SocialButtons } from "@/components/auth/social-buttons";
+import { FEATURES } from "@/lib/features";
 
 export const metadata = { title: "로그인" };
 
@@ -22,13 +23,16 @@ export default async function LoginPage({ searchParams }: PageProps) {
       </div>
 
       <Card className="p-6">
-        <SocialButtons next={next} variant="login" />
-
-        <div className="my-5 flex items-center gap-3" aria-hidden>
-          <hr className="flex-1 border-border-soft" />
-          <span className="text-[11px] text-text-secondary">또는 이메일로</span>
-          <hr className="flex-1 border-border-soft" />
-        </div>
+        {FEATURES.socialAuth ? (
+          <>
+            <SocialButtons next={next} variant="login" />
+            <div className="my-5 flex items-center gap-3" aria-hidden>
+              <hr className="flex-1 border-border-soft" />
+              <span className="text-[11px] text-text-secondary">또는 이메일로</span>
+              <hr className="flex-1 border-border-soft" />
+            </div>
+          </>
+        ) : null}
 
         <form action="/api/auth/login" method="POST" className="space-y-4">
           <input type="hidden" name="next" value={next} />
