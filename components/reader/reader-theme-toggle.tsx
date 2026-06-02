@@ -7,10 +7,12 @@ type ReaderTheme = "light" | "night" | "day";
 
 const STORAGE_KEY = "foem-reader-theme";
 const VALID: ReaderTheme[] = ["light", "night", "day"];
+// 사용자에게 보이는 라벨은 한국어 — 내부 식별자는 호환을 위해 유지합니다.
+// (light = 종이, day = 흰색, night = 밤)
 const OPTIONS: { value: ReaderTheme; label: string }[] = [
   { value: "light", label: "종이" },
+  { value: "day", label: "흰색" },
   { value: "night", label: "밤" },
-  { value: "day", label: "낮" },
 ];
 
 function readStored(): ReaderTheme {

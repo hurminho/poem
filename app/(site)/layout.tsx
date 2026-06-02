@@ -6,6 +6,10 @@ import { AppShell } from "@/components/layout/app-shell";
  *
  * 운영자(/admin) 영역은 이 그룹 바깥에서 자체 레이아웃을 사용합니다.
  */
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+export default async function SiteLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <AppShell>{children}</AppShell>;
 }

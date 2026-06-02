@@ -20,6 +20,7 @@ import {
   UserCog,
   MessagesSquare,
   CircleDollarSign,
+  ClipboardCheck,
 } from "lucide-react";
 
 interface NavItem {
@@ -50,6 +51,7 @@ const NAV: NavItem[] = [
     roles: ["super_admin", "content_admin"],
   },
   { href: "/admin/audit-logs", label: "감사 로그", icon: ScrollText },
+  { href: "/admin/qa", label: "QA 체크리스트", icon: ClipboardCheck },
   { href: "/admin/settings", label: "설정", icon: Settings, roles: ["super_admin"] },
 ];
 

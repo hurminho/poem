@@ -126,13 +126,25 @@ export function PoemEditor({
     error: "자동 저장 실패 — 잠시 후 다시 시도",
   };
 
+  // 모바일에서는 미리보기 카드를 숨기고, 큰 화면(md 이상)에서만 좌우 분할.
   return (
-    <div className={cn("grid gap-6", previewMode ? "" : "lg:grid-cols-[1fr_1fr]")}>
+    <div
+      className={cn(
+        "grid gap-6",
+        previewMode ? "" : "md:grid-cols-[1fr_1fr]",
+      )}
+    >
       {!previewMode && (
-        <Card className="p-6">
+        <Card className="p-5 sm:p-6">
           <div className="flex items-center justify-between mb-5 gap-3">
             <h2 className="font-serif text-base font-semibold text-text-primary">시 쓰기</h2>
-            <span className="text-xs text-text-secondary" aria-live="polite">
+            <span
+              className="inline-flex items-center gap-1.5 text-xs text-text-secondary"
+              aria-live="polite"
+            >
+              <AutoSaveDot
+                state={pending ? "saving" : status === "published" || status === "archived" ? "saved" : autoSave}
+              />
               {pending
                 ? actionLabel
                 : status === "published"
@@ -271,6 +283,7 @@ export function PoemEditor({
                 variant="ghost"
                 onClick={() => setPreviewMode(true)}
                 disabled={!isValid}
+                className="hidden md:inline-flex"
               >
                 미리보기
               </Button>
@@ -292,7 +305,13 @@ export function PoemEditor({
         </Card>
       )}
 
-      <Card className={cn("poem-page p-8", previewMode ? "" : "lg:order-last")}>
+      <Card
+        className={cn(
+          "poem-page p-8",
+          // 모바일(md 미만)에서는 옆에 보일 미리보기 카드를 숨깁니다.
+          previewMode ? "" : "hidden md:block md:order-last",
+        )}
+      >
         {previewMode && (
           <div className="mx-auto max-w-prose mb-8 flex items-center justify-between">
             <p className="poem-muted tracking-wider">─ 미리보기 ─</p>
@@ -319,6 +338,22 @@ function formatTime(d: Date): string {
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
+}
+
+/** 자동저장 상태를 색으로 표시하는 작은 점. */
+function AutoSaveDot({ state }: { state: AutoSaveState }) {
+  const color: Record<AutoSaveState, string> = {
+    idle: "bg-text-secondary/40",
+    saving: "bg-amber-500 animate-pulse",
+    saved: "bg-[color:var(--accent)]",
+    error: "bg-rose-500",
+  };
+  return (
+    <span
+      className={cn("inline-block h-1.5 w-1.5 rounded-full", color[state])}
+      aria-hidden
+    />
+  );
 }
 
 const ALIGN_OPTIONS: Array<{ value: TextAlign; label: string; Icon: typeof AlignLeft }> = [

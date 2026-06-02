@@ -56,13 +56,28 @@ export const metadata: Metadata = {
       "naver-site-verification": "7665ad6ee4bbd484ce51401f9e07b762318977c1",
     },
   },
+  // iOS 홈 화면 추가 — 상태바 스타일과 앱 이름 힌트.
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "시담",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
+  // iOS 사파리 주소창/상단바 색 — 시담 시그니처 세이지 그린.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FAF7F0" },
-    { media: "(prefers-color-scheme: dark)", color: "#1c1f2e" },
+    { media: "(prefers-color-scheme: light)", color: "#B5D692" },
+    { media: "(prefers-color-scheme: dark)", color: "#1A1F1A" },
   ],
+  width: "device-width",
+  initialScale: 1,
+  // 본문 입력 시 의도치 않은 자동 확대를 막되, 사용자 핀치 확대는 허용.
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

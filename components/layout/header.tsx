@@ -17,7 +17,10 @@ export async function Header() {
   const ctaHref = profile ? "/studio/new" : "/signup?next=/studio/new";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border-soft/80 bg-background/85 backdrop-blur">
+    <header
+      className="sticky top-0 z-40 border-b border-border-soft/80 bg-background/85 backdrop-blur safe-x"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-5">
         <Link href="/" className="flex items-center gap-2 group" aria-label="시담 홈">
           <Image
@@ -53,6 +56,8 @@ export async function Header() {
         <div className="flex items-center gap-1.5">
           {profile ? (
             <>
+              {/* 모바일에서는 1차 CTA 가 하단 네비 가운데에 있으므로
+                  헤더의 ‘시 쓰기’ 알약 버튼은 sm 이상에서만 노출합니다. */}
               <Link
                 href={ctaHref}
                 prefetch
@@ -74,10 +79,11 @@ export async function Header() {
               >
                 로그인
               </Link>
+              {/* 모바일에서는 하단 네비 ‘시집 만들기’ 가 1차 CTA — 헤더 알약은 sm 이상만. */}
               <Link
                 href={ctaHref}
                 prefetch
-                className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
+                className="hidden sm:inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
               >
                 시 쓰기
               </Link>

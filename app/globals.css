@@ -127,6 +127,8 @@ body {
   /* 한국어는 단어 단위로 줄바꿈하고, 영어/링크는 자연스럽게 줄바꿈되도록. */
   word-break: keep-all;
   overflow-wrap: anywhere;
+  /* iOS 사파리: pull-to-refresh 가 위저드/에디터를 흔드는 것을 막습니다. */
+  overscroll-behavior-y: contain;
 }
 
 /* 모바일에서 입력 폼이 자동 확대되는 것을 방지 (iOS 16px 룰) */
@@ -136,6 +138,44 @@ body {
   textarea {
     font-size: 16px;
   }
+}
+
+/* ──────────────────────────────────────────────────────────
+   반응형 유틸 — viewport / safe-area / 터치 타깃
+   ────────────────────────────────────────────────────────── */
+
+/* 100dvh 폴백: 일부 구형 사파리는 dvh 를 모르므로 vh 도 함께 둡니다. */
+.h-screen-dvh {
+  height: 100vh;        /* fallback */
+  height: 100dvh;
+}
+.min-h-screen-dvh {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* iOS 노치/홈바 안전 영역 — 페이지 하단·상단의 챔퍼링 */
+.safe-top    { padding-top: env(safe-area-inset-top); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-x      { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+
+/* 하단 네비가 있는 페이지에서 본문이 가려지지 않도록 — 모바일에서만 */
+.has-bottom-nav {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 4.25rem); /* 68px */
+}
+@media (min-width: 768px) {
+  .has-bottom-nav { padding-bottom: 0; }
+}
+
+/* 44px 터치 타깃 — 모바일에서 button/anchor 의 최소 높이 보장 */
+@media (max-width: 767px) {
+  .touch-target,
+  .touch-target * { min-height: 44px; }
+}
+
+/* PWA 설치(standalone) 시: 상단 챔퍼링을 살짝 더 부드럽게 */
+@media all and (display-mode: standalone) {
+  body { padding-top: env(safe-area-inset-top); }
 }
 
 /* ──────────────────────────────────────────────────────────
@@ -185,9 +225,14 @@ textarea.poem-editor-textarea {
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
+/* iPad/태블릿 */
 @media (min-width: 768px) {
   .poem-body,
   textarea.poem-editor-textarea { font-size: 19px; }
+}
+/* 데스크톱 — 책 한 페이지 폭(약 720px)에서 가장 자연스러운 크기 */
+@media (min-width: 1280px) {
+  .poem-body { font-size: 20px; line-height: 2.1; }
 }
 
 /* 본문 편집기 — 약 10줄 높이를 기본으로, 그 이상은 내부 스크롤로 처리합니다. */

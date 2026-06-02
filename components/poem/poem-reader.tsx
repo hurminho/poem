@@ -13,13 +13,22 @@ interface PoemReaderProps {
   position?: { current: number; total: number };
 }
 
-/** 한 편의 시를 펼쳐 읽는 잔잔한 표지 컴포넌트. */
+/**
+ * 한 편의 시를 펼쳐 읽는 잔잔한 표지 컴포넌트.
+ *
+ * - 모바일: 한 시가 한 화면에 자연스럽게 들어오도록 큰 명조 + 좁은 폭
+ * - iPad : 넉넉한 좌우 여백(720px 이하)
+ * - 데스크톱: 본문 폭 720px 로 고정 — 책 한 페이지 폭에 가깝게
+ */
 export function PoemReader({ poem, showNote = true, actions, position }: PoemReaderProps) {
   return (
     <div className="poem-page">
-      <div className="mx-auto max-w-2xl px-6 py-16 md:py-24">
+      <div
+        className="mx-auto px-6 py-12 sm:py-16 md:py-20"
+        style={{ maxWidth: "720px" }}
+      >
         {position && (
-          <p className="poem-muted mb-12 text-center tabular-nums">
+          <p className="poem-muted mb-10 text-center tabular-nums">
             {String(position.current).padStart(2, "0")} / {String(position.total).padStart(2, "0")}
           </p>
         )}
@@ -29,14 +38,14 @@ export function PoemReader({ poem, showNote = true, actions, position }: PoemRea
           textAlign={poem.text_align ?? "center"}
         />
         {showNote && poem.note && (
-          <p className="mt-12 mx-auto max-w-prose text-center poem-muted italic">
+          <p className="mt-10 mx-auto max-w-prose text-center poem-muted italic">
             {poem.note}
           </p>
         )}
         {actions ? (
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-2">{actions}</div>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">{actions}</div>
         ) : (
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
             <QuietButton disabled>감상평 남기기</QuietButton>
           </div>
         )}

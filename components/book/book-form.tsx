@@ -128,8 +128,9 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <div className="space-y-5">
+    <div className="grid gap-6 md:grid-cols-[300px_1fr] md:items-start lg:grid-cols-[320px_1fr]">
+      {/* iPad 세로 이상에서는 표지 미리보기를 sticky 로 옆에 따라오게. */}
+      <div className="space-y-5 md:sticky md:top-20">
         <BookCover
           title={title}
           subtitle={subtitle}

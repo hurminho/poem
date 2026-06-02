@@ -117,8 +117,17 @@ export function StartWizard({
     setStep(((step - 1) as Step) >= 1 ? ((step - 1) as Step) : step);
   };
 
+  // 마지막 단계(공유 카드)에서는 사이드 미리보기를 숨깁니다.
+  const showSidePreview = step < 5;
+
   return (
-    <div className="mx-auto max-w-2xl px-5 py-10 sm:py-14">
+    <div
+      className={cn(
+        "mx-auto px-5 py-8 sm:py-12",
+        // 모바일: 좁게, iPad: 본문 + 우측 표지 미리보기 sticky.
+        showSidePreview ? "max-w-5xl" : "max-w-2xl",
+      )}
+    >
       <header className="mb-8 text-center">
         <p className="text-xs tracking-wider text-text-secondary mb-2">
           첫 시집 · 3분 안에 만들기
@@ -134,81 +143,120 @@ export function StartWizard({
         ) : null}
       </header>
 
-      <Card className="p-6 sm:p-8">
-        {step === 1 && (
-          <StepTitle
-            bookTitle={bookTitle}
-            setBookTitle={setBookTitle}
-            templateName={initialTemplate?.name}
-            templateDescription={initialTemplate?.description}
-          />
+      <div
+        className={cn(
+          "grid gap-6",
+          showSidePreview && "md:grid-cols-[1fr_280px] md:items-start",
         )}
-        {step === 2 && (
-          <StepPoem
-            poemTitle={poemTitle}
-            setPoemTitle={setPoemTitle}
-            poemContent={poemContent}
-            setPoemContent={setPoemContent}
-          />
-        )}
-        {step === 3 && (
-          <StepCover
-            coverTheme={coverTheme}
-            setCoverTheme={setCoverTheme}
-            bookTitle={bookTitle}
-            authorName={authorName}
-          />
-        )}
-        {step === 4 && (
-          <StepReview
-            bookTitle={bookTitle}
-            poemTitle={poemTitle}
-            poemContent={poemContent}
-            coverTheme={coverTheme}
-            authorName={authorName}
-          />
-        )}
-        {step === 5 && result ? (
-          <ShareCard
-            bookId={result.bookId}
-            sharePath={result.sharePath}
-            bookTitle={bookTitle}
-            authorName={authorName}
-            coverTheme={coverTheme}
-            poemCount={1}
-          />
-        ) : null}
+      >
+        <Card className="p-5 sm:p-7 md:p-8">
+          {step === 1 && (
+            <StepTitle
+              bookTitle={bookTitle}
+              setBookTitle={setBookTitle}
+              templateName={initialTemplate?.name}
+              templateDescription={initialTemplate?.description}
+            />
+          )}
+          {step === 2 && (
+            <StepPoem
+              poemTitle={poemTitle}
+              setPoemTitle={setPoemTitle}
+              poemContent={poemContent}
+              setPoemContent={setPoemContent}
+            />
+          )}
+          {step === 3 && (
+            <StepCover
+              coverTheme={coverTheme}
+              setCoverTheme={setCoverTheme}
+              bookTitle={bookTitle}
+              authorName={authorName}
+            />
+          )}
+          {step === 4 && (
+            <StepReview
+              bookTitle={bookTitle}
+              poemTitle={poemTitle}
+              poemContent={poemContent}
+              coverTheme={coverTheme}
+              authorName={authorName}
+            />
+          )}
+          {step === 5 && result ? (
+            <ShareCard
+              bookId={result.bookId}
+              sharePath={result.sharePath}
+              bookTitle={bookTitle}
+              authorName={authorName}
+              coverTheme={coverTheme}
+              poemCount={1}
+            />
+          ) : null}
 
-        {error ? (
-          <p className="mt-4 rounded-lg border border-rose-200/60 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-            {error}
-          </p>
-        ) : null}
+          {error ? (
+            <p className="mt-4 rounded-lg border border-rose-200/60 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+              {error}
+            </p>
+          ) : null}
 
-        {step < 5 && (
-          <div className="mt-7 flex flex-wrap items-center justify-between gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={goBack}
-              disabled={step === 1 || pending}
+          {step < 5 && (
+            <div
+              className={cn(
+                "mt-7 flex flex-wrap items-center justify-between gap-2",
+                // 모바일에서는 단계 액션을 하단 고정 바로 — 키보드와 함께 자연스럽게.
+                "md:static md:bg-transparent md:p-0 md:border-0",
+              )}
             >
-              뒤로
-            </Button>
-            <Button
-              type="button"
-              onClick={goNext}
-              disabled={
-                pending ||
-                (step === 1 && !bookTitle.trim()) ||
-                (step === 2 && (!poemTitle.trim() || !poemContent.trim()))
-              }
-            >
-              {step === 4 ? (pending ? "발행 중…" : "발행하기") : "다음"}
-            </Button>
-          </div>
-        )}
-      </Card>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={goBack}
+                disabled={step === 1 || pending}
+                className="touch-target"
+              >
+                뒤로
+              </Button>
+              <Button
+                type="button"
+                onClick={goNext}
+                disabled={
+                  pending ||
+                  (step === 1 && !bookTitle.trim()) ||
+                  (step === 2 && (!poemTitle.trim() || !poemContent.trim()))
+                }
+                size="lg"
+                className="touch-target"
+              >
+                {step === 4 ? (pending ? "발행 중…" : "발행하기") : "다음"}
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        {/* iPad·데스크톱: 라이브 표지 미리보기 — sticky 로 따라옵니다. */}
+        {showSidePreview ? (
+          <aside className="hidden md:block md:sticky md:top-20">
+            <div className="rounded-xl border border-border-soft bg-surface p-5">
+              <p className="text-[11px] tracking-wider text-text-secondary mb-3">
+                미리보기 · 라이브
+              </p>
+              <BookCover
+                title={bookTitle || "제목"}
+                authorName={authorName}
+                theme={coverTheme}
+                size="sm"
+              />
+              <p className="mt-3 font-serif text-sm font-semibold text-text-primary line-clamp-1">
+                {bookTitle || "제목"}
+              </p>
+              <p className="text-[11px] text-text-secondary">
+                {authorName} 지음
+              </p>
+            </div>
+          </aside>
+        ) : null}
+      </div>
 
       {step === 5 ? null : (
         <p className="mt-6 text-center text-xs text-text-secondary">
