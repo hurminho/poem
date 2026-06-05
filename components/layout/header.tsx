@@ -4,6 +4,7 @@ import { getCurrentProfile } from "@/lib/auth/current";
 import { getAdminContext } from "@/lib/admin/auth";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNavToggle } from "@/components/layout/mobile-nav";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { desktopHeaderNav } from "@/components/layout/nav-items";
 
 export async function Header() {
@@ -54,6 +55,7 @@ export async function Header() {
         </nav>
 
         <div className="flex items-center gap-1.5">
+          <LanguageSwitcher current="ko" />
           {profile ? (
             <>
               {/* 모바일에서는 1차 CTA 가 하단 네비 가운데에 있으므로
