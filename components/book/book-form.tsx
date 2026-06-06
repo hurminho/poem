@@ -15,6 +15,8 @@ import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-select
 import { saveBookAction } from "@/lib/books/actions";
 import type { PoemBook, Poem, Visibility, BookAuthorPosition } from "@/types";
 import { cn } from "@/lib/utils";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface BookFormProps {
   initial?: Partial<PoemBook> & { poem_ids?: string[] };
@@ -22,11 +24,13 @@ interface BookFormProps {
   authorName?: string;
   notice?: string;
   errorMessage?: string;
+  lang?: Locale;
 }
 
 type AutoSaveState = "idle" | "saving" | "saved" | "dirty";
 
-export function BookForm({ initial, myPoems, authorName, notice, errorMessage }: BookFormProps) {
+export function BookForm({ initial, myPoems, authorName, notice, errorMessage, lang = "ko" }: BookFormProps) {
+  const t = getDictionary(lang).studio.bookForm;
   const [title, setTitle] = React.useState(initial?.title ?? "");
   const [subtitle, setSubtitle] = React.useState(initial?.subtitle ?? "");
   const [description, setDescription] = React.useState(initial?.description ?? "");
@@ -69,7 +73,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
 
   const submit = (action: "draft" | "publish" | "archive") => {
     if (action === "publish" && selectedPoemIds.length === 0) {
-      alert("발행하려면 적어도 한 편의 시가 필요합니다.");
+      alert(t.needPoemAlert);
       return;
     }
     const fd = new FormData();
@@ -83,17 +87,18 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
     fd.set("visibility", visibility);
     if (allowReviews) fd.set("allow_reviews", "on");
     fd.set("poem_ids", selectedPoemIds.join(","));
+    fd.set("locale", lang);
     setActionLabel(
-      action === "publish" ? "발행 중…" : action === "archive" ? "보관 중…" : "저장 중…",
+      action === "publish" ? t.publishing : action === "archive" ? t.archiving : t.saving,
     );
     startTransition(() => saveBookAction(fd));
   };
 
   const autoSaveText: Record<AutoSaveState, string> = {
-    idle: "아직 저장되지 않음",
-    dirty: "아직 저장되지 않음",
-    saving: "저장 중…",
-    saved: "저장됨",
+    idle: t.autoIdle,
+    dirty: t.autoIdle,
+    saving: t.saving,
+    saved: t.saved,
   };
 
   const selectedPoems = selectedPoemIds
@@ -104,14 +109,14 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-text-secondary">미리보기 모드 — 발행 시 보여지는 모습입니다.</p>
+          <p className="text-sm text-text-secondary">{t.previewMode}</p>
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => setPreviewMode(false)}
           >
-            편집으로 돌아가기
+            {t.backToEdit}
           </Button>
         </div>
         <BookPreview
@@ -122,6 +127,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
           authorName={authorName}
           authorPosition={authorPosition}
           poems={selectedPoems}
+          lang={lang}
         />
       </div>
     );
@@ -138,12 +144,14 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
           authorPosition={authorPosition}
           theme={coverTheme}
           size="lg"
+          lang={lang}
         />
 
         {initial?.id && isPublished && (
           <BookPublicLinkCard
             bookId={initial.id}
             visible={visibility !== "private"}
+            lang={lang}
           />
         )}
 
@@ -160,31 +168,31 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
           ) : null}
 
           <div className="space-y-1.5">
-            <Label htmlFor="title">제목</Label>
+            <Label htmlFor="title">{t.title}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="시집의 제목"
+              placeholder={t.titlePlaceholder}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="subtitle">부제 (선택)</Label>
+            <Label htmlFor="subtitle">{t.subtitle}</Label>
             <Input
               id="subtitle"
               value={subtitle ?? ""}
               onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="짧은 한 줄"
+              placeholder={t.subtitlePlaceholder}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="description">설명 (선택)</Label>
+            <Label htmlFor="description">{t.description}</Label>
             <Textarea
               id="description"
               rows={3}
               value={description ?? ""}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="이 시집을 한 문단으로 소개해주세요."
+              placeholder={t.descPlaceholder}
             />
           </div>
 
@@ -194,7 +202,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
               checked={allowReviews}
               onChange={(e) => setAllowReviews(e.target.checked)}
             />
-            감상평 받기
+            {t.allowReviews}
           </label>
 
           <hr className="divider" />
@@ -205,11 +213,11 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
               disabled={pending || !titleOk}
               title={
                 selectedPoemIds.length === 0
-                  ? "발행하려면 적어도 한 편의 시가 필요합니다."
+                  ? t.needPoemAlert
                   : undefined
               }
             >
-              발행하기
+              {t.publish}
             </Button>
             <Button
               type="button"
@@ -217,7 +225,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
               onClick={() => submit("draft")}
               disabled={pending || !titleOk}
             >
-              임시저장
+              {t.draft}
             </Button>
             <Button
               type="button"
@@ -225,7 +233,7 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
               onClick={() => setPreviewMode(true)}
               disabled={!titleOk}
             >
-              미리보기
+              {t.preview}
             </Button>
             {initial?.id ? (
               <Button
@@ -234,16 +242,16 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
                 onClick={() => submit("archive")}
                 disabled={pending}
               >
-                보관함으로
+                {t.toArchive}
               </Button>
             ) : null}
             <span className="ml-auto text-xs text-text-secondary">
               {pending
                 ? actionLabel
                 : isPublished
-                  ? "발행됨"
+                  ? t.published
                   : status === "archived"
-                    ? "보관함"
+                    ? t.archived
                     : autoSaveText[autoSave]}
             </span>
           </div>
@@ -252,33 +260,34 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
 
       <div className="space-y-6">
         <Card className="p-5 space-y-4">
-          <h3 className="font-serif text-base font-semibold text-text-primary">표지 고르기</h3>
+          <h3 className="font-serif text-base font-semibold text-text-primary">{t.chooseCover}</h3>
           <BookCoverSelector
             value={coverTheme}
             onChange={setCoverTheme}
             previewTitle={title}
             previewAuthorName={authorName}
             authorPosition={authorPosition}
+            lang={lang}
           />
 
           {/* 작가 필명 위치 — 미리보기 표지에 즉시 반영됩니다. */}
           <div className="space-y-2 pt-1">
             <div className="flex items-baseline justify-between">
-              <Label className="text-xs">작가 필명 위치</Label>
+              <Label className="text-xs">{t.authorPosLabel}</Label>
               <span className="text-[11px] text-text-secondary">
-                {authorName ? authorName : "필명을 설정하면 표지에 표시돼요"}
+                {authorName ? authorName : t.authorPosHint}
               </span>
             </div>
             <div
               role="radiogroup"
-              aria-label="작가 필명 위치"
+              aria-label={t.authorPosLabel}
               className="grid grid-cols-3 gap-2"
             >
               {(
                 [
-                  { v: "top", label: "표지 상단" },
-                  { v: "middle", label: "제목 아래" },
-                  { v: "bottom", label: "표지 하단" },
+                  { v: "top", label: t.posTop },
+                  { v: "middle", label: t.posMiddle },
+                  { v: "bottom", label: t.posBottom },
                 ] as { v: BookAuthorPosition; label: string }[]
               ).map((opt) => {
                 const active = authorPosition === opt.v;
@@ -305,21 +314,22 @@ export function BookForm({ initial, myPoems, authorName, notice, errorMessage }:
         </Card>
 
         <Card className="p-5 space-y-3">
-          <h3 className="font-serif text-base font-semibold text-text-primary">공개 범위</h3>
-          <PoemVisibilitySelector value={visibility} onChange={setVisibility} />
+          <h3 className="font-serif text-base font-semibold text-text-primary">{t.visibility}</h3>
+          <PoemVisibilitySelector value={visibility} onChange={setVisibility} lang={lang} />
         </Card>
 
         <BookPoemPicker
           allPoems={myPoems}
           selectedIds={selectedPoemIds}
           onChange={setSelectedPoemIds}
+          lang={lang}
         />
 
         {!isPublished && selectedPoemIds.length === 0 && (
           <p className={cn(
             "text-xs text-text-secondary text-center rounded-md border border-dashed border-border-soft py-3 px-4 bg-surface/60"
           )}>
-            발행하려면 적어도 한 편의 시가 필요합니다. 임시저장은 시 없이도 가능합니다.
+            {t.emptyTocHelper}
           </p>
         )}
       </div>

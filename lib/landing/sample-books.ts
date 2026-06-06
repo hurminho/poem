@@ -146,6 +146,144 @@ export const SAMPLE_BOOKS: SampleBook[] = [
   },
 ];
 
-export function findSampleBook(slug: string): SampleBook | undefined {
-  return SAMPLE_BOOKS.find((b) => b.slug === slug);
+/**
+ * 영어 샘플 시집.
+ *
+ * 한국어판을 직역한 것이 아니라, 같은 주제·분위기를 영어로 자연스럽게 다시 쓴
+ * 짧은 영문 시들입니다. slug 는 한국어판과 동일하게 맞춰 라우팅이 일관됩니다.
+ */
+export const SAMPLE_BOOKS_EN: SampleBook[] = [
+  {
+    slug: "my-first-collection",
+    title: "My First Collection",
+    subtitle: "Five poems, each begun with a single line",
+    authorName: "Jiwon Yoon",
+    coverTheme: "warm_paper",
+    description:
+      "The first few poems I ever gathered.\nA book doesn’t have to be long to be a book.",
+    poems: [
+      {
+        title: "First Page",
+        content:
+          "Even leaving things blank\ntook some practice.\n\nToday the first page\nfelt the lightest it ever had.",
+      },
+      {
+        title: "One Line for Today",
+        content:
+          "Leaning on the bus window,\nI watched a view that was nothing at all.\nI loved it for that.",
+      },
+      {
+        title: "What I’d Leave Behind",
+        content:
+          "I keep saving up\nthe words “take care.”\n\nStill, today —\ntake care.",
+      },
+    ],
+  },
+  {
+    slug: "rainy-days",
+    title: "Lines for Rainy Days",
+    authorName: "Gyeol Han",
+    coverTheme: "rain",
+    description: "The greyer the window,\nthe clearer the lines became.",
+    poems: [
+      {
+        title: "The Smell of Rain",
+        content:
+          "It’s the asphalt\nthat remembers summer first.\n\nRain always\narrives a little early.",
+      },
+      {
+        title: "Quiet Under One Umbrella",
+        content:
+          "One person holds an umbrella\nmeant for two, half-tilted.\n\nThe rain\nfilled in the silence.",
+      },
+      {
+        title: "The Moment It Stops",
+        content:
+          "Some people keep walking,\nnot noticing it has stopped.\nSo did I.",
+      },
+    ],
+  },
+  {
+    slug: "after-work",
+    title: "After the Workday",
+    authorName: "Minseo",
+    coverTheme: "letter",
+    description: "Small lines that pause\nat the end of the day.",
+    poems: [
+      {
+        title: "Bus Stop",
+        content:
+          "The relief that it’s over\nand the regret that nothing got finished\nsit on the same bench.",
+      },
+      {
+        title: "To Myself",
+        content:
+          "“You did well today” —\nI rarely manage to say it\nto myself.\n\nTonight I’ll try, once.",
+      },
+      {
+        title: "The Night I Put Tomorrow Off",
+        content:
+          "Just a little longer, I ask\nof the day.\n\nQuietly, it steps aside\nand makes room.",
+      },
+    ],
+  },
+  {
+    slug: "from-travel",
+    title: "Lines I Brought Home",
+    authorName: "Jiu",
+    coverTheme: "garden",
+    description: "Short lines I picked up\nin the alleys of an unfamiliar city.",
+    poems: [
+      {
+        title: "The Day I Arrived",
+        content:
+          "At a stop whose name I never learned,\nI lost my way for a moment.\n\nThat was the first page.",
+      },
+      {
+        title: "Alley",
+        content:
+          "On a street not on any map\nI lingered the longest.\n\nEven now, back home,\nit keeps coming to mind.",
+      },
+      {
+        title: "The Flight Back",
+        content:
+          "When the window turned to night\nI was already\nmissing that city.",
+      },
+    ],
+  },
+  {
+    slug: "letters-to-someone",
+    title: "Words for Someone",
+    authorName: "Jueun",
+    coverTheme: "spring",
+    description: "Letters I never sent\ngathered, in the end, into poems.",
+    poems: [
+      {
+        title: "What I Couldn’t Say That Day",
+        content:
+          "Thank you always arrives\na beat too late.\n\nSo I write it down as a poem —\nso it reaches, even late.",
+      },
+      {
+        title: "A Wish for You to Be Well",
+        content:
+          "If I say be well,\nit feels like you truly will,\nso today I send those words\ngently.",
+      },
+      {
+        title: "To Someone Worth Rereading",
+        content:
+          "Sometimes I want to lay a person open\nlike a book of poems.\n\nSlowly —\nto read them again.",
+      },
+    ],
+  },
+];
+
+export function getSampleBooks(locale: "ko" | "en"): SampleBook[] {
+  return locale === "en" ? SAMPLE_BOOKS_EN : SAMPLE_BOOKS;
+}
+
+export function findSampleBook(
+  slug: string,
+  locale: "ko" | "en" = "ko",
+): SampleBook | undefined {
+  return getSampleBooks(locale).find((b) => b.slug === slug);
 }

@@ -17,23 +17,31 @@ import { getSupabaseAnonKey, getSupabaseUrl } from "@/lib/supabase/env";
  * (사용자 열거 공격 방지)
  */
 export async function POST(request: Request) {
+  const formDataEarly = await request.formData();
+  const isEn = String(formDataEarly.get("locale") || "") === "en";
+  const base = isEn ? "/en" : "";
+  const forgotPath = `${base}/login/forgot`;
+  const invalidEmailMsg = isEn
+    ? "Please enter a valid email address."
+    : "올바른 이메일 주소를 입력해 주세요.";
+
   if (!isSupabaseConfigured()) {
-    const url = new URL("/login/forgot", request.url);
+    const url = new URL(forgotPath, request.url);
     url.searchParams.set("error", supabaseNotConfiguredMessage());
     return NextResponse.redirect(url);
   }
 
-  const formData = await request.formData();
+  const formData = formDataEarly;
   const email = String(formData.get("email") || "").trim().toLowerCase();
 
   if (!email || !email.includes("@")) {
-    const url = new URL("/login/forgot", request.url);
-    url.searchParams.set("error", "올바른 이메일 주소를 입력해 주세요.");
+    const url = new URL(forgotPath, request.url);
+    url.searchParams.set("error", invalidEmailMsg);
     return NextResponse.redirect(url);
   }
 
   const cookieStore = await cookies();
-  const successUrl = new URL("/login/forgot", request.url);
+  const successUrl = new URL(forgotPath, request.url);
   successUrl.searchParams.set("sent", email);
   let response = NextResponse.redirect(successUrl);
 
@@ -57,7 +65,7 @@ export async function POST(request: Request) {
 
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? new URL(request.url).origin;
-  const redirectTo = `${siteUrl.replace(/\/$/, "")}/api/auth/callback?next=${encodeURIComponent("/login/reset")}`;
+  const redirectTo = `${siteUrl.replace(/\/$/, "")}/api/auth/callback?next=${encodeURIComponent(`${base}/login/reset`)}`;
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,

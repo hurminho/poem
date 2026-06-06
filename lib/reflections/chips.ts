@@ -11,3 +11,17 @@ export const REFLECTION_CHIPS: ReadonlyArray<string> = [
   "다시 읽고 싶어요.",
   "표지가 분위기와 잘 어울려요.",
 ];
+
+/** 영어 감상평 칩 — 직역이 아니라 영어로 자연스럽게 다시 쓴 표현. */
+export const REFLECTION_CHIPS_EN: ReadonlyArray<string> = [
+  "The last line stayed with me.",
+  "It felt quietly comforting.",
+  "I want to read it again.",
+  "The cover suits the mood so well.",
+];
+
+export function getReflectionChips(
+  locale: "ko" | "en",
+): ReadonlyArray<string> {
+  return locale === "en" ? REFLECTION_CHIPS_EN : REFLECTION_CHIPS;
+}

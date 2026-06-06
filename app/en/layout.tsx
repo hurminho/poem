@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { getCurrentProfile } from "@/lib/auth/current";
 
 export const metadata = {
   title: "Sidam — Turn your poems into a beautiful book",
@@ -23,8 +24,16 @@ export const metadata = {
  * 깊은 페이지(스튜디오/둘러보기 등)는 아직 한국어이며, 영문 nav 는 해당
  * 경로로 연결됩니다.
  */
-export default function EnLayout({ children }: { children: React.ReactNode }) {
+export default async function EnLayout({ children }: { children: React.ReactNode }) {
   const t = getDictionary("en");
+  const profile = await getCurrentProfile();
+  const sn = t.studio.nav;
+  const authedNav = [
+    { href: "/en/studio", label: sn.studio },
+    { href: "/en/studio/poems", label: sn.poems },
+    { href: "/en/studio/books", label: sn.books },
+    { href: "/en/studio/reflections", label: sn.reflections },
+  ];
   return (
     <div className="min-h-screen-dvh flex flex-col" lang="en">
       <header
@@ -49,34 +58,59 @@ export default function EnLayout({ children }: { children: React.ReactNode }) {
             aria-label="Primary"
             className="hidden md:flex items-center gap-0.5 text-sm"
           >
-            <Link
-              href="/explore"
-              className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
-            >
-              {t.nav.explore}
-            </Link>
-            <Link
-              href="/pricing"
-              className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
-            >
-              {t.nav.pricing}
-            </Link>
+            {profile ? (
+              authedNav.map((n) => (
+                <Link
+                  key={n.href}
+                  href={n.href}
+                  className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors whitespace-nowrap"
+                >
+                  {n.label}
+                </Link>
+              ))
+            ) : (
+              <>
+                <Link
+                  href="/en/explore"
+                  className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
+                >
+                  {t.nav.explore}
+                </Link>
+                <Link
+                  href="/en/pricing"
+                  className="rounded-md px-2.5 py-1.5 text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
+                >
+                  {t.nav.pricing}
+                </Link>
+              </>
+            )}
           </nav>
 
           <div className="flex items-center gap-1.5">
             <LanguageSwitcher current="en" />
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex h-9 items-center rounded-md px-3 text-sm text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
-            >
-              {t.nav.login}
-            </Link>
-            <Link
-              href="/start"
-              className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
-            >
-              {t.nav.createBook}
-            </Link>
+            {profile ? (
+              <Link
+                href="/en/studio/new"
+                className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
+              >
+                {t.studio.home.writePoem}
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/en/login"
+                  className="hidden sm:inline-flex h-9 items-center rounded-md px-3 text-sm text-text-secondary hover:bg-accent-soft hover:text-text-primary transition-colors"
+                >
+                  {t.nav.login}
+                </Link>
+                <Link
+                  href="/en/start"
+                  className="inline-flex h-9 items-center rounded-full bg-text-primary px-4 text-sm font-medium text-background hover:opacity-90 transition-opacity"
+                >
+                  {t.nav.createBook}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -94,7 +128,7 @@ export default function EnLayout({ children }: { children: React.ReactNode }) {
             <Link href="/legal/privacy" className="hover:text-text-primary">
               Privacy
             </Link>
-            <Link href="/pricing" className="hover:text-text-primary">
+            <Link href="/en/pricing" className="hover:text-text-primary">
               {t.nav.pricing}
             </Link>
             <a href="mailto:hello@sidam.app" className="hover:text-text-primary">

@@ -3,12 +3,14 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Heart, Pencil, Check, X, Trash2 } from "lucide-react";
-import { cn, relativeTimeKo } from "@/lib/utils";
+import { cn, relativeTime } from "@/lib/utils";
 import { toggleReactionAction } from "@/lib/reactions/actions";
 import {
   deleteReflectionAction,
   updateReflectionAction,
 } from "@/lib/reflections/actions";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { Reflection } from "@/types";
 
 interface Props {
@@ -18,6 +20,7 @@ interface Props {
   currentUserId?: string | null;
   initialLiked?: boolean;
   initialLikeCount?: number;
+  lang?: Locale;
 }
 
 const MAX_CONTENT = 500;
@@ -28,8 +31,12 @@ export function ReflectionCard({
   currentUserId = null,
   initialLiked = false,
   initialLikeCount = 0,
+  lang = "ko",
 }: Props) {
-  const name = authorName ?? reflection.guest_name ?? "익명의 독자";
+  const t = getDictionary(lang).reflections;
+  const reactionsT = getDictionary(lang).reactions;
+  const loginHref = lang === "en" ? "/en/login" : "/login";
+  const name = authorName ?? reflection.guest_name ?? t.anon;
   const router = useRouter();
 
   const canEdit = !!currentUserId && reflection.user_id === currentUserId;
@@ -42,8 +49,8 @@ export function ReflectionCard({
 
   const onLike = () => {
     if (!currentUserId) {
-      setHint("좋아요는 로그인 후 가능해요.");
-      setTimeout(() => router.push("/login"), 1000);
+      setHint(reactionsT.likeNeedsLogin);
+      setTimeout(() => router.push(loginHref), 1000);
       return;
     }
     startLike(async () => {
@@ -58,7 +65,7 @@ export function ReflectionCard({
       if (!res.ok) {
         setLiked(!next);
         setCount((c) => c + (next ? -1 : 1));
-        setHint(res.error ?? "요청을 처리하지 못했어요.");
+        setHint(res.error ?? reactionsT.requestFailed);
         setTimeout(() => setHint(null), 1500);
         return;
       }
@@ -78,14 +85,12 @@ export function ReflectionCard({
   const [removed, setRemoved] = React.useState(false);
   const [removePending, startRemove] = React.useTransition();
   const onRemove = () => {
-    const ok = window.confirm(
-      "이 감상평을 삭제할까요? 한 번 지우면 되돌릴 수 없습니다.",
-    );
+    const ok = window.confirm(t.confirmDelete);
     if (!ok) return;
     startRemove(async () => {
       const res = await deleteReflectionAction(reflection.id);
       if (!res.ok) {
-        setHint(res.error ?? "삭제에 실패했어요.");
+        setHint(res.error ?? t.deleteFailed);
         setTimeout(() => setHint(null), 1500);
         return;
       }
@@ -106,17 +111,17 @@ export function ReflectionCard({
   const saveEdit = () => {
     const v = draft.trim();
     if (!v) {
-      setEditError("내용을 입력해주세요.");
+      setEditError(t.contentRequired);
       return;
     }
     if (v.length > MAX_CONTENT) {
-      setEditError(`감상평은 ${MAX_CONTENT}자 이하로 적어주세요.`);
+      setEditError(t.errTooLong.replace("{max}", String(MAX_CONTENT)));
       return;
     }
     startEdit(async () => {
       const res = await updateReflectionAction(reflection.id, v);
       if (!res.ok) {
-        setEditError(res.error ?? "수정에 실패했어요.");
+        setEditError(res.error ?? t.editFailed);
         return;
       }
       setSavedContent(v);
@@ -133,10 +138,10 @@ export function ReflectionCard({
       <div className="flex items-baseline justify-between gap-2 mb-2">
         <p className="text-sm font-medium text-text-primary">{name}</p>
         <p className="text-xs text-text-secondary">
-          {relativeTimeKo(reflection.created_at)}
+          {relativeTime(reflection.created_at, lang)}
           {reflection.updated_at &&
             reflection.updated_at !== reflection.created_at && (
-              <span className="ml-1">· 수정됨</span>
+              <span className="ml-1">· {t.edited}</span>
             )}
         </p>
       </div>
@@ -161,7 +166,7 @@ export function ReflectionCard({
                 disabled={editPending}
                 className="inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-xs text-text-secondary hover:bg-accent-soft"
               >
-                <X className="size-3.5" /> 취소
+                <X className="size-3.5" /> {t.cancel}
               </button>
               <button
                 type="button"
@@ -170,7 +175,7 @@ export function ReflectionCard({
                 className="inline-flex h-8 items-center gap-1 rounded-md bg-text-primary px-3 text-xs text-background hover:opacity-90 disabled:opacity-50"
               >
                 <Check className="size-3.5" />
-                {editPending ? "저장 중…" : "저장"}
+                {editPending ? t.saving : t.save}
               </button>
             </div>
           </div>
@@ -193,7 +198,7 @@ export function ReflectionCard({
               onClick={onLike}
               disabled={likePending}
               aria-pressed={liked}
-              aria-label={liked ? "좋아요 해제" : "좋아요"}
+              aria-label={liked ? reactionsT.unlikeAria : reactionsT.likeAria}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full border bg-surface h-7 px-2.5 text-xs transition-colors",
                 "border-border-soft hover:border-accent",
@@ -226,7 +231,7 @@ export function ReflectionCard({
                 onClick={beginEdit}
                 className="inline-flex h-7 items-center gap-1 rounded-full border border-border-soft px-2.5 text-xs text-text-secondary hover:border-accent hover:text-text-primary"
               >
-                <Pencil className="size-3.5" /> 수정
+                <Pencil className="size-3.5" /> {t.edit}
               </button>
               <button
                 type="button"
@@ -235,7 +240,7 @@ export function ReflectionCard({
                 className="inline-flex h-7 items-center gap-1 rounded-full border border-border-soft px-2.5 text-xs text-text-secondary hover:border-rose-300 hover:text-rose-700 disabled:opacity-60"
               >
                 <Trash2 className="size-3.5" />
-                {removePending ? "삭제 중…" : "삭제"}
+                {removePending ? t.deleting : t.del}
               </button>
             </>
           ) : null}

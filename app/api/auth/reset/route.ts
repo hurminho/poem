@@ -16,30 +16,47 @@ import { mapAuthErrorMessage } from "@/lib/auth/errors";
  *   3. supabase.auth.updateUser({ password }) 로 갱신 후 /login 으로 이동.
  */
 export async function POST(request: Request) {
+  const formData = await request.formData();
+  const isEn = String(formData.get("locale") || "") === "en";
+  const base = isEn ? "/en" : "";
+  const resetPath = `${base}/login/reset`;
+  const m = isEn
+    ? {
+        tooShort: "Please use a password of at least 8 characters.",
+        mismatch: "Passwords don’t match.",
+        notice: "Your password has been changed. Please log in with your new password.",
+        expired: "This reset link has expired or wasn’t verified. Please try again.",
+      }
+    : {
+        tooShort: "비밀번호는 8자 이상으로 설정해 주세요.",
+        mismatch: "비밀번호가 일치하지 않습니다.",
+        notice: "비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요.",
+        expired: "재설정 링크가 만료되었거나 인증되지 않았습니다. 다시 시도해 주세요.",
+      };
+
   if (!isSupabaseConfigured()) {
-    const url = new URL("/login/reset", request.url);
+    const url = new URL(resetPath, request.url);
     url.searchParams.set("error", supabaseNotConfiguredMessage());
     return NextResponse.redirect(url);
   }
 
-  const formData = await request.formData();
   const password = String(formData.get("password") || "");
   const passwordConfirm = String(formData.get("password_confirm") || "");
 
   if (password.length < 8) {
-    const url = new URL("/login/reset", request.url);
-    url.searchParams.set("error", "비밀번호는 8자 이상으로 설정해 주세요.");
+    const url = new URL(resetPath, request.url);
+    url.searchParams.set("error", m.tooShort);
     return NextResponse.redirect(url);
   }
   if (password !== passwordConfirm) {
-    const url = new URL("/login/reset", request.url);
-    url.searchParams.set("error", "비밀번호가 일치하지 않습니다.");
+    const url = new URL(resetPath, request.url);
+    url.searchParams.set("error", m.mismatch);
     return NextResponse.redirect(url);
   }
 
   const cookieStore = await cookies();
-  const successUrl = new URL("/login", request.url);
-  successUrl.searchParams.set("notice", "비밀번호가 변경되었습니다. 새 비밀번호로 로그인해 주세요.");
+  const successUrl = new URL(`${base}/login`, request.url);
+  successUrl.searchParams.set("notice", m.notice);
   let response = NextResponse.redirect(successUrl);
 
   const supabase = createServerClient(
@@ -66,17 +83,14 @@ export async function POST(request: Request) {
 
   if (!user) {
     // 메일 링크에서 출발하지 않은 경우 — 세션이 없으면 다시 안내.
-    const url = new URL("/login/forgot", request.url);
-    url.searchParams.set(
-      "error",
-      "재설정 링크가 만료되었거나 인증되지 않았습니다. 다시 시도해 주세요.",
-    );
+    const url = new URL(`${base}/login/forgot`, request.url);
+    url.searchParams.set("error", m.expired);
     return NextResponse.redirect(url);
   }
 
   const { error } = await supabase.auth.updateUser({ password });
   if (error) {
-    const url = new URL("/login/reset", request.url);
+    const url = new URL(resetPath, request.url);
     url.searchParams.set("error", mapAuthErrorMessage(error.message));
     return NextResponse.redirect(url);
   }

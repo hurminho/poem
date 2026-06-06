@@ -14,6 +14,8 @@ import { WritingPrompts } from "@/components/poem/writing-prompts";
 import { savePoemAction, autosavePoemAction } from "@/lib/poems/actions";
 import type { Poem, TextAlign, Visibility } from "@/types";
 import { cn } from "@/lib/utils";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface PoemEditorProps {
   initial?: Partial<Poem> & { tags?: string[] };
@@ -21,6 +23,7 @@ interface PoemEditorProps {
   errorMessage?: string;
   /** 추천 태그 (서버에서 미리 내려줌) */
   tagSuggestions?: string[];
+  lang?: Locale;
 }
 
 type AutoSaveState = "idle" | "saving" | "saved" | "error";
@@ -33,7 +36,9 @@ export function PoemEditor({
   notice,
   errorMessage,
   tagSuggestions,
+  lang = "ko",
 }: PoemEditorProps) {
+  const t = getDictionary(lang).studio.editor;
   const [id, setId] = React.useState<string | null>(initial?.id ?? null);
   const [title, setTitle] = React.useState(initial?.title ?? "");
   const [content, setContent] = React.useState(initial?.content ?? "");
@@ -111,8 +116,9 @@ export function PoemEditor({
     if (allowCopy) fd.set("allow_copy", "on");
     fd.set("text_align", textAlign);
     fd.set("tags", tags.join(","));
+    fd.set("locale", lang);
     setActionLabel(
-      action === "publish" ? "발행 중…" : action === "archive" ? "보관 중…" : "저장 중…",
+      action === "publish" ? t.publishing : action === "archive" ? t.archiving : t.saving,
     );
     startTransition(() => savePoemAction(fd));
   };
@@ -120,10 +126,10 @@ export function PoemEditor({
   const isValid = title.trim().length > 0 && content.trim().length > 0;
 
   const autoSaveText: Record<AutoSaveState, string> = {
-    idle: "아직 저장되지 않음",
-    saving: "자동 저장 중…",
-    saved: savedAtLabel ? `자동 저장됨 · ${savedAtLabel}` : "저장됨",
-    error: "자동 저장 실패 — 잠시 후 다시 시도",
+    idle: t.autoIdle,
+    saving: t.autoSaving,
+    saved: savedAtLabel ? t.autoSaved.replace("{time}", savedAtLabel) : t.autoSavedShort,
+    error: t.autoError,
   };
 
   // 모바일에서는 미리보기 카드를 숨기고, 큰 화면(md 이상)에서만 좌우 분할.
@@ -137,7 +143,7 @@ export function PoemEditor({
       {!previewMode && (
         <Card className="p-5 sm:p-6">
           <div className="flex items-center justify-between mb-5 gap-3">
-            <h2 className="font-serif text-base font-semibold text-text-primary">시 쓰기</h2>
+            <h2 className="font-serif text-base font-semibold text-text-primary">{t.heading}</h2>
             <span
               className="inline-flex items-center gap-1.5 text-xs text-text-secondary"
               aria-live="polite"
@@ -148,9 +154,9 @@ export function PoemEditor({
               {pending
                 ? actionLabel
                 : status === "published"
-                  ? "발행됨"
+                  ? t.published
                   : status === "archived"
-                    ? "보관함"
+                    ? t.archived
                     : autoSaveText[autoSave]}
             </span>
           </div>
@@ -168,6 +174,7 @@ export function PoemEditor({
 
           <div className="space-y-5">
             <WritingPrompts
+              lang={lang}
               visible={content.trim().length === 0}
               onPickPrompt={(p) => {
                 setContent(p.starter);
@@ -186,10 +193,10 @@ export function PoemEditor({
             />
 
             <div className="space-y-1.5">
-              <Label htmlFor="title">제목</Label>
+              <Label htmlFor="title">{t.title}</Label>
               <Input
                 id="title"
-                placeholder="제목을 적어주세요"
+                placeholder={t.titlePlaceholder}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
@@ -197,14 +204,14 @@ export function PoemEditor({
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <Label htmlFor="content">본문</Label>
-                <AlignToolbar value={textAlign} onChange={setTextAlign} />
+                <Label htmlFor="content">{t.body}</Label>
+                <AlignToolbar value={textAlign} onChange={setTextAlign} t={t} />
               </div>
               {/* 본문 — 미리보기와 동일한 명조 글꼴 / 동일한 행간 / 동일한 글자 크기.
                   높이는 약 10줄로 제한하고, 그 이후로는 스크롤로 처리합니다. */}
               <Textarea
                 id="content"
-                placeholder={"줄바꿈은 그대로 보존됩니다.\n천천히 적어주세요."}
+                placeholder={t.bodyPlaceholder}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className={cn(
@@ -217,10 +224,10 @@ export function PoemEditor({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="note">작가의 말 (선택)</Label>
+              <Label htmlFor="note">{t.note}</Label>
               <Textarea
                 id="note"
-                placeholder="이 시를 둘러싼 짧은 메모"
+                placeholder={t.notePlaceholder}
                 value={note ?? ""}
                 onChange={(e) => setNote(e.target.value)}
                 rows={3}
@@ -228,17 +235,18 @@ export function PoemEditor({
             </div>
 
             <div className="space-y-1.5">
-              <Label>태그 (선택)</Label>
+              <Label>{t.tags}</Label>
               <TagInput
                 value={tags}
                 onChange={setTags}
                 suggestions={tagSuggestions}
+                lang={lang}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label>공개 범위</Label>
-              <PoemVisibilitySelector value={visibility} onChange={setVisibility} />
+              <Label>{t.visibility}</Label>
+              <PoemVisibilitySelector value={visibility} onChange={setVisibility} lang={lang} />
             </div>
 
             <div className="flex flex-wrap items-center gap-4">
@@ -248,7 +256,7 @@ export function PoemEditor({
                   checked={allowComments}
                   onChange={(e) => setAllowComments(e.target.checked)}
                 />
-                감상평 받기
+                {t.allowComments}
               </label>
               <label className="flex items-center gap-2 text-sm text-text-secondary">
                 <input
@@ -256,7 +264,7 @@ export function PoemEditor({
                   checked={allowCopy}
                   onChange={(e) => setAllowCopy(e.target.checked)}
                 />
-                복사 허용
+                {t.allowCopy}
               </label>
             </div>
 
@@ -268,7 +276,7 @@ export function PoemEditor({
                 onClick={() => submit("publish")}
                 disabled={pending || !isValid}
               >
-                발행하기
+                {t.publish}
               </Button>
               <Button
                 type="button"
@@ -276,7 +284,7 @@ export function PoemEditor({
                 onClick={() => submit("draft")}
                 disabled={pending || !isValid}
               >
-                임시저장
+                {t.draft}
               </Button>
               <Button
                 type="button"
@@ -285,7 +293,7 @@ export function PoemEditor({
                 disabled={!isValid}
                 className="hidden md:inline-flex"
               >
-                미리보기
+                {t.preview}
               </Button>
               {id ? (
                 <Button
@@ -294,12 +302,12 @@ export function PoemEditor({
                   onClick={() => submit("archive")}
                   disabled={pending}
                 >
-                  보관함으로
+                  {t.toArchive}
                 </Button>
               ) : null}
             </div>
             <p className="text-[11px] text-text-secondary">
-              3분마다 자동 임시 저장됩니다.
+              {t.autosaveHint}
             </p>
           </div>
         </Card>
@@ -314,16 +322,16 @@ export function PoemEditor({
       >
         {previewMode && (
           <div className="mx-auto max-w-prose mb-8 flex items-center justify-between">
-            <p className="poem-muted tracking-wider">─ 미리보기 ─</p>
+            <p className="poem-muted tracking-wider">{t.previewDivider}</p>
             <Button type="button" variant="ghost" size="sm" onClick={() => setPreviewMode(false)}>
-              편집으로
+              {t.toEdit}
             </Button>
           </div>
         )}
         {!previewMode && (
-          <p className="poem-muted text-center mb-6 tracking-wider">─ 미리보기 ─</p>
+          <p className="poem-muted text-center mb-6 tracking-wider">{t.previewDivider}</p>
         )}
-        <PoemPreview title={title} content={content} textAlign={textAlign} />
+        <PoemPreview title={title} content={content} textAlign={textAlign} lang={lang} />
         {previewMode && note && (
           <p className="mt-12 mx-auto max-w-prose text-center poem-muted italic">
             {note}
@@ -356,23 +364,24 @@ function AutoSaveDot({ state }: { state: AutoSaveState }) {
   );
 }
 
-const ALIGN_OPTIONS: Array<{ value: TextAlign; label: string; Icon: typeof AlignLeft }> = [
-  { value: "left", label: "왼쪽 정렬", Icon: AlignLeft },
-  { value: "center", label: "가운데 정렬", Icon: AlignCenter },
-  { value: "right", label: "오른쪽 정렬", Icon: AlignRight },
-];
-
 function AlignToolbar({
   value,
   onChange,
+  t,
 }: {
   value: TextAlign;
   onChange: (v: TextAlign) => void;
+  t: { alignLeft: string; alignCenter: string; alignRight: string; alignToolbar: string };
 }) {
+  const ALIGN_OPTIONS: Array<{ value: TextAlign; label: string; Icon: typeof AlignLeft }> = [
+    { value: "left", label: t.alignLeft, Icon: AlignLeft },
+    { value: "center", label: t.alignCenter, Icon: AlignCenter },
+    { value: "right", label: t.alignRight, Icon: AlignRight },
+  ];
   return (
     <div
       role="radiogroup"
-      aria-label="본문 정렬"
+      aria-label={t.alignToolbar}
       className="inline-flex rounded-md border border-border-soft bg-surface p-0.5"
     >
       {ALIGN_OPTIONS.map((o) => {

@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { TextAlign } from "@/types";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface PoemPreviewProps {
   title?: string;
@@ -9,6 +11,7 @@ interface PoemPreviewProps {
    * 본문 가로 정렬. 지정하지 않으면 'center' 로 폴백합니다.
    */
   textAlign?: TextAlign | null;
+  lang?: Locale;
 }
 
 const ALIGN_CLASS: Record<TextAlign, string> = {
@@ -27,6 +30,7 @@ export function PoemPreview({
   content,
   className,
   textAlign = "center",
+  lang = "ko",
 }: PoemPreviewProps) {
   const align = textAlign ?? "center";
   const cls = ALIGN_CLASS[align];
@@ -39,7 +43,9 @@ export function PoemPreview({
       )}
       <div className={cn("poem-body", cls)}>
         {content || (
-          <span className="text-text-secondary italic">아직 본문이 비어 있습니다.</span>
+          <span className="text-text-secondary italic">
+            {getDictionary(lang).studio.poemPreview.emptyBody}
+          </span>
         )}
       </div>
     </article>

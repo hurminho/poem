@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Share2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   title?: string;
@@ -11,6 +13,7 @@ interface Props {
   url?: string;
   className?: string;
   variant?: "default" | "compact";
+  lang?: Locale;
 }
 
 /**
@@ -19,7 +22,8 @@ interface Props {
  * navigator.share 가 가능하면 시스템 공유 시트를 열고,
  * 그렇지 않으면 클립보드에 링크를 복사한 뒤 잠시 "복사됨" 피드백을 보여줍니다.
  */
-export function ShareButton({ title, text, url, className, variant = "default" }: Props) {
+export function ShareButton({ title, text, url, className, variant = "default", lang = "ko" }: Props) {
+  const t = getDictionary(lang).reactions;
   const [copied, setCopied] = React.useState(false);
 
   const onClick = async () => {
@@ -55,11 +59,11 @@ export function ShareButton({ title, text, url, className, variant = "default" }
     >
       {copied ? (
         <>
-          <Check className={cn(compact ? "size-3.5" : "size-4")} /> 링크 복사됨
+          <Check className={cn(compact ? "size-3.5" : "size-4")} /> {t.shareCopied}
         </>
       ) : (
         <>
-          <Share2 className={cn(compact ? "size-3.5" : "size-4")} /> 공유하기
+          <Share2 className={cn(compact ? "size-3.5" : "size-4")} /> {t.share}
         </>
       )}
     </button>

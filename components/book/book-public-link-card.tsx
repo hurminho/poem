@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Copy, ExternalLink } from "lucide-react";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   bookId: string;
@@ -12,12 +14,15 @@ interface Props {
   publicPath?: string;
   /** 시집이 공개 상태일 때만 보여주는 카드 */
   visible: boolean;
+  lang?: Locale;
 }
 
 /**
  * 발행 직후 보이는 카드. 공개 링크를 복사하거나 시집을 펼쳐볼 수 있습니다.
  */
-export function BookPublicLinkCard({ bookId, publicPath = "/books", visible }: Props) {
+export function BookPublicLinkCard({ bookId, publicPath, visible, lang = "ko" }: Props) {
+  const t = getDictionary(lang).studio.linkCard;
+  const path = publicPath ?? (lang === "en" ? "/en/books" : "/books");
   const [copied, setCopied] = React.useState(false);
   const subscribe = React.useCallback(() => () => {}, []);
   const origin = React.useSyncExternalStore<string>(
@@ -28,10 +33,10 @@ export function BookPublicLinkCard({ bookId, publicPath = "/books", visible }: P
 
   if (!visible) return null;
 
-  const url = `${origin}${publicPath}/${bookId}`;
+  const url = `${origin}${path}/${bookId}`;
   const shortUrl = origin
-    ? `${origin.replace(/^https?:\/\//, "")}${publicPath}/${bookId}`
-    : `${publicPath}/${bookId}`;
+    ? `${origin.replace(/^https?:\/\//, "")}${path}/${bookId}`
+    : `${path}/${bookId}`;
 
   const onCopy = async () => {
     try {
@@ -46,10 +51,10 @@ export function BookPublicLinkCard({ bookId, publicPath = "/books", visible }: P
   return (
     <Card className="p-5 border-accent/40 bg-accent-soft/30">
       <p className="font-serif text-sm font-semibold text-text-primary">
-        시집이 발행되었어요
+        {t.published}
       </p>
       <p className="mt-1 text-xs text-text-secondary">
-        링크를 복사해 친구에게 보내거나, 시집을 펼쳐 볼 수 있어요.
+        {t.helper}
       </p>
       <div className="mt-3 flex items-center gap-2 rounded-md border border-border-soft bg-surface px-3 py-2 text-xs text-text-secondary truncate">
         {shortUrl}
@@ -58,21 +63,21 @@ export function BookPublicLinkCard({ bookId, publicPath = "/books", visible }: P
         <Button type="button" size="sm" onClick={onCopy}>
           {copied ? (
             <>
-              <Check className="size-4" /> 복사됨
+              <Check className="size-4" /> {t.copied}
             </>
           ) : (
             <>
-              <Copy className="size-4" /> 링크 복사
+              <Copy className="size-4" /> {t.copyLink}
             </>
           )}
         </Button>
         <Link
-          href={`${publicPath}/${bookId}`}
+          href={`${path}/${bookId}`}
           target="_blank"
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-surface px-3 text-sm font-medium text-text-primary border border-border-soft hover:border-accent"
         >
           <ExternalLink className="size-4" />
-          시집 읽기
+          {t.readBook}
         </Link>
       </div>
     </Card>

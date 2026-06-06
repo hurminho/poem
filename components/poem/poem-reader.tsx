@@ -1,6 +1,8 @@
 import * as React from "react";
 import { PoemPreview } from "@/components/poem/poem-preview";
 import { QuietButton } from "@/components/ui/quiet-button";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { Poem } from "@/types";
 
 interface PoemReaderProps {
@@ -11,6 +13,7 @@ interface PoemReaderProps {
   actions?: React.ReactNode;
   /** 읽기 위치 (예: 03 / 12) */
   position?: { current: number; total: number };
+  lang?: Locale;
 }
 
 /**
@@ -20,7 +23,8 @@ interface PoemReaderProps {
  * - iPad : 넉넉한 좌우 여백(720px 이하)
  * - 데스크톱: 본문 폭 720px 로 고정 — 책 한 페이지 폭에 가깝게
  */
-export function PoemReader({ poem, showNote = true, actions, position }: PoemReaderProps) {
+export function PoemReader({ poem, showNote = true, actions, position, lang = "ko" }: PoemReaderProps) {
+  const r = getDictionary(lang).reader;
   return (
     <div className="poem-page">
       <div
@@ -46,7 +50,7 @@ export function PoemReader({ poem, showNote = true, actions, position }: PoemRea
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">{actions}</div>
         ) : (
           <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
-            <QuietButton disabled>감상평 남기기</QuietButton>
+            <QuietButton disabled>{r.leaveReflection}</QuietButton>
           </div>
         )}
       </div>

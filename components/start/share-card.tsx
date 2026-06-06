@@ -6,6 +6,8 @@ import { BookCover } from "@/components/book/book-cover";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { trackActivation } from "@/lib/analytics/events";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
 interface ShareCardProps {
@@ -15,6 +17,7 @@ interface ShareCardProps {
   authorName: string;
   coverTheme: string;
   poemCount: number;
+  lang?: Locale;
 }
 
 /**
@@ -32,7 +35,10 @@ export function ShareCard({
   authorName,
   coverTheme,
   poemCount,
+  lang = "ko",
 }: ShareCardProps) {
+  const t = getDictionary(lang).share;
+  const startT = getDictionary(lang).start;
   const [origin, setOrigin] = React.useState<string>("");
   const [linkCopied, setLinkCopied] = React.useState(false);
   const [textCopied, setTextCopied] = React.useState(false);
@@ -45,9 +51,8 @@ export function ShareCard({
   const shareUrl = origin ? `${origin}${sharePath}` : sharePath;
 
   const suggestedText = React.useMemo(
-    () =>
-      `제가 쓴 문장들을 작은 시집으로 묶어봤어요.\n『${bookTitle}』\n읽고 감상평 하나 남겨주시면 기쁠 것 같아요.`,
-    [bookTitle],
+    () => t.suggestedText.replace("{title}", bookTitle),
+    [t.suggestedText, bookTitle],
   );
 
   const copyLink = async () => {
@@ -77,7 +82,7 @@ export function ShareCard({
   };
 
   const tryKakao = () => {
-    setKakaoNote("카카오톡 공유는 곧 추가됩니다. 잠시 링크 복사로 보내주세요.");
+    setKakaoNote(t.kakaoNote);
     window.setTimeout(() => setKakaoNote(null), 3500);
   };
 
@@ -86,7 +91,7 @@ export function ShareCard({
       <div className="grid gap-6 sm:grid-cols-[200px_1fr] items-start">
         <div className="mx-auto sm:mx-0 w-[200px]">
           <BookCover
-            title={bookTitle || "제목"}
+            title={bookTitle || startT.untitled}
             authorName={authorName}
             theme={coverTheme}
             size="sm"
@@ -94,30 +99,33 @@ export function ShareCard({
         </div>
         <div className="space-y-1">
           <p className="text-[11px] tracking-wider text-text-secondary">
-            한 권의 시집
+            {t.aBook}
           </p>
           <p className="font-serif text-lg font-semibold text-text-primary">
             {bookTitle}
           </p>
-          <p className="text-sm text-text-secondary">{authorName} 지음</p>
+          <p className="text-sm text-text-secondary">
+            {startT.byline.replace("{name}", authorName)}
+          </p>
           <p className="mt-2 text-xs text-text-secondary">
-            시 {poemCount}편 · 공유 링크 활성
+            {poemCount}
+            {t.poemCountSuffix}
           </p>
         </div>
       </div>
 
       {/* 링크 */}
       <div className="space-y-2">
-        <p className="text-xs text-text-secondary">공유 링크</p>
+        <p className="text-xs text-text-secondary">{t.shareLink}</p>
         <div className="flex flex-wrap items-center gap-2">
           <code className="flex-1 min-w-0 truncate rounded-md border border-border-soft bg-background px-3 py-2 text-xs text-text-primary">
-            {shareUrl || "(생성 중...)"}
+            {shareUrl || "…"}
           </code>
           <Button type="button" variant="secondary" size="sm" onClick={copyLink}>
-            {linkCopied ? "복사됨" : "링크 복사"}
+            {linkCopied ? t.copied : t.copyLink}
           </Button>
           <Button type="button" variant="ghost" size="sm" onClick={tryKakao}>
-            카카오톡 공유
+            {t.kakaoShare}
           </Button>
         </div>
         {kakaoNote ? (
@@ -127,7 +135,7 @@ export function ShareCard({
 
       {/* 추천 공유 문구 */}
       <div className="space-y-2">
-        <p className="text-xs text-text-secondary">추천 공유 문구</p>
+        <p className="text-xs text-text-secondary">{t.suggestedTitle}</p>
         <Textarea
           readOnly
           rows={4}
@@ -136,7 +144,7 @@ export function ShareCard({
         />
         <div className="flex items-center justify-end">
           <Button type="button" variant="secondary" size="sm" onClick={copyText}>
-            {textCopied ? "문구·링크 복사됨" : "문구·링크 함께 복사"}
+            {textCopied ? t.copiedTextWithLink : t.copyTextWithLink}
           </Button>
         </div>
       </div>
@@ -148,13 +156,13 @@ export function ShareCard({
           href={sharePath}
           className={cn(buttonVariants({ variant: "primary", size: "md" }))}
         >
-          시집 열어보기
+          {t.openBook}
         </Link>
         <Link
           href="/studio/books"
           className={cn(buttonVariants({ variant: "ghost", size: "md" }))}
         >
-          작업실로
+          {t.toStudio}
         </Link>
       </div>
     </div>

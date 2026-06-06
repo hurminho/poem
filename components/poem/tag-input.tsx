@@ -3,6 +3,8 @@
 import * as React from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   value: string[];
@@ -12,6 +14,7 @@ interface Props {
   placeholder?: string;
   maxTags?: number;
   className?: string;
+  lang?: Locale;
 }
 
 /**
@@ -26,10 +29,13 @@ export function TagInput({
   value,
   onChange,
   suggestions = [],
-  placeholder = "태그를 적고 Enter (예: 사랑, 겨울)",
+  placeholder,
   maxTags = 8,
   className,
+  lang = "ko",
 }: Props) {
+  const t = getDictionary(lang).studio.tagInput;
+  const ph = placeholder ?? t.placeholder;
   const [draft, setDraft] = React.useState("");
 
   const add = (raw: string) => {
@@ -56,17 +62,17 @@ export function TagInput({
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-border-soft bg-surface px-2.5 py-2">
-        {value.map((t) => (
+        {value.map((tag) => (
           <span
-            key={t}
+            key={tag}
             className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs text-text-primary"
           >
-            #{t}
+            #{tag}
             <button
               type="button"
-              onClick={() => remove(t)}
+              onClick={() => remove(tag)}
               className="text-text-secondary hover:text-text-primary"
-              aria-label={`${t} 제거`}
+              aria-label={t.removeAria.replace("{tag}", tag)}
             >
               <X className="size-3" />
             </button>
@@ -83,9 +89,9 @@ export function TagInput({
               setDraft("");
             }
           }}
-          placeholder={value.length === 0 ? placeholder : undefined}
+          placeholder={value.length === 0 ? ph : undefined}
           className="flex-1 min-w-[120px] bg-transparent px-1 py-0.5 text-sm outline-none placeholder:text-text-secondary"
-          aria-label="태그 입력"
+          aria-label={t.inputAria}
         />
       </div>
       {filteredSuggestions.length > 0 && (

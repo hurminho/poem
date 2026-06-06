@@ -115,6 +115,109 @@ export const BOOK_TEMPLATES: BookTemplate[] = [
   },
 ];
 
-export function findBookTemplate(slug: string): BookTemplate | undefined {
-  return BOOK_TEMPLATES.find((t) => t.slug === slug);
+/** 영어 시집 템플릿 — 직역이 아니라 영어 정서에 맞게 다시 쓴 표현. slug 는 동일하게 유지. */
+export const BOOK_TEMPLATES_EN: BookTemplate[] = [
+  {
+    slug: "first-collection",
+    name: "My first collection",
+    suggestedTitle: "My First Collection",
+    description: "Your first bound book. Five short pieces are plenty.",
+    coverTheme: "warm_paper",
+    suggestedToc: [
+      "A line for today",
+      "A scene that quietly surfaced",
+      "Something I want to leave for someone",
+      "A line I’d read again",
+      "The last page",
+    ],
+  },
+  {
+    slug: "after-work",
+    name: "Lines after work",
+    suggestedTitle: "Lines After Work",
+    description: "Short breaths found at the end of the day.",
+    coverTheme: "letter",
+    suggestedToc: [
+      "The view from the commute home",
+      "The longest five minutes today",
+      "A line said under my breath",
+      "The night I put off tomorrow",
+    ],
+  },
+  {
+    slug: "to-mother",
+    name: "Lines for my mother",
+    suggestedTitle: "Lines for My Mother",
+    description: "The words I never quite said, gathered in one book.",
+    coverTheme: "spring",
+    suggestedToc: [
+      "The first name I called",
+      "A view we saw together",
+      "The day I didn’t say thank you",
+      "If you were here now",
+    ],
+  },
+  {
+    slug: "after-goodbye",
+    name: "What’s left after goodbye",
+    suggestedTitle: "What’s Left After Goodbye",
+    description: "A book for quietly putting time in order.",
+    coverTheme: "rain",
+    suggestedToc: [
+      "The weather that day",
+      "The last conversation",
+      "Walking alone",
+      "The lines that stayed anyway",
+    ],
+  },
+  {
+    slug: "twenty",
+    name: "A record of being twenty",
+    suggestedTitle: "A Record of Being Twenty",
+    description: "A year noted down at the doorway to adulthood.",
+    coverTheme: "modern",
+    suggestedToc: [
+      "An unfamiliar city",
+      "A first mistake",
+      "A friend who stays",
+      "To myself, next year",
+    ],
+  },
+  {
+    slug: "rainy-days",
+    name: "Lines for rainy days",
+    suggestedTitle: "Lines for Rainy Days",
+    description: "A book of lines that surfaced beyond the window.",
+    coverTheme: "rain",
+    suggestedToc: [
+      "The first scent of rain",
+      "Silence under an umbrella",
+      "Wet shoes",
+      "The moment it lets up",
+    ],
+  },
+  {
+    slug: "from-travel",
+    name: "Lines brought back from travel",
+    suggestedTitle: "Lines Brought Back from Travel",
+    description: "Short lines picked up in unfamiliar cities.",
+    coverTheme: "garden",
+    suggestedToc: [
+      "The day I arrived",
+      "A nameless alley",
+      "The local light",
+      "The flight back home",
+    ],
+  },
+];
+
+export function getBookTemplates(locale: "ko" | "en"): BookTemplate[] {
+  return locale === "en" ? BOOK_TEMPLATES_EN : BOOK_TEMPLATES;
+}
+
+export function findBookTemplate(
+  slug: string,
+  locale: "ko" | "en" = "ko",
+): BookTemplate | undefined {
+  return getBookTemplates(locale).find((t) => t.slug === slug);
 }

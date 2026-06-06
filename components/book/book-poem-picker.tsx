@@ -7,16 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ChevronUp, ChevronDown, X, Plus } from "lucide-react";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { Poem } from "@/types";
 
 interface Props {
   allPoems: Poem[];
   selectedIds: string[];
   onChange: (next: string[]) => void;
+  lang?: Locale;
 }
 
 /** 좌: 후보 검색·추가, 우: 차례(▲▼ 재정렬). DnD는 추후. */
-export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
+export function BookPoemPicker({ allPoems, selectedIds, onChange, lang = "ko" }: Props) {
+  const t = getDictionary(lang).studio.poemPicker;
+  const base = lang === "en" ? "/en/studio" : "/studio";
   const [query, setQuery] = React.useState("");
 
   const selectedSet = new Set(selectedIds);
@@ -44,13 +49,13 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
     <div className="grid gap-5 md:grid-cols-2">
       <Card className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-serif text-base font-semibold text-text-primary">시 고르기</h3>
-          <Link href="/studio/new" className="text-xs text-accent hover:underline">
-            새 시 쓰기 →
+          <h3 className="font-serif text-base font-semibold text-text-primary">{t.choose}</h3>
+          <Link href={`${base}/new`} className="text-xs text-accent hover:underline">
+            {t.writeNew}
           </Link>
         </div>
         <Input
-          placeholder="제목·본문 검색"
+          placeholder={t.search}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="mb-3"
@@ -58,7 +63,7 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
         <ul className="space-y-2 max-h-[420px] overflow-auto pr-1">
           {candidates.length === 0 && (
             <li>
-              <p className="text-sm text-text-secondary py-6 text-center">고를 수 있는 시가 없어요.</p>
+              <p className="text-sm text-text-secondary py-6 text-center">{t.noCandidates}</p>
             </li>
           )}
           {candidates.map((p) => (
@@ -70,7 +75,7 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
               >
                 <span className="min-w-0">
                   <span className="block font-serif text-sm font-semibold truncate text-text-primary">
-                    {p.title || "(제목 없음)"}
+                    {p.title || t.untitled}
                   </span>
                   <span className="block text-xs text-text-secondary line-clamp-1 whitespace-pre-line">
                     {p.content}
@@ -85,14 +90,14 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
 
       <Card className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-serif text-base font-semibold text-text-primary">시집 차례</h3>
-          <span className="text-xs text-text-secondary">{selectedPoems.length}편</span>
+          <h3 className="font-serif text-base font-semibold text-text-primary">{t.toc}</h3>
+          <span className="text-xs text-text-secondary">
+            {selectedPoems.length}
+            {t.countSuffix}
+          </span>
         </div>
         {selectedPoems.length === 0 ? (
-          <EmptyState
-            title="아직 담긴 시가 없어요"
-            description="왼쪽에서 시를 골라 시집의 차례에 담아보세요."
-          />
+          <EmptyState title={t.emptyTitle} description={t.emptyDesc} />
         ) : (
           <ol className="space-y-2">
             {selectedPoems.map((p, idx) => (
@@ -102,7 +107,7 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
               >
                 <span className="text-xs tabular-nums text-text-secondary w-5">{idx + 1}.</span>
                 <span className="font-serif text-sm font-semibold truncate flex-1 text-text-primary">
-                  {p.title || "(제목 없음)"}
+                  {p.title || t.untitled}
                 </span>
                 <div className="flex items-center gap-1">
                   <Button
@@ -110,7 +115,7 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
                     variant="ghost"
                     size="icon"
                     onClick={() => move(p.id, -1)}
-                    aria-label="위로"
+                    aria-label={t.moveUp}
                     disabled={idx === 0}
                   >
                     <ChevronUp className="size-4" />
@@ -120,7 +125,7 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
                     variant="ghost"
                     size="icon"
                     onClick={() => move(p.id, 1)}
-                    aria-label="아래로"
+                    aria-label={t.moveDown}
                     disabled={idx === selectedPoems.length - 1}
                   >
                     <ChevronDown className="size-4" />
@@ -130,7 +135,7 @@ export function BookPoemPicker({ allPoems, selectedIds, onChange }: Props) {
                     variant="ghost"
                     size="icon"
                     onClick={() => remove(p.id)}
-                    aria-label="빼기"
+                    aria-label={t.remove}
                   >
                     <X className="size-4" />
                   </Button>

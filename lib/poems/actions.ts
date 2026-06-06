@@ -7,9 +7,35 @@ import { isSupabaseConfigured } from "@/lib/supabase/check";
 import type { Visibility, ContentStatus, TextAlign } from "@/types";
 
 type SaveAction = "draft" | "publish" | "archive";
+type Locale = "ko" | "en";
 
 const ALLOWED_VIS: Visibility[] = ["private", "link", "public"];
 const ALLOWED_ALIGN: TextAlign[] = ["left", "center", "right"];
+
+function asLocale(v: FormDataEntryValue | null): Locale {
+  return String(v ?? "") === "en" ? "en" : "ko";
+}
+
+const POEM_MSG = {
+  ko: {
+    notConfigured: "Supabase 환경변수가 설정되지 않았습니다.",
+    needTitleBody: "제목과 본문을 모두 입력해주세요.",
+    saveFailed: "저장에 실패했습니다.",
+    publishNotice: "발행했습니다. ‘발행됨’ 탭에서 확인해 보세요.",
+    archiveNotice: "보관함으로 옮겼습니다.",
+    draftNotice: "임시저장 했습니다.",
+    deleteNotice: "시를 삭제했습니다.",
+  },
+  en: {
+    notConfigured: "Supabase environment variables are not set.",
+    needTitleBody: "Please enter both a title and a body.",
+    saveFailed: "Couldn’t save.",
+    publishNotice: "Published. Check it in the ‘Published’ tab.",
+    archiveNotice: "Moved to the archive.",
+    draftNotice: "Draft saved.",
+    deleteNotice: "Poem deleted.",
+  },
+} as const;
 
 function asAlign(v: FormDataEntryValue | null, fallback: TextAlign): TextAlign {
   const s = String(v ?? "");
@@ -22,15 +48,20 @@ function asVisibility(v: FormDataEntryValue | null, fallback: Visibility): Visib
 }
 
 export async function savePoemAction(formData: FormData) {
+  const locale = asLocale(formData.get("locale"));
+  const M = POEM_MSG[locale];
+  const studioBase = locale === "en" ? "/en/studio" : "/studio";
+  const loginBase = locale === "en" ? "/en/login" : "/login";
+
   if (!isSupabaseConfigured()) {
-    redirect("/studio/poems?error=" + encodeURIComponent("Supabase 환경변수가 설정되지 않았습니다."));
+    redirect(`${studioBase}/poems?error=` + encodeURIComponent(M.notConfigured));
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/studio/poems");
+  if (!user) redirect(`${loginBase}?next=${studioBase}/poems`);
 
   const id = String(formData.get("id") || "").trim() || null;
   const action = String(formData.get("action") || "draft") as SaveAction;
@@ -48,8 +79,8 @@ export async function savePoemAction(formData: FormData) {
     .filter(Boolean);
 
   if (!title || !content.trim()) {
-    const back = id ? `/studio/poems/${id}/edit` : "/studio/new";
-    redirect(back + "?error=" + encodeURIComponent("제목과 본문을 모두 입력해주세요."));
+    const back = id ? `${studioBase}/poems/${id}/edit` : `${studioBase}/new`;
+    redirect(back + "?error=" + encodeURIComponent(M.needTitleBody));
   }
 
   let status: ContentStatus = "draft";
@@ -80,12 +111,12 @@ export async function savePoemAction(formData: FormData) {
   if (id) {
     const { error } = await supabase.from("poems").update(payload).eq("id", id).eq("author_id", user.id);
     if (error) {
-      redirect(`/studio/poems/${id}/edit?error=` + encodeURIComponent(error.message));
+      redirect(`${studioBase}/poems/${id}/edit?error=` + encodeURIComponent(error.message));
     }
   } else {
     const { data, error } = await supabase.from("poems").insert(payload).select("id").single();
     if (error || !data) {
-      redirect("/studio/new?error=" + encodeURIComponent(error?.message ?? "저장에 실패했습니다."));
+      redirect(`${studioBase}/new?error=` + encodeURIComponent(error?.message ?? M.saveFailed));
     }
     savedId = data.id;
   }
@@ -96,27 +127,26 @@ export async function savePoemAction(formData: FormData) {
 
   revalidatePath("/studio");
   revalidatePath("/studio/poems");
-  if (savedId) revalidatePath(`/poems/${savedId}`);
+  revalidatePath("/en/studio");
+  revalidatePath("/en/studio/poems");
+  if (savedId) {
+    revalidatePath(`/poems/${savedId}`);
+    revalidatePath(`/en/poems/${savedId}`);
+  }
 
   // 발행 후에는 '나의 시 > 발행됨' 탭으로 이동시켜 작가가 본인 작품을 한눈에 봅니다.
   if (action === "publish") {
     redirect(
-      `/studio/poems?status=published&notice=${encodeURIComponent(
-        "발행했습니다. ‘발행됨’ 탭에서 확인해 보세요.",
-      )}`,
+      `${studioBase}/poems?status=published&notice=${encodeURIComponent(M.publishNotice)}`,
     );
   }
   if (action === "archive") {
     redirect(
-      `/studio/poems?status=archived&notice=${encodeURIComponent(
-        "보관함으로 옮겼습니다.",
-      )}`,
+      `${studioBase}/poems?status=archived&notice=${encodeURIComponent(M.archiveNotice)}`,
     );
   }
   redirect(
-    `/studio/poems/${savedId}/edit?notice=${encodeURIComponent(
-      "임시저장 했습니다.",
-    )}`,
+    `${studioBase}/poems/${savedId}/edit?notice=${encodeURIComponent(M.draftNotice)}`,
   );
 }
 
@@ -265,17 +295,21 @@ export async function autosavePoemAction(input: {
 }
 
 export async function deletePoemAction(formData: FormData) {
-  if (!isSupabaseConfigured()) redirect("/studio/poems");
+  const locale = asLocale(formData.get("locale"));
+  const studioBase = locale === "en" ? "/en/studio" : "/studio";
+  const loginBase = locale === "en" ? "/en/login" : "/login";
+  if (!isSupabaseConfigured()) redirect(`${studioBase}/poems`);
   const id = String(formData.get("id") || "").trim();
-  if (!id) redirect("/studio/poems");
+  if (!id) redirect(`${studioBase}/poems`);
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(loginBase);
 
   await supabase.from("poems").delete().eq("id", id).eq("author_id", user.id);
   revalidatePath("/studio/poems");
-  redirect("/studio/poems?notice=" + encodeURIComponent("시를 삭제했습니다."));
+  revalidatePath("/en/studio/poems");
+  redirect(`${studioBase}/poems?notice=` + encodeURIComponent(POEM_MSG[locale].deleteNotice));
 }

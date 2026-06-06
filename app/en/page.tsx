@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { SampleBookCard } from "@/components/landing/sample-book-card";
-import { SAMPLE_BOOKS } from "@/lib/landing/sample-books";
+import { getSampleBooks } from "@/lib/landing/sample-books";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { cn } from "@/lib/utils";
+
+const SAMPLE_BOOKS_EN = getSampleBooks("en");
 
 const t = getDictionary("en");
 
@@ -43,7 +45,7 @@ export default function EnHomePage() {
         </p>
         <div className="mt-8 flex flex-col items-center justify-center gap-2 sm:flex-row">
           <Link
-            href="/start"
+            href="/en/start"
             className={cn(buttonVariants({ variant: "primary", size: "lg" }), "rounded-full px-8")}
           >
             {t.home.hero.primaryCta}
@@ -94,15 +96,15 @@ export default function EnHomePage() {
           </p>
         </header>
         <ul className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
-          {SAMPLE_BOOKS.map((b) => (
+          {SAMPLE_BOOKS_EN.map((b) => (
             <li key={b.slug}>
-              <SampleBookCard book={b} />
+              <SampleBookCard book={b} href={`/en/samples/${b.slug}`} lang="en" />
             </li>
           ))}
         </ul>
         <div className="mt-8 text-center">
           <Link
-            href="/samples"
+            href="/en/samples"
             className="inline-flex h-10 items-center rounded-full border border-border-soft bg-surface px-5 text-sm text-text-primary hover:border-accent transition-colors"
           >
             {t.home.samples.cta} →
@@ -170,7 +172,7 @@ export default function EnHomePage() {
         <p className="mt-2 text-sm text-text-secondary">{t.home.pricing.subtitle}</p>
         <div className="mt-6 flex items-center justify-center">
           <Link
-            href="/pricing"
+            href="/en/pricing"
             className={cn(buttonVariants({ variant: "secondary", size: "md" }), "rounded-full px-6")}
           >
             {t.home.pricing.cta}
@@ -186,12 +188,18 @@ export default function EnHomePage() {
         <p className="mt-3 text-sm text-text-secondary">{t.home.beta.body}</p>
         <div className="mt-8 flex items-center justify-center">
           <Link
-            href="/start"
+            href="/en/start"
             className={cn(buttonVariants({ variant: "primary", size: "lg" }), "rounded-full px-10")}
           >
             {t.home.beta.cta}
           </Link>
         </div>
+        <p className="mt-6 text-xs text-text-secondary">
+          {t.auth.login.noAccount}{" "}
+          <Link href="/en/login" className="underline underline-offset-4 hover:text-text-primary">
+            {t.auth.login.signupLink}
+          </Link>
+        </p>
       </section>
     </div>
   );

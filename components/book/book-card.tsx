@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BookCover } from "@/components/book/book-cover";
 import { StatusBadge, VisibilityBadge } from "@/components/poem/poem-status-badge";
+import type { Locale } from "@/lib/i18n/config";
 import type { PoemBook, BookWithAuthor } from "@/types";
 
 interface BookCardProps {
@@ -8,9 +9,10 @@ interface BookCardProps {
   href: string;
   showStatus?: boolean;
   showAuthor?: boolean;
+  lang?: Locale;
 }
 
-export function BookCard({ book, href, showStatus = false, showAuthor = false }: BookCardProps) {
+export function BookCard({ book, href, showStatus = false, showAuthor = false, lang = "ko" }: BookCardProps) {
   const author = "author" in book ? book.author : null;
   return (
     <Link href={href} className="group block">
@@ -22,6 +24,7 @@ export function BookCard({ book, href, showStatus = false, showAuthor = false }:
         authorName={author?.display_name}
         authorPosition={book.author_position ?? "bottom"}
         size="md"
+        lang={lang}
         className="group-hover:shadow-md transition-shadow"
       />
       <div className="mt-3 space-y-1">
@@ -36,8 +39,8 @@ export function BookCard({ book, href, showStatus = false, showAuthor = false }:
         )}
         {showStatus && (
           <div className="flex gap-1.5 pt-1">
-            <StatusBadge status={book.status} />
-            <VisibilityBadge visibility={book.visibility} />
+            <StatusBadge status={book.status} lang={lang} />
+            <VisibilityBadge visibility={book.visibility} lang={lang} />
           </div>
         )}
       </div>

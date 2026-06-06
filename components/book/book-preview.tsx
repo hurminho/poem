@@ -1,4 +1,6 @@
 import { BookCover } from "@/components/book/book-cover";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { BookAuthorPosition, Poem } from "@/types";
 
 interface Props {
@@ -9,6 +11,7 @@ interface Props {
   authorName?: string | null;
   authorPosition?: BookAuthorPosition;
   poems: Poem[];
+  lang?: Locale;
 }
 
 /**
@@ -23,28 +26,31 @@ export function BookPreview({
   authorName,
   authorPosition = "bottom",
   poems,
+  lang = "ko",
 }: Props) {
+  const t = getDictionary(lang).studio.bookPreview;
   return (
     <article className="poem-page rounded-2xl border border-border-soft p-8">
       <header className="grid gap-8 md:grid-cols-[200px_1fr] items-start">
         <div className="mx-auto md:mx-0 w-[180px] md:w-full">
           <BookCover
-            title={title || "제목"}
+            title={title || t.coverFallback}
             subtitle={subtitle}
             authorName={authorName}
             authorPosition={authorPosition}
             theme={coverTheme}
             size="md"
+            lang={lang}
           />
         </div>
         <div>
           {authorName && (
             <p className="text-xs tracking-widest text-text-secondary uppercase">
-              {authorName}의 시집
+              {`${authorName}${t.authorSuffix}`}
             </p>
           )}
           <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
-            {title || "(제목 없음)"}
+            {title || t.untitled}
           </h2>
           {subtitle && (
             <p className="mt-1.5 font-serif text-base text-text-secondary">{subtitle}</p>
@@ -60,9 +66,9 @@ export function BookPreview({
       <hr className="divider my-8" />
 
       <section>
-        <h3 className="text-sm font-semibold tracking-tight text-text-primary mb-3">차례</h3>
+        <h3 className="text-sm font-semibold tracking-tight text-text-primary mb-3">{t.toc}</h3>
         {poems.length === 0 ? (
-          <p className="text-sm text-text-secondary">아직 차례에 담긴 시가 없습니다.</p>
+          <p className="text-sm text-text-secondary">{t.tocEmpty}</p>
         ) : (
           <ol className="space-y-1.5 text-sm">
             {poems.map((p, idx) => (
@@ -71,7 +77,7 @@ export function BookPreview({
                   {String(idx + 1).padStart(2, "0")}
                 </span>
                 <span className="font-serif text-text-primary truncate">
-                  {p.title || "(제목 없음)"}
+                  {p.title || t.untitled}
                 </span>
               </li>
             ))}

@@ -1,5 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { BookAuthorPosition } from "@/types";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface BookCoverProps {
   title: string;
@@ -11,6 +13,7 @@ interface BookCoverProps {
   coverUrl?: string | null;
   className?: string;
   size?: "sm" | "md" | "lg";
+  lang?: Locale;
 }
 
 interface ThemeStyle {
@@ -77,10 +80,12 @@ export function BookCover({
   coverUrl,
   size = "md",
   className,
+  lang = "ko",
 }: BookCoverProps) {
   const themeKey = theme && THEMES[theme] ? theme : "warm_paper";
   const themeStyle = THEMES[themeKey];
   const pos: BookAuthorPosition = authorPosition ?? "bottom";
+  const t = getDictionary(lang).studio.bookCover;
 
   if (coverUrl) {
     return (
@@ -88,7 +93,7 @@ export function BookCover({
         className={cn("book-cover relative w-full", className)}
         style={{ backgroundImage: `url(${coverUrl})`, backgroundSize: "cover" }}
         role="img"
-        aria-label={`${title} 표지`}
+        aria-label={t.aria.replace("{title}", title)}
       />
     );
   }
@@ -117,7 +122,7 @@ export function BookCover({
          나머지 70% 는 호흡을 둡니다. */}
       <div className="h-full flex flex-col text-center px-2 pt-[24%]">
         <p className="font-serif font-semibold leading-snug text-balance">
-          {title || "제목 없음"}
+          {title || t.untitled}
         </p>
         {themeStyle.ornament === "rule" && (
           <span className="mt-3 mx-auto h-px w-8 bg-current opacity-30" />

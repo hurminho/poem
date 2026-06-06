@@ -43,6 +43,42 @@ export const WRITING_PROMPTS: WritingPrompt[] = [
 ];
 
 /**
+ * 영어 프롬프트 — 직역이 아니라 영어로 자연스럽게 쓰도록 의역했습니다.
+ * key 는 한국어판과 동일하게 맞춰 이벤트 라벨 일관성을 유지합니다.
+ */
+export const WRITING_PROMPTS_EN: WritingPrompt[] = [
+  {
+    key: "today_me_like",
+    text: "Today, I felt like ______.",
+    starter: "Today, I felt like ",
+  },
+  {
+    key: "recurring_word",
+    text: "The word that keeps coming back to me is ______.",
+    starter: "The word that keeps coming back to me is ",
+  },
+  {
+    key: "unsaid_words",
+    text: "Is there something you never got to say?",
+    starter: "There’s something I never got to say:\n",
+  },
+  {
+    key: "weather_of_heart",
+    text: "If your heart were weather, what would it be?",
+    starter: "If my heart were weather, it would be\n",
+  },
+  {
+    key: "scene_of_the_day",
+    text: "What moment from today stayed with you?",
+    starter: "The moment that stayed with me today:\n",
+  },
+];
+
+export function getWritingPrompts(locale: "ko" | "en"): WritingPrompt[] {
+  return locale === "en" ? WRITING_PROMPTS_EN : WRITING_PROMPTS;
+}
+
+/**
  * 화면에 한 번에 보여줄 프롬프트 묶음 크기.
  * "다른 질문 보기" 를 누르면 다음 묶음으로 회전합니다.
  */

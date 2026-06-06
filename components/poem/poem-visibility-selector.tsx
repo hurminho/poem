@@ -3,42 +3,30 @@
 import { cn } from "@/lib/utils";
 import type { Visibility } from "@/types";
 import { Lock, Link as LinkIcon, Globe } from "lucide-react";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   value: Visibility;
   onChange: (next: Visibility) => void;
   className?: string;
+  lang?: Locale;
 }
 
-const OPTIONS: {
-  value: Visibility;
-  label: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }>;
-}[] = [
-  {
-    value: "private",
-    label: "비공개",
-    description: "오직 나만 볼 수 있어요.",
-    icon: Lock,
-  },
-  {
-    value: "link",
-    label: "링크가 있는 사람",
-    description: "둘러보기엔 안 뜨고, 링크로만 열 수 있어요.",
-    icon: LinkIcon,
-  },
-  {
-    value: "public",
-    label: "전체 공개",
-    description: "둘러보기에 노출됩니다.",
-    icon: Globe,
-  },
-];
-
-export function PoemVisibilitySelector({ value, onChange, className }: Props) {
+export function PoemVisibilitySelector({ value, onChange, className, lang = "ko" }: Props) {
+  const t = getDictionary(lang).studio.visibility;
+  const OPTIONS: {
+    value: Visibility;
+    label: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
+    { value: "private", label: t.private, description: t.privateDesc, icon: Lock },
+    { value: "link", label: t.link, description: t.linkDesc, icon: LinkIcon },
+    { value: "public", label: t.public, description: t.publicDesc, icon: Globe },
+  ];
   return (
-    <div className={cn("space-y-2", className)} role="radiogroup" aria-label="공개 범위">
+    <div className={cn("space-y-2", className)} role="radiogroup" aria-label={t.aria}>
       {OPTIONS.map((o) => {
         const Icon = o.icon;
         const active = value === o.value;

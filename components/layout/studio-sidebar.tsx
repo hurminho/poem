@@ -3,19 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
-const ITEMS = [
-  { href: "/studio", label: "작업실", exact: true },
-  { href: "/studio/poems", label: "나의 시" },
-  { href: "/studio/books", label: "나의 시집" },
-  { href: "/studio/import", label: "가져오기" },
-  { href: "/studio/reflections", label: "받은 감상평" },
-];
-
-export function StudioSidebar() {
+export function StudioSidebar({ lang = "ko" }: { lang?: Locale }) {
   const pathname = usePathname();
+  const t = getDictionary(lang).studio.nav;
+  const base = lang === "en" ? "/en/studio" : "/studio";
+  const ITEMS = [
+    { href: base, label: t.studio, exact: true },
+    { href: `${base}/poems`, label: t.poems },
+    { href: `${base}/books`, label: t.books },
+    { href: `${base}/import`, label: t.import },
+    { href: `${base}/reflections`, label: t.reflections },
+  ];
   return (
-    <nav aria-label="작업실 메뉴" className="flex flex-col gap-1 text-sm">
+    <nav aria-label={t.menuAria} className="flex flex-col gap-1 text-sm">
       {ITEMS.map((it) => {
         const active = it.exact ? pathname === it.href : pathname.startsWith(it.href);
         return (

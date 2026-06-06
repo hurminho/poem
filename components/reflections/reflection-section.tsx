@@ -2,6 +2,8 @@ import { ReflectionList } from "@/components/reflections/reflection-list";
 import { ReflectionForm } from "@/components/reflections/reflection-form";
 import { getReflectionsFor, getReflectionLikes } from "@/lib/db/reflections";
 import { getCurrentUser, getCurrentProfile } from "@/lib/auth/current";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   targetType: "poem" | "book";
@@ -15,6 +17,7 @@ interface Props {
   formDisabled?: boolean;
   /** 섹션 헤딩 표시 여부. */
   showHeading?: boolean;
+  lang?: Locale;
 }
 
 /**
@@ -27,7 +30,9 @@ export async function ReflectionSection({
   kind,
   formDisabled,
   showHeading = true,
+  lang = "ko",
 }: Props) {
+  const t = getDictionary(lang).reflections;
   const [reflections, user, profile] = await Promise.all([
     getReflectionsFor(targetType, targetId),
     getCurrentUser(),
@@ -49,13 +54,14 @@ export async function ReflectionSection({
   return (
     <section className="space-y-5">
       {showHeading && (
-        <h2 className="font-serif text-base font-semibold text-text-primary">감상평</h2>
+        <h2 className="font-serif text-base font-semibold text-text-primary">{t.heading}</h2>
       )}
       <ReflectionList
         reflections={reflections}
         currentUserId={user?.id ?? null}
         likeCountById={likeCountById}
         likedIds={likedIds}
+        lang={lang}
       />
       {!formDisabled && (
         <ReflectionForm
@@ -64,6 +70,7 @@ export async function ReflectionSection({
           isLoggedIn={!!user}
           loggedInName={profile?.display_name ?? null}
           kind={kind ?? targetType}
+          lang={lang}
         />
       )}
     </section>

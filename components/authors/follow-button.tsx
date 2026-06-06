@@ -4,6 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   /** 향후 follows 테이블 mutation 시 사용 (현재는 placeholder). */
@@ -13,6 +15,7 @@ interface Props {
   isSelf?: boolean;
   /** 향후 follows 테이블 연결 시 사용. 현재는 시각적 placeholder. */
   initialFollowing?: boolean;
+  lang?: Locale;
 }
 
 /**
@@ -23,10 +26,12 @@ interface Props {
  *
  * 비로그인 사용자가 누르면 부드러운 안내 후 로그인 페이지로 이동합니다.
  */
-export function FollowButton({ authorId, isLoggedIn, isSelf, initialFollowing = false }: Props) {
+export function FollowButton({ authorId, isLoggedIn, isSelf, initialFollowing = false, lang = "ko" }: Props) {
   // authorId 는 향후 mutation 호출에 사용됩니다 (follows 테이블 insert/delete).
   void authorId;
   const router = useRouter();
+  const t = getDictionary(lang).authors;
+  const loginHref = lang === "en" ? "/en/login" : "/login";
   const [following, setFollowing] = React.useState(initialFollowing);
   const [hint, setHint] = React.useState<string | null>(null);
 
@@ -34,13 +39,13 @@ export function FollowButton({ authorId, isLoggedIn, isSelf, initialFollowing = 
 
   const onClick = () => {
     if (!isLoggedIn) {
-      setHint("작가를 팔로우하려면 로그인이 필요합니다.");
-      setTimeout(() => router.push("/login"), 1100);
+      setHint(t.followNeedsLogin);
+      setTimeout(() => router.push(loginHref), 1100);
       return;
     }
     // TODO: follows 테이블 연결 (Phase 2).
     setFollowing((v) => !v);
-    setHint("팔로우 피드는 곧 도착합니다.");
+    setHint(t.followComingSoon);
     setTimeout(() => setHint(null), 1500);
   };
 
@@ -58,7 +63,7 @@ export function FollowButton({ authorId, isLoggedIn, isSelf, initialFollowing = 
         )}
       >
         <Heart className="size-3.5" />
-        {following ? "팔로잉" : "팔로우"}
+        {following ? t.following : t.follow}
       </button>
       {hint && (
         <span className="absolute left-1/2 top-full z-10 mt-2 -translate-x-1/2 whitespace-nowrap rounded-full bg-text-primary/95 px-3 py-1 text-xs text-background shadow">

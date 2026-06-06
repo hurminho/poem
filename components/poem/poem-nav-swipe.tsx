@@ -4,12 +4,15 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   /** 다음(더 새 시)으로 이동할 시의 id. 없으면 비활성. */
   prevId: string | null;
   /** 이전(더 오래된 시)으로 이동할 시의 id. 없으면 비활성. */
   nextId: string | null;
+  lang?: Locale;
 }
 
 /**
@@ -24,26 +27,28 @@ interface Props {
  *     nextId = 더 오래(=배열에서 뒤)에 발행된 시 → 좌측 화살표
  *   읽는 사람 직관(왼쪽으로 스와이프 = 다음으로 넘김)에 맞춰 left/right 매핑합니다.
  */
-export function PoemNavSwipe({ prevId, nextId }: Props) {
+export function PoemNavSwipe({ prevId, nextId, lang = "ko" }: Props) {
   const router = useRouter();
+  const t = getDictionary(lang).poemNav;
+  const base = lang === "en" ? "/en/poems" : "/poems";
 
   // 키보드 ← / → — 입력 중이거나 모달 안에서는 무시.
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      const t = e.target as HTMLElement | null;
-      const tag = t?.tagName?.toLowerCase();
-      if (tag === "input" || tag === "textarea" || t?.isContentEditable) return;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || el?.isContentEditable) return;
       if (e.key === "ArrowLeft" && prevId) {
         e.preventDefault();
-        router.push(`/poems/${prevId}`);
+        router.push(`${base}/${prevId}`);
       } else if (e.key === "ArrowRight" && nextId) {
         e.preventDefault();
-        router.push(`/poems/${nextId}`);
+        router.push(`${base}/${nextId}`);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [prevId, nextId, router]);
+  }, [prevId, nextId, router, base]);
 
   // 터치 스와이프 — body 전체를 트랙으로 사용해서 짧은 가로 제스처만 인식.
   React.useEffect(() => {
@@ -74,9 +79,9 @@ export function PoemNavSwipe({ prevId, nextId }: Props) {
       // 가로보다 세로 이동이 크면 스크롤로 보고 무시.
       if (Math.abs(dx) < Math.abs(dy) * 1.4) return;
       if (dx < 0 && nextId) {
-        router.push(`/poems/${nextId}`);
+        router.push(`${base}/${nextId}`);
       } else if (dx > 0 && prevId) {
-        router.push(`/poems/${prevId}`);
+        router.push(`${base}/${prevId}`);
       }
     };
     window.addEventListener("touchstart", onStart, { passive: true });
@@ -85,7 +90,7 @@ export function PoemNavSwipe({ prevId, nextId }: Props) {
       window.removeEventListener("touchstart", onStart);
       window.removeEventListener("touchend", onEnd);
     };
-  }, [prevId, nextId, router]);
+  }, [prevId, nextId, router, base]);
 
   return (
     <>
@@ -93,8 +98,8 @@ export function PoemNavSwipe({ prevId, nextId }: Props) {
       <div className="hidden md:block">
         {prevId ? (
           <Link
-            href={`/poems/${prevId}`}
-            aria-label="이전 시"
+            href={`${base}/${prevId}`}
+            aria-label={t.prevAria}
             prefetch
             className="fixed left-4 top-1/2 -translate-y-1/2 z-30 inline-flex size-11 items-center justify-center rounded-full border border-border-soft bg-surface/85 text-text-secondary shadow-sm backdrop-blur hover:text-text-primary hover:border-accent transition-colors"
           >
@@ -103,8 +108,8 @@ export function PoemNavSwipe({ prevId, nextId }: Props) {
         ) : null}
         {nextId ? (
           <Link
-            href={`/poems/${nextId}`}
-            aria-label="다음 시"
+            href={`${base}/${nextId}`}
+            aria-label={t.nextAria}
             prefetch
             className="fixed right-4 top-1/2 -translate-y-1/2 z-30 inline-flex size-11 items-center justify-center rounded-full border border-border-soft bg-surface/85 text-text-secondary shadow-sm backdrop-blur hover:text-text-primary hover:border-accent transition-colors"
           >
@@ -114,12 +119,12 @@ export function PoemNavSwipe({ prevId, nextId }: Props) {
       </div>
 
       {/* 모바일 — 작은 안내 (한 번만 살짝 보이고 사라집니다) */}
-      <MobileSwipeHint visible={!!prevId || !!nextId} />
+      <MobileSwipeHint visible={!!prevId || !!nextId} hint={t.swipeHint} />
     </>
   );
 }
 
-function MobileSwipeHint({ visible }: { visible: boolean }) {
+function MobileSwipeHint({ visible, hint: hintText }: { visible: boolean; hint: string }) {
   const [show, setShow] = React.useState(false);
 
   React.useEffect(() => {
@@ -147,7 +152,7 @@ function MobileSwipeHint({ visible }: { visible: boolean }) {
       role="status"
       className="md:hidden fixed left-1/2 bottom-6 z-30 -translate-x-1/2 rounded-full bg-text-primary/90 px-4 py-1.5 text-[11px] text-background shadow"
     >
-      좌·우로 쓸어 넘기면 다른 시로 이동해요
+      {hintText}
     </p>
   );
 }

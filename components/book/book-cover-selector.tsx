@@ -8,6 +8,8 @@ import {
   BetaInterestModal,
   useBetaInterest,
 } from "@/components/monetization/beta-interest-modal";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { BookAuthorPosition } from "@/types";
 
 interface Props {
@@ -20,6 +22,7 @@ interface Props {
   /** 표지 위 작가 필명의 위치 */
   authorPosition?: BookAuthorPosition;
   className?: string;
+  lang?: Locale;
 }
 
 /**
@@ -33,96 +36,107 @@ export function BookCoverSelector({
   previewAuthorName,
   authorPosition = "bottom",
   className,
+  lang = "ko",
 }: Props) {
+  const dict = getDictionary(lang).studio;
+  const t = dict.coverSelector;
+  const themeLabels = dict.coverThemes as Record<string, string>;
   const { open, setOpen, trigger } = useBetaInterest({
     interestType: "designer_cover",
-    productName: "디자이너 협업 표지",
+    productName: t.productName,
     clickEventType: "click_premium_cover",
     productType: "feature",
     price: null,
   });
 
-  // 12개 자리 중 마지막 1개는 '디자이너와 협업' 카드로 대체합니다.
-  const visibleThemes = COVER_THEMES.slice(0, 11);
+  // 한국어: 11종 + '디자이너와 협업' 베타 카드. 영어: 베타 모달 대신 12종 모두 노출.
+  const showDesignerCard = lang === "ko";
+  const visibleThemes = showDesignerCard ? COVER_THEMES.slice(0, 11) : COVER_THEMES;
 
   return (
     <>
       <div
         className={cn("grid gap-3 grid-cols-3 sm:grid-cols-4", className)}
         role="radiogroup"
-        aria-label="표지 테마"
+        aria-label={t.themeAria}
       >
-        {visibleThemes.map((t) => {
-          const active = value === t.value;
+        {visibleThemes.map((theme) => {
+          const active = value === theme.value;
+          const label = themeLabels[theme.value] ?? theme.label;
           return (
             <button
-              key={t.value}
+              key={theme.value}
               type="button"
               role="radio"
               aria-checked={active}
-              onClick={() => onChange(t.value)}
+              onClick={() => onChange(theme.value)}
               className={cn(
                 "relative block rounded-xl p-1.5 transition-all text-left",
                 active
                   ? "ring-2 ring-accent bg-accent-soft/40"
                   : "hover:bg-accent-soft/30",
               )}
-              aria-label={t.label}
+              aria-label={label}
             >
               <BookCover
                 title={previewTitle || "—"}
                 authorName={previewAuthorName ?? null}
                 authorPosition={authorPosition}
-                theme={t.value}
+                theme={theme.value}
                 size="sm"
+                lang={lang}
                 className="w-full"
               />
               <div className="mt-2 flex items-center gap-1.5">
-                <p className="text-xs text-text-secondary">{t.label}</p>
+                <p className="text-xs text-text-secondary">{label}</p>
               </div>
             </button>
           );
         })}
 
-        {/* 4번째 줄 마지막 자리 — '디자이너와 협업' 카드 */}
-        <button
-          type="button"
-          onClick={trigger}
-          className={cn(
-            "relative block rounded-xl p-1.5 text-left transition-all hover:bg-accent-soft/30",
-          )}
-          aria-label="디자이너와 협업 표지 — 베타 신청"
-        >
-          <div
+        {showDesignerCard && (
+          /* 4번째 줄 마지막 자리 — '디자이너와 협업' 카드 */
+          <button
+            type="button"
+            onClick={trigger}
             className={cn(
-              "book-cover relative w-full overflow-hidden rounded-md border border-dashed border-border-soft bg-accent-soft/30 text-text-primary",
+              "relative block rounded-xl p-1.5 text-left transition-all hover:bg-accent-soft/30",
             )}
+            aria-label={t.designerAria}
           >
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center">
-              <Sparkles className="size-4 text-[color:var(--ink-amber)]" aria-hidden />
-              <p className="font-serif text-xs font-semibold leading-snug">
-                디자이너와
-                <br />
-                협업
-              </p>
-              <p className="text-[10px] text-text-secondary leading-snug">
-                준비 중 · 신청
-              </p>
+            <div
+              className={cn(
+                "book-cover relative w-full overflow-hidden rounded-md border border-dashed border-border-soft bg-accent-soft/30 text-text-primary",
+              )}
+            >
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-3 text-center">
+                <Sparkles className="size-4 text-[color:var(--ink-amber)]" aria-hidden />
+                <p className="font-serif text-xs font-semibold leading-snug">
+                  {t.designerLine1}
+                  <br />
+                  {t.designerLine2}
+                </p>
+                <p className="text-[10px] text-text-secondary leading-snug">
+                  {t.comingSoon}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="mt-2 flex items-center gap-1.5">
-            <p className="text-xs text-text-secondary">디자이너와 협업</p>
-          </div>
-        </button>
+            <div className="mt-2 flex items-center gap-1.5">
+              <p className="text-xs text-text-secondary">{t.designerLabel}</p>
+            </div>
+          </button>
+        )}
       </div>
 
-      <BetaInterestModal
-        open={open}
-        interestType="designer_cover"
-        productName="디자이너 협업 표지"
-        helperText="디자이너가 한 권의 책처럼 다듬은 표지를 베타 신청자에게 우선 제공할 예정입니다."
-        onClose={() => setOpen(false)}
-      />
+      {showDesignerCard && (
+        <BetaInterestModal
+          open={open}
+          interestType="designer_cover"
+          productName={t.productName}
+          helperText={t.helperText}
+          onClose={() => setOpen(false)}
+        />
+      )}
     </>
   );
 }

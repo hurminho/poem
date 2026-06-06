@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toggleReactionAction } from "@/lib/reactions/actions";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { ReactionTargetType } from "@/types";
 
 interface LikeButtonProps {
@@ -15,6 +17,7 @@ interface LikeButtonProps {
   initialCount?: number;
   variant?: "default" | "compact";
   className?: string;
+  lang?: Locale;
 }
 
 /**
@@ -31,8 +34,11 @@ export function LikeButton({
   initialCount = 0,
   variant = "default",
   className,
+  lang = "ko",
 }: LikeButtonProps) {
   const router = useRouter();
+  const t = getDictionary(lang).reactions;
+  const loginHref = lang === "en" ? "/en/login" : "/login";
   const [liked, setLiked] = React.useState(initialLiked);
   const [count, setCount] = React.useState(initialCount);
   const [pending, startTransition] = React.useTransition();
@@ -42,8 +48,8 @@ export function LikeButton({
 
   const onClick = () => {
     if (!isLoggedIn) {
-      setHint("좋아요는 로그인 후 가능해요.");
-      setTimeout(() => router.push("/login"), 1100);
+      setHint(t.likeNeedsLogin);
+      setTimeout(() => router.push(loginHref), 1100);
       return;
     }
     startTransition(async () => {
@@ -55,10 +61,10 @@ export function LikeButton({
         setLiked(!next);
         setCount((c) => c + (next ? -1 : 1));
         if (res.needsLogin) {
-          setHint("좋아요는 로그인 후 가능해요.");
-          setTimeout(() => router.push("/login"), 1100);
+          setHint(t.likeNeedsLogin);
+          setTimeout(() => router.push(loginHref), 1100);
         } else {
-          setHint(res.error ?? "요청을 처리하지 못했어요.");
+          setHint(res.error ?? t.requestFailed);
           setTimeout(() => setHint(null), 1500);
         }
         return;
@@ -75,7 +81,7 @@ export function LikeButton({
         onClick={onClick}
         disabled={pending}
         aria-pressed={liked}
-        aria-label={liked ? "좋아요 해제" : "좋아요"}
+        aria-label={liked ? t.unlikeAria : t.likeAria}
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full border bg-surface transition-colors",
           "border-border-soft hover:border-accent",
@@ -92,7 +98,7 @@ export function LikeButton({
           fill={liked ? "currentColor" : "none"}
         />
         <span className="tabular-nums">{count}</span>
-        {!compact && <span className="ml-0.5">좋아요</span>}
+        {!compact && <span className="ml-0.5">{t.like}</span>}
       </button>
       {hint && (
         <span

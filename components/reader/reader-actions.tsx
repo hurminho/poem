@@ -3,17 +3,21 @@
 import * as React from "react";
 import { MessageSquareQuote } from "lucide-react";
 import { QuietButton } from "@/components/ui/quiet-button";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   /** 감상평 영역으로 스크롤할 selector (optional) */
   reflectionAnchor?: string;
+  lang?: Locale;
 }
 
 /**
  * 읽기 화면에서 시 한 편을 만난 뒤의 작은 행동.
  * 감상평 남기기는 같은 페이지 내 anchor로 부드럽게 이동합니다.
  */
-export function ReaderActions({ reflectionAnchor }: Props) {
+export function ReaderActions({ reflectionAnchor, lang = "ko" }: Props) {
+  const r = getDictionary(lang).reader;
   const goReflection = () => {
     if (!reflectionAnchor) return;
     const el = document.querySelector(reflectionAnchor) as HTMLElement | null;
@@ -27,7 +31,7 @@ export function ReaderActions({ reflectionAnchor }: Props) {
     <div className="flex flex-wrap items-center justify-center gap-2">
       <QuietButton onClick={goReflection}>
         <MessageSquareQuote className="size-4" />
-        감상평 남기기
+        {r.leaveReflection}
       </QuietButton>
     </div>
   );

@@ -2,18 +2,15 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 type ReaderTheme = "light" | "night" | "day";
 
 const STORAGE_KEY = "foem-reader-theme";
 const VALID: ReaderTheme[] = ["light", "night", "day"];
-// 사용자에게 보이는 라벨은 한국어 — 내부 식별자는 호환을 위해 유지합니다.
-// (light = 종이, day = 흰색, night = 밤)
-const OPTIONS: { value: ReaderTheme; label: string }[] = [
-  { value: "light", label: "종이" },
-  { value: "day", label: "흰색" },
-  { value: "night", label: "밤" },
-];
+// 내부 식별자(light/day/night)는 테마 호환을 위해 유지하고, 라벨만 로케일에 맞춥니다.
+// (light = 종이/Paper, day = 흰색/White, night = 밤/Night)
 
 function readStored(): ReaderTheme {
   if (typeof window === "undefined") return "light";
@@ -39,7 +36,19 @@ function applyTheme(t: ReaderTheme) {
  * `useSyncExternalStore` 패턴을 사용해 effect 내 setState 없이
  * 외부 상태(localStorage)를 따라가도록 합니다.
  */
-export function ReaderThemeToggle({ className }: { className?: string }) {
+export function ReaderThemeToggle({
+  className,
+  lang = "ko",
+}: {
+  className?: string;
+  lang?: Locale;
+}) {
+  const r = getDictionary(lang).reader;
+  const OPTIONS: { value: ReaderTheme; label: string }[] = [
+    { value: "light", label: r.themePaper },
+    { value: "day", label: r.themeWhite },
+    { value: "night", label: r.themeNight },
+  ];
   const subscribe = React.useCallback((cb: () => void) => {
     if (typeof window === "undefined") return () => {};
     const onStorage = (e: StorageEvent) => {

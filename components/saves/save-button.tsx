@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Bookmark, BookmarkCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toggleSaveAction } from "@/lib/saves/actions";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { SaveTargetType } from "@/types";
 
 interface Props {
@@ -15,6 +17,7 @@ interface Props {
   /** "내 서재에 저장" / 짧은 라벨로 변형. */
   variant?: "default" | "compact";
   className?: string;
+  lang?: Locale;
 }
 
 /**
@@ -32,16 +35,19 @@ export function SaveButton({
   initialSaved = false,
   variant = "default",
   className,
+  lang = "ko",
 }: Props) {
   const router = useRouter();
+  const t = getDictionary(lang).reactions;
+  const loginHref = lang === "en" ? "/en/login" : "/login";
   const [saved, setSaved] = React.useState(initialSaved);
   const [pending, startTransition] = React.useTransition();
   const [hint, setHint] = React.useState<string | null>(null);
 
   const onClick = () => {
     if (!isLoggedIn) {
-      setHint("내 서재에 담으려면 로그인이 필요합니다.");
-      setTimeout(() => router.push("/login"), 1100);
+      setHint(t.saveNeedsLogin);
+      setTimeout(() => router.push(loginHref), 1100);
       return;
     }
     startTransition(async () => {
@@ -51,10 +57,10 @@ export function SaveButton({
       if (!res.ok) {
         setSaved(!optimistic);
         if (res.needsLogin) {
-          setHint("내 서재에 담으려면 로그인이 필요합니다.");
-          setTimeout(() => router.push("/login"), 1100);
+          setHint(t.saveNeedsLogin);
+          setTimeout(() => router.push(loginHref), 1100);
         } else {
-          setHint(res.error ?? "요청을 처리하지 못했어요.");
+          setHint(res.error ?? t.requestFailed);
           setTimeout(() => setHint(null), 1500);
         }
         return;
@@ -64,7 +70,7 @@ export function SaveButton({
   };
 
   const compact = variant === "compact";
-  const label = saved ? "서재에 담음" : "내 서재에 저장";
+  const label = saved ? t.saved : t.saveDefault;
   const Icon = saved ? BookmarkCheck : Bookmark;
 
   return (

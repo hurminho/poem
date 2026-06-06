@@ -9,9 +9,12 @@ import {
   signUpAction,
   checkDisplayNameAvailableAction,
 } from "@/lib/auth/actions";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface SignupFormProps {
   error?: string;
+  lang?: Locale;
 }
 
 type NameState = "idle" | "checking" | "available" | "taken" | "invalid";
@@ -20,8 +23,10 @@ type NameState = "idle" | "checking" | "available" | "taken" | "invalid";
  * 회원가입 폼.
  * - 필명(작가 이름) 중복 확인 (서버 액션 호출)
  * - 비밀번호 2회 입력 검증 (실시간 + 서버)
+ * - lang 으로 한/영 카피 전환 (서버 액션/필드명은 동일)
  */
-export function SignupForm({ error }: SignupFormProps) {
+export function SignupForm({ error, lang = "ko" }: SignupFormProps) {
+  const t = getDictionary(lang).auth.signup;
   const [displayName, setDisplayName] = React.useState("");
   const [nameState, setNameState] = React.useState<NameState>("idle");
   const [nameMsg, setNameMsg] = React.useState<string | null>(null);
@@ -52,7 +57,7 @@ export function SignupForm({ error }: SignupFormProps) {
     const name = displayName.trim();
     if (!name) {
       setNameState("invalid");
-      setNameMsg("필명을 입력해주세요.");
+      setNameMsg(t.nameEmpty);
       return;
     }
     setNameState("checking");
@@ -60,24 +65,25 @@ export function SignupForm({ error }: SignupFormProps) {
     const res = await checkDisplayNameAvailableAction(name);
     if (res.available) {
       setNameState("available");
-      setNameMsg("사용할 수 있는 필명이에요.");
+      setNameMsg(t.nameAvailable);
     } else {
       setNameState("taken");
-      setNameMsg(res.reason ?? "이미 사용 중인 필명입니다.");
+      setNameMsg(res.reason ?? t.nameTaken);
     }
   }
 
   return (
     <form action={signUpAction} className="space-y-4">
+      <input type="hidden" name="locale" value={lang} />
       <div className="space-y-1.5">
-        <Label htmlFor="display_name">필명 (작가 이름)</Label>
+        <Label htmlFor="display_name">{t.displayName}</Label>
         <div className="flex gap-2">
           <Input
             id="display_name"
             name="display_name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="예) 윤지원"
+            placeholder={t.displayNamePlaceholder}
             required
             maxLength={30}
             autoComplete="nickname"
@@ -91,7 +97,7 @@ export function SignupForm({ error }: SignupFormProps) {
             disabled={nameState === "checking" || !displayName.trim()}
             className="shrink-0"
           >
-            {nameState === "checking" ? "확인 중…" : "중복 확인"}
+            {nameState === "checking" ? t.checking : t.checkDup}
           </Button>
         </div>
         {nameMsg ? (
@@ -106,14 +112,12 @@ export function SignupForm({ error }: SignupFormProps) {
             {nameMsg}
           </p>
         ) : (
-          <p className="text-xs text-text-secondary">
-            시담에서 글을 발표할 때 보이는 이름입니다. 가입 후에도 변경할 수 있어요.
-          </p>
+          <p className="text-xs text-text-secondary">{t.displayNameHelp}</p>
         )}
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="email">이메일</Label>
+        <Label htmlFor="email">{t.email}</Label>
         <Input
           id="email"
           name="email"
@@ -124,7 +128,7 @@ export function SignupForm({ error }: SignupFormProps) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="password">비밀번호</Label>
+        <Label htmlFor="password">{t.password}</Label>
         <Input
           id="password"
           name="password"
@@ -135,11 +139,11 @@ export function SignupForm({ error }: SignupFormProps) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-        <p className="text-xs text-text-secondary">8자 이상</p>
+        <p className="text-xs text-text-secondary">{t.passwordHelp}</p>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="password_confirm">비밀번호 확인</Label>
+        <Label htmlFor="password_confirm">{t.passwordConfirm}</Label>
         <Input
           id="password_confirm"
           name="password_confirm"
@@ -152,9 +156,7 @@ export function SignupForm({ error }: SignupFormProps) {
           aria-invalid={passwordMismatch || undefined}
         />
         {passwordMismatch ? (
-          <p className="text-xs text-[color:#a85a4a]">
-            비밀번호가 일치하지 않습니다.
-          </p>
+          <p className="text-xs text-[color:#a85a4a]">{t.passwordMismatch}</p>
         ) : null}
       </div>
 
@@ -166,7 +168,7 @@ export function SignupForm({ error }: SignupFormProps) {
             onChange={(e) => toggleAll(e.target.checked)}
             className="h-4 w-4 rounded border-border-soft accent-[color:var(--ink-forest)]"
           />
-          전체 동의
+          {t.agreeAll}
         </label>
 
         <hr className="border-border-soft" />
@@ -181,8 +183,8 @@ export function SignupForm({ error }: SignupFormProps) {
             required
           />
           <span>
-            <span className="text-[color:#a85a4a]">[필수]</span>{" "}
-            만 14세 이상입니다.
+            <span className="text-[color:#a85a4a]">{t.required}</span>{" "}
+            {t.age14}
           </span>
         </label>
 
@@ -196,16 +198,17 @@ export function SignupForm({ error }: SignupFormProps) {
             required
           />
           <span>
-            <span className="text-[color:#a85a4a]">[필수]</span>{" "}
+            <span className="text-[color:#a85a4a]">{t.required}</span>{" "}
+            {t.agreeTermsPrefix}
             <Link
               href="/legal/terms"
               target="_blank"
               rel="noopener noreferrer"
               className="text-text-primary underline underline-offset-4"
             >
-              시담 이용약관
+              {t.termsLink}
             </Link>
-            에 동의합니다.
+            {t.agreeTermsSuffix}
           </span>
         </label>
 
@@ -219,16 +222,17 @@ export function SignupForm({ error }: SignupFormProps) {
             required
           />
           <span>
-            <span className="text-[color:#a85a4a]">[필수]</span>{" "}
+            <span className="text-[color:#a85a4a]">{t.required}</span>{" "}
+            {t.agreePrivacyPrefix}
             <Link
               href="/legal/privacy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-text-primary underline underline-offset-4"
             >
-              개인정보 처리방침
+              {t.privacyLink}
             </Link>
-            에 동의합니다.
+            {t.agreePrivacySuffix}
           </span>
         </label>
       </div>
@@ -247,12 +251,12 @@ export function SignupForm({ error }: SignupFormProps) {
           !allAgreed
         }
       >
-        가입하기
+        {t.submit}
       </Button>
 
       {nameState === "idle" && displayName.trim().length > 0 ? (
         <p className="text-xs text-text-secondary text-center">
-          ※ 가입 전 ‘중복 확인’을 한 번 눌러주세요.
+          {t.checkFirstHint}
         </p>
       ) : null}
     </form>

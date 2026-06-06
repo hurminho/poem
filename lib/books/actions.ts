@@ -7,8 +7,36 @@ import { isSupabaseConfigured } from "@/lib/supabase/check";
 import type { Visibility, ContentStatus, BookAuthorPosition } from "@/types";
 
 type SaveAction = "draft" | "publish" | "archive";
+type Locale = "ko" | "en";
 const ALLOWED_VIS: Visibility[] = ["private", "link", "public"];
 const ALLOWED_POS: BookAuthorPosition[] = ["top", "middle", "bottom"];
+
+function asLocale(v: FormDataEntryValue | null): Locale {
+  return String(v ?? "") === "en" ? "en" : "ko";
+}
+
+const BOOK_MSG = {
+  ko: {
+    notConfigured: "Supabase 환경변수가 설정되지 않았습니다.",
+    needTitle: "제목을 입력해주세요.",
+    needPoem: "발행하려면 적어도 한 편의 시가 필요합니다.",
+    saveFailed: "저장에 실패했습니다.",
+    publishNotice: "발행했습니다.",
+    archiveNotice: "보관함으로 옮겼습니다.",
+    draftNotice: "임시저장 했습니다.",
+    deleteNotice: "시집을 삭제했습니다.",
+  },
+  en: {
+    notConfigured: "Supabase environment variables are not set.",
+    needTitle: "Please enter a title.",
+    needPoem: "You need at least one poem to publish.",
+    saveFailed: "Couldn’t save.",
+    publishNotice: "Published.",
+    archiveNotice: "Moved to the archive.",
+    draftNotice: "Draft saved.",
+    deleteNotice: "Book deleted.",
+  },
+} as const;
 
 function asVisibility(v: FormDataEntryValue | null, fallback: Visibility): Visibility {
   const s = String(v ?? "");
@@ -26,15 +54,20 @@ function asAuthorPosition(
 }
 
 export async function saveBookAction(formData: FormData) {
+  const locale = asLocale(formData.get("locale"));
+  const M = BOOK_MSG[locale];
+  const studioBase = locale === "en" ? "/en/studio" : "/studio";
+  const loginBase = locale === "en" ? "/en/login" : "/login";
+
   if (!isSupabaseConfigured()) {
-    redirect("/studio/books?error=" + encodeURIComponent("Supabase 환경변수가 설정되지 않았습니다."));
+    redirect(`${studioBase}/books?error=` + encodeURIComponent(M.notConfigured));
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/studio/books");
+  if (!user) redirect(`${loginBase}?next=${studioBase}/books`);
 
   const id = String(formData.get("id") || "").trim() || null;
   const action = String(formData.get("action") || "draft") as SaveAction;
@@ -51,12 +84,12 @@ export async function saveBookAction(formData: FormData) {
     .filter(Boolean);
 
   if (!title) {
-    const back = id ? `/studio/books/${id}/edit` : "/studio/books/new";
-    redirect(back + "?error=" + encodeURIComponent("제목을 입력해주세요."));
+    const back = id ? `${studioBase}/books/${id}/edit` : `${studioBase}/books/new`;
+    redirect(back + "?error=" + encodeURIComponent(M.needTitle));
   }
   if (action === "publish" && poemIds.length === 0) {
-    const back = id ? `/studio/books/${id}/edit` : "/studio/books/new";
-    redirect(back + "?error=" + encodeURIComponent("발행하려면 적어도 한 편의 시가 필요합니다."));
+    const back = id ? `${studioBase}/books/${id}/edit` : `${studioBase}/books/new`;
+    redirect(back + "?error=" + encodeURIComponent(M.needPoem));
   }
 
   let status: ContentStatus = "draft";
@@ -90,7 +123,7 @@ export async function saveBookAction(formData: FormData) {
       .eq("id", id)
       .eq("author_id", user.id);
     if (error) {
-      redirect(`/studio/books/${id}/edit?error=` + encodeURIComponent(error.message));
+      redirect(`${studioBase}/books/${id}/edit?error=` + encodeURIComponent(error.message));
     }
   } else {
     const { data, error } = await supabase
@@ -99,7 +132,7 @@ export async function saveBookAction(formData: FormData) {
       .select("id")
       .single();
     if (error || !data) {
-      redirect("/studio/books/new?error=" + encodeURIComponent(error?.message ?? "저장에 실패했습니다."));
+      redirect(`${studioBase}/books/new?error=` + encodeURIComponent(error?.message ?? M.saveFailed));
     }
     savedId = data.id;
   }
@@ -108,7 +141,7 @@ export async function saveBookAction(formData: FormData) {
     // poem_book_items 일괄 동기화: 기존 삭제 후 새로 입력 (간단·정확).
     const { error: delErr } = await supabase.from("poem_book_items").delete().eq("book_id", savedId);
     if (delErr) {
-      redirect(`/studio/books/${savedId}/edit?error=` + encodeURIComponent(delErr.message));
+      redirect(`${studioBase}/books/${savedId}/edit?error=` + encodeURIComponent(delErr.message));
     }
     if (poemIds.length) {
       const rows = poemIds.map((poem_id, i) => ({
@@ -118,33 +151,42 @@ export async function saveBookAction(formData: FormData) {
       }));
       const { error: insErr } = await supabase.from("poem_book_items").insert(rows);
       if (insErr) {
-        redirect(`/studio/books/${savedId}/edit?error=` + encodeURIComponent(insErr.message));
+        redirect(`${studioBase}/books/${savedId}/edit?error=` + encodeURIComponent(insErr.message));
       }
     }
   }
 
   revalidatePath("/studio");
   revalidatePath("/studio/books");
-  if (savedId) revalidatePath(`/books/${savedId}`);
+  revalidatePath("/en/studio");
+  revalidatePath("/en/studio/books");
+  if (savedId) {
+    revalidatePath(`/books/${savedId}`);
+    revalidatePath(`/en/books/${savedId}`);
+  }
 
   const notice =
-    action === "publish" ? "발행했습니다." : action === "archive" ? "보관함으로 옮겼습니다." : "임시저장 했습니다.";
-  redirect(`/studio/books/${savedId}/edit?notice=` + encodeURIComponent(notice));
+    action === "publish" ? M.publishNotice : action === "archive" ? M.archiveNotice : M.draftNotice;
+  redirect(`${studioBase}/books/${savedId}/edit?notice=` + encodeURIComponent(notice));
 }
 
 export async function deleteBookAction(formData: FormData) {
-  if (!isSupabaseConfigured()) redirect("/studio/books");
+  const locale = asLocale(formData.get("locale"));
+  const studioBase = locale === "en" ? "/en/studio" : "/studio";
+  const loginBase = locale === "en" ? "/en/login" : "/login";
+  if (!isSupabaseConfigured()) redirect(`${studioBase}/books`);
   const id = String(formData.get("id") || "").trim();
-  if (!id) redirect("/studio/books");
+  if (!id) redirect(`${studioBase}/books`);
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) redirect(loginBase);
 
   await supabase.from("poem_book_items").delete().eq("book_id", id);
   await supabase.from("poem_books").delete().eq("id", id).eq("author_id", user.id);
   revalidatePath("/studio/books");
-  redirect("/studio/books?notice=" + encodeURIComponent("시집을 삭제했습니다."));
+  revalidatePath("/en/studio/books");
+  redirect(`${studioBase}/books?notice=` + encodeURIComponent(BOOK_MSG[locale].deleteNotice));
 }

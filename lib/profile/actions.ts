@@ -17,8 +17,27 @@ function sanitizeUsername(raw: string): string | null {
 }
 
 export async function saveOnboardingAction(formData: FormData) {
+  const isEn = String(formData.get("locale") || "") === "en";
+  const base = isEn ? "/en" : "";
+  const onboardingPath = `${base}/onboarding`;
+  const m = isEn
+    ? {
+        notConfigured: "Supabase environment variables are not configured.",
+        nameRequired: "Please enter a pen name.",
+        usernameTaken: "That username is already taken.",
+        usernameFormat:
+          "Use lowercase letters, numbers and underscores, 2–30 characters.",
+      }
+    : {
+        notConfigured: "Supabase 환경변수가 설정되지 않았습니다.",
+        nameRequired: "필명을 입력해주세요.",
+        usernameTaken: "이미 사용 중인 사용자 이름입니다.",
+        usernameFormat:
+          "사용자 이름은 영문 소문자·숫자·언더스코어 2~30자로 입력해주세요.",
+      };
+
   if (!isSupabaseConfigured()) {
-    redirect("/onboarding?error=" + encodeURIComponent("Supabase 환경변수가 설정되지 않았습니다."));
+    redirect(onboardingPath + "?error=" + encodeURIComponent(m.notConfigured));
   }
 
   const display_name = String(formData.get("display_name") || "").trim();
@@ -26,21 +45,21 @@ export async function saveOnboardingAction(formData: FormData) {
   const bio = String(formData.get("bio") || "").trim();
 
   if (!display_name) {
-    redirect("/onboarding?error=" + encodeURIComponent("필명을 입력해주세요."));
+    redirect(onboardingPath + "?error=" + encodeURIComponent(m.nameRequired));
   }
 
   let username: string | null;
   try {
     username = sanitizeUsername(usernameRaw);
-  } catch (e) {
-    redirect("/onboarding?error=" + encodeURIComponent((e as Error).message));
+  } catch {
+    redirect(onboardingPath + "?error=" + encodeURIComponent(m.usernameFormat));
   }
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/onboarding");
+  if (!user) redirect(`${base}/login?next=${onboardingPath}`);
 
   if (username) {
     const { data: dup } = await supabase
@@ -51,8 +70,7 @@ export async function saveOnboardingAction(formData: FormData) {
       .maybeSingle();
     if (dup) {
       redirect(
-        "/onboarding?error=" +
-          encodeURIComponent("이미 사용 중인 사용자 이름입니다."),
+        onboardingPath + "?error=" + encodeURIComponent(m.usernameTaken),
       );
     }
   }
@@ -68,7 +86,7 @@ export async function saveOnboardingAction(formData: FormData) {
     .eq("id", user.id);
 
   if (error) {
-    redirect("/onboarding?error=" + encodeURIComponent(error.message));
+    redirect(onboardingPath + "?error=" + encodeURIComponent(error.message));
   }
   revalidatePath("/", "layout");
   redirect("/studio");

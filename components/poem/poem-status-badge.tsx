@@ -1,23 +1,25 @@
 import { Badge } from "@/components/ui/badge";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import type { ContentStatus, Visibility } from "@/types";
 
-const STATUS_LABEL: Record<ContentStatus, string> = {
-  draft: "임시저장",
-  published: "발행됨",
-  archived: "보관함",
-};
-
-const VIS_LABEL: Record<Visibility, string> = {
-  private: "비공개",
-  link: "링크 공유",
-  public: "공개",
-};
-
-export function StatusBadge({ status }: { status: ContentStatus }) {
+export function StatusBadge({
+  status,
+  lang = "ko",
+}: {
+  status: ContentStatus;
+  lang?: Locale;
+}) {
   const tone = status === "published" ? "ink" : status === "draft" ? "neutral" : "outline";
-  return <Badge tone={tone}>{STATUS_LABEL[status]}</Badge>;
+  return <Badge tone={tone}>{getDictionary(lang).studio.status[status]}</Badge>;
 }
 
-export function VisibilityBadge({ visibility }: { visibility: Visibility }) {
-  return <Badge tone="outline">{VIS_LABEL[visibility]}</Badge>;
+export function VisibilityBadge({
+  visibility,
+  lang = "ko",
+}: {
+  visibility: Visibility;
+  lang?: Locale;
+}) {
+  return <Badge tone="outline">{getDictionary(lang).studio.vis[visibility]}</Badge>;
 }

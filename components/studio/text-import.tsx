@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { importPoemDraftsAction } from "@/lib/poems/import-actions";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 
 interface DetectedBlock {
   index: number;
@@ -22,7 +24,8 @@ interface DetectedBlock {
  * - 빈 줄 1개 이상(`\n\n+`)을 기준으로 블록을 자동 분리
  * - 클라이언트에서 미리 분리 결과를 보여주고, 확인 후 일괄 저장
  */
-export function TextImport() {
+export function TextImport({ lang = "ko" }: { lang?: Locale }) {
+  const t = getDictionary(lang).studio.textImport;
   const router = useRouter();
   const [raw, setRaw] = React.useState("");
   const [pending, startTransition] = React.useTransition();
@@ -41,11 +44,11 @@ export function TextImport() {
       const firstLine = content.split("\n", 1)[0]?.trim() ?? "";
       return {
         index: i,
-        title: firstLine.slice(0, 60) || `초안 ${i + 1}`,
+        title: firstLine.slice(0, 60) || t.draftFallback.replace("{n}", String(i + 1)),
         content,
       };
     });
-  }, [raw]);
+  }, [raw, t]);
 
   const onImport = () => {
     if (blocks.length === 0) return;
@@ -53,14 +56,15 @@ export function TextImport() {
     startTransition(async () => {
       const res = await importPoemDraftsAction(
         blocks.map((b) => ({ content: b.content })),
+        lang,
       );
       if (!res.ok) {
-        setMessage({ kind: "error", text: res.error ?? "가져오기에 실패했어요." });
+        setMessage({ kind: "error", text: res.error ?? t.errFallback });
         return;
       }
       setMessage({
         kind: "ok",
-        text: `${res.createdCount}편이 임시저장으로 보관되었습니다. ‘나의 시’에서 마저 다듬어 보세요.`,
+        text: t.success.replace("{n}", String(res.createdCount)),
       });
       setRaw("");
       router.refresh();
@@ -71,28 +75,30 @@ export function TextImport() {
     <div className="space-y-6">
       <Card className="p-6">
         <p className="text-xs tracking-wider text-text-secondary mb-1">
-          가져오기
+          {t.eyebrow}
         </p>
         <h2 className="font-serif text-lg font-semibold text-text-primary">
-          메모장이나 인스타그램에 써둔 글을 붙여넣어보세요.
+          {t.heading}
         </h2>
         <p className="mt-1 text-xs text-text-secondary">
-          빈 줄로 구분된 단락은 각각 한 편의 시 초안이 됩니다. 가져온 뒤 ‘나의 시’ 에서 천천히 다듬으면 됩니다.
+          {t.helper}
         </p>
 
         <div className="mt-5 space-y-2">
           <Textarea
             rows={12}
-            placeholder={
-              "여기에 통째로 붙여넣어 주세요.\n\n빈 줄을 한 번 띄우면\n다음 글로 분리됩니다.\n\n오늘의 짧은 한 줄.\n\n또 다른 단락의 시작."
-            }
+            placeholder={t.placeholder}
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
             className="poem-editor-textarea px-5 py-4"
           />
           <div className="flex items-center justify-between gap-2">
             <p className="text-[11px] text-text-secondary">
-              감지된 초안: <strong>{blocks.length}편</strong>
+              {t.detectedPre}
+              <strong>
+                {blocks.length}
+                {t.detectedSuffix}
+              </strong>
             </p>
             <div className="flex items-center gap-2">
               <Button
@@ -102,14 +108,14 @@ export function TextImport() {
                 onClick={() => setRaw("")}
                 disabled={!raw}
               >
-                지우기
+                {t.clear}
               </Button>
               <Button
                 type="button"
                 onClick={onImport}
                 disabled={pending || blocks.length === 0}
               >
-                {pending ? "가져오는 중…" : "초안으로 저장"}
+                {pending ? t.importing : t.saveAsDraft}
               </Button>
             </div>
           </div>
@@ -132,7 +138,7 @@ export function TextImport() {
       {blocks.length > 0 ? (
         <section className="space-y-3">
           <h3 className="font-serif text-sm font-semibold text-text-primary">
-            이렇게 분리될 거예요
+            {t.previewHeading}
           </h3>
           <ul className="space-y-3">
             {blocks.map((b) => (

@@ -3,11 +3,13 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
-  WRITING_PROMPTS,
+  getWritingPrompts,
   PROMPT_BATCH_SIZE,
   type WritingPrompt,
 } from "@/lib/poems/prompts";
 import { trackActivation } from "@/lib/analytics/events";
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
 interface WritingPromptsProps {
@@ -18,6 +20,7 @@ interface WritingPromptsProps {
   onPickPrompt: (prompt: WritingPrompt) => void;
   /** 본문이 비어 있을 때만 보여주려면 false 로 숨김 */
   visible?: boolean;
+  lang?: Locale;
   className?: string;
 }
 
@@ -30,16 +33,19 @@ interface WritingPromptsProps {
 export function WritingPrompts({
   onPickPrompt,
   visible = true,
+  lang = "ko",
   className,
 }: WritingPromptsProps) {
   const [offset, setOffset] = React.useState(0);
+  const t = getDictionary(lang).prompts;
+  const prompts = getWritingPrompts(lang);
 
   if (!visible) return null;
 
-  const total = WRITING_PROMPTS.length;
+  const total = prompts.length;
   const visible3: WritingPrompt[] = Array.from(
     { length: Math.min(PROMPT_BATCH_SIZE, total) },
-    (_, i) => WRITING_PROMPTS[(offset + i) % total],
+    (_, i) => prompts[(offset + i) % total],
   );
 
   function rotate() {
@@ -57,11 +63,11 @@ export function WritingPrompts({
         "rounded-xl border border-border-soft bg-[color:var(--paper-soft,#faf7f1)]/60 p-4 sm:p-5",
         className,
       )}
-      aria-label="쓰기 프롬프트"
+      aria-label={t.aria}
     >
       <div className="flex items-center justify-between gap-2 mb-3">
         <p className="text-xs font-medium tracking-wide text-text-secondary">
-          오늘은 이 질문으로 시작해볼까요?
+          {t.heading}
         </p>
         <Button
           type="button"
@@ -70,7 +76,7 @@ export function WritingPrompts({
           onClick={rotate}
           className="text-text-secondary"
         >
-          다른 질문 보기
+          {t.rotate}
         </Button>
       </div>
 
@@ -90,7 +96,7 @@ export function WritingPrompts({
               onClick={() => pick(p)}
               className="self-start"
             >
-              이 문장으로 시작하기
+              {t.pick}
             </Button>
           </li>
         ))}

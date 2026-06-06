@@ -33,18 +33,41 @@ export interface ImportResult {
 const MAX_BLOCKS = 30;
 const MAX_BLOCK_CHARS = 4000;
 
+type Locale = "ko" | "en";
+
+const IMPORT_MSG = {
+  ko: {
+    empty: "초안이 비어 있습니다.",
+    tooMany: `한 번에 ${MAX_BLOCKS}편까지 가져올 수 있어요.`,
+    notNow: "지금은 저장할 수 없어요. 잠시 후 다시 시도해 주세요.",
+    needLogin: "로그인이 필요합니다.",
+    emptyBody: "본문이 비어 있어요.",
+    untitled: "제목 없음",
+  },
+  en: {
+    empty: "There’s nothing to import.",
+    tooMany: `You can import up to ${MAX_BLOCKS} pieces at once.`,
+    notNow: "Can’t save right now. Please try again shortly.",
+    needLogin: "Please sign in.",
+    emptyBody: "The body is empty.",
+    untitled: "Untitled",
+  },
+} as const;
+
 export async function importPoemDraftsAction(
   blocks: ImportBlock[],
+  locale: Locale = "ko",
 ): Promise<ImportResult> {
+  const M = IMPORT_MSG[locale === "en" ? "en" : "ko"];
   if (!Array.isArray(blocks) || blocks.length === 0) {
-    return { ok: false, createdCount: 0, ids: [], error: "초안이 비어 있습니다." };
+    return { ok: false, createdCount: 0, ids: [], error: M.empty };
   }
   if (blocks.length > MAX_BLOCKS) {
     return {
       ok: false,
       createdCount: 0,
       ids: [],
-      error: `한 번에 ${MAX_BLOCKS}편까지 가져올 수 있어요.`,
+      error: M.tooMany,
     };
   }
 
@@ -53,13 +76,13 @@ export async function importPoemDraftsAction(
       ok: false,
       createdCount: 0,
       ids: [],
-      error: "지금은 저장할 수 없어요. 잠시 후 다시 시도해 주세요.",
+      error: M.notNow,
     };
   }
 
   const user = await getCurrentUser();
   if (!user) {
-    return { ok: false, createdCount: 0, ids: [], error: "로그인이 필요합니다." };
+    return { ok: false, createdCount: 0, ids: [], error: M.needLogin };
   }
 
   const supabase = await createClient();
@@ -70,7 +93,7 @@ export async function importPoemDraftsAction(
       const content = (b.content ?? "").trim().slice(0, MAX_BLOCK_CHARS);
       if (!content) return null;
       const firstLine = content.split("\n", 1)[0]?.trim() ?? "";
-      const title = (b.title?.trim() || firstLine || "제목 없음").slice(0, 80);
+      const title = (b.title?.trim() || firstLine || M.untitled).slice(0, 80);
       return {
         author_id: user.id,
         title,
@@ -85,7 +108,7 @@ export async function importPoemDraftsAction(
     .filter((r): r is NonNullable<typeof r> => r !== null);
 
   if (rows.length === 0) {
-    return { ok: false, createdCount: 0, ids: [], error: "본문이 비어 있어요." };
+    return { ok: false, createdCount: 0, ids: [], error: M.emptyBody };
   }
 
   const { data, error } = await supabase
@@ -103,6 +126,7 @@ export async function importPoemDraftsAction(
   });
 
   revalidatePath("/studio/poems");
+  revalidatePath("/en/studio/poems");
 
   return {
     ok: true,
