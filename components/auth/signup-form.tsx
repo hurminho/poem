@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +49,39 @@ export function SignupForm({ error, lang = "ko" }: SignupFormProps) {
   const passwordMismatch =
     passwordConfirm.length > 0 && password !== passwordConfirm;
 
+  // 제출 시 클라이언트 검증 — 버튼을 비활성화하는 대신, 무엇이 부족한지 알려줍니다.
+  const [clientError, setClientError] = React.useState<string | null>(null);
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    if (!displayName.trim()) {
+      e.preventDefault();
+      setClientError(t.needName);
+      return;
+    }
+    if (password.length < 8) {
+      e.preventDefault();
+      setClientError(t.needPassword);
+      return;
+    }
+    if (password !== passwordConfirm) {
+      e.preventDefault();
+      setClientError(t.passwordMismatch);
+      return;
+    }
+    if (!allAgreed) {
+      e.preventDefault();
+      setClientError(t.needAgree);
+      return;
+    }
+    if (nameState === "taken") {
+      e.preventDefault();
+      setClientError(nameMsg ?? t.nameTaken);
+      return;
+    }
+    // 통과 — 서버 액션(signUpAction)이 실행되어 /onboarding 으로 이동합니다.
+    setClientError(null);
+  }
+
   React.useEffect(() => {
     setNameState("idle");
     setNameMsg(null);
@@ -73,7 +107,7 @@ export function SignupForm({ error, lang = "ko" }: SignupFormProps) {
   }
 
   return (
-    <form action={signUpAction} className="space-y-4">
+    <form action={signUpAction} onSubmit={handleSubmit} className="space-y-4">
       <input type="hidden" name="locale" value={lang} />
       <div className="space-y-1.5">
         <Label htmlFor="display_name">{t.displayName}</Label>
@@ -237,22 +271,11 @@ export function SignupForm({ error, lang = "ko" }: SignupFormProps) {
         </label>
       </div>
 
-      {error && <p className="text-sm text-[color:#a85a4a]">{error}</p>}
+      {(clientError || error) && (
+        <p className="text-sm text-[color:#a85a4a]">{clientError ?? error}</p>
+      )}
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={
-          passwordMismatch ||
-          password.length < 8 ||
-          !displayName.trim() ||
-          nameState === "taken" ||
-          nameState === "checking" ||
-          !allAgreed
-        }
-      >
-        {t.submit}
-      </Button>
+      <SubmitButton label={t.submit} pendingLabel={t.submitting} />
 
       {nameState === "idle" && displayName.trim().length > 0 ? (
         <p className="text-xs text-text-secondary text-center">
@@ -260,5 +283,18 @@ export function SignupForm({ error, lang = "ko" }: SignupFormProps) {
         </p>
       ) : null}
     </form>
+  );
+}
+
+/**
+ * 제출 버튼 — 항상 누를 수 있고(검증은 onSubmit/서버에서),
+ * 전송 중에만 비활성화하며 진행 상태를 보여줍니다.
+ */
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full" disabled={pending} aria-busy={pending}>
+      {pending ? pendingLabel : label}
+    </Button>
   );
 }

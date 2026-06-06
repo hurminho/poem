@@ -27,6 +27,34 @@ export async function signInAction(formData: FormData) {
 }
 
 export async function signUpAction(formData: FormData) {
+  const locale = String(formData.get("locale") || "") === "en" ? "en" : "ko";
+  const signupPath = locale === "en" ? "/en/signup" : "/signup";
+  const onboardingPath = locale === "en" ? "/en/onboarding" : "/onboarding";
+  const M =
+    locale === "en"
+      ? {
+          needEmailPw: "Please enter your email and password.",
+          needName: "Please enter a pen name.",
+          shortPw: "Password must be at least 8 characters.",
+          mismatch: "Passwords don’t match.",
+          age14: "You must be 14 or older to join Sidam.",
+          needAgree: "Please agree to the Terms of Service and Privacy Policy.",
+          notConfigured: "Supabase environment variables are missing on the server. Please try again shortly.",
+          dupName: "That pen name is already taken. Please try another.",
+          welcome: "Welcome to Sidam.",
+        }
+      : {
+          needEmailPw: "이메일과 비밀번호를 입력해주세요.",
+          needName: "필명(작가 이름)을 입력해주세요.",
+          shortPw: "비밀번호는 8자 이상으로 설정해주세요.",
+          mismatch: "비밀번호가 일치하지 않습니다.",
+          age14: "만 14세 이상만 시담에 가입할 수 있습니다.",
+          needAgree: "이용약관과 개인정보 처리방침에 동의해주세요.",
+          notConfigured: "Supabase 환경 변수가 서버에 없습니다. 잠시 후 다시 시도해 주세요.",
+          dupName: "이미 사용 중인 필명입니다. 다른 이름으로 시도해 주세요.",
+          welcome: "가입을 환영합니다.",
+        };
+
   const email = String(formData.get("email") || "").trim();
   const password = String(formData.get("password") || "");
   const passwordConfirm = String(formData.get("password_confirm") || "");
@@ -36,32 +64,26 @@ export async function signUpAction(formData: FormData) {
   const agreePrivacy = formData.get("agree_privacy") === "on";
 
   if (!email || !password) {
-    redirect(`/signup?error=${encodeURIComponent("이메일과 비밀번호를 입력해주세요.")}`);
+    redirect(`${signupPath}?error=${encodeURIComponent(M.needEmailPw)}`);
   }
   if (!displayName) {
-    redirect(`/signup?error=${encodeURIComponent("필명(작가 이름)을 입력해주세요.")}`);
+    redirect(`${signupPath}?error=${encodeURIComponent(M.needName)}`);
   }
   if (password.length < 8) {
-    redirect(`/signup?error=${encodeURIComponent("비밀번호는 8자 이상으로 설정해주세요.")}`);
+    redirect(`${signupPath}?error=${encodeURIComponent(M.shortPw)}`);
   }
   if (password !== passwordConfirm) {
-    redirect(`/signup?error=${encodeURIComponent("비밀번호가 일치하지 않습니다.")}`);
+    redirect(`${signupPath}?error=${encodeURIComponent(M.mismatch)}`);
   }
   if (!agreeAge14) {
-    redirect(
-      `/signup?error=${encodeURIComponent("만 14세 이상만 시담에 가입할 수 있습니다.")}`,
-    );
+    redirect(`${signupPath}?error=${encodeURIComponent(M.age14)}`);
   }
   if (!agreeTerms || !agreePrivacy) {
-    redirect(
-      `/signup?error=${encodeURIComponent("이용약관과 개인정보 처리방침에 동의해주세요.")}`,
-    );
+    redirect(`${signupPath}?error=${encodeURIComponent(M.needAgree)}`);
   }
 
   if (!isSupabaseConfigured()) {
-    redirect(
-      `/signup?error=${encodeURIComponent("Supabase 환경 변수가 서버에 없습니다. 잠시 후 다시 시도해 주세요.")}`,
-    );
+    redirect(`${signupPath}?error=${encodeURIComponent(M.notConfigured)}`);
   }
 
   const supabase = await createClient();
@@ -73,9 +95,7 @@ export async function signUpAction(formData: FormData) {
     .ilike("display_name", displayName)
     .maybeSingle();
   if (dupName) {
-    redirect(
-      `/signup?error=${encodeURIComponent("이미 사용 중인 필명입니다. 다른 이름으로 시도해 주세요.")}`,
-    );
+    redirect(`${signupPath}?error=${encodeURIComponent(M.dupName)}`);
   }
 
   // 동의 정보는 raw_user_meta_data 로 전달 → DB 트리거(handle_new_user)가
@@ -95,9 +115,9 @@ export async function signUpAction(formData: FormData) {
     },
   });
   if (error) {
-    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+    redirect(`${signupPath}?error=${encodeURIComponent(error.message)}`);
   }
-  redirect(`/onboarding?notice=${encodeURIComponent("가입을 환영합니다.")}`);
+  redirect(`${onboardingPath}?notice=${encodeURIComponent(M.welcome)}`);
 }
 
 /**
