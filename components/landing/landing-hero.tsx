@@ -2,10 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface LandingHeroProps {
-  /** 1차 CTA — 첫 시집 만들기로 안내합니다. */
+  /** 1차 CTA — 나의 시 짓기로 안내합니다. */
   primaryHref: string;
   primaryLabel?: string;
-  /** 2차 CTA — 샘플 시집 보기. 미지정 시 숨김. */
+  /** 2차 CTA — 누군가의 시 읽기. 미지정 시 숨김. */
   secondaryHref?: string;
   secondaryLabel?: string;
 }
@@ -22,7 +22,7 @@ export function LandingHero({
   primaryHref,
   primaryLabel = "나의 시 짓기",
   secondaryHref,
-  secondaryLabel = "샘플 시집 보기",
+  secondaryLabel = "누군가의 시 읽기",
 }: LandingHeroProps) {
   return (
     <section className="relative mx-auto max-w-6xl px-5 pt-8 pb-14 md:pt-14 md:pb-20">
@@ -32,10 +32,10 @@ export function LandingHero({
           {/* ── TEXT ─────────────────────────────────────────── */}
           <div className="relative z-10 order-2 md:order-1 px-6 py-10 md:px-8 md:py-16">
             <h1 className="mt-4 font-serif text-[2.1rem] md:text-[2.8rem] lg:text-[3.1rem] font-semibold text-text-primary leading-[1.18]">
-              내가 쓴 시를,
+              내 마음 속에 있는 글을,
               <br />
-              <span className="text-accent">한 권의 시집</span>
-              으로.
+              <span className="text-accent">이곳에 담습니다.</span>
+              
             </h1>
             <div className="mt-8 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:flex-wrap">
               <Link
@@ -55,7 +55,7 @@ export function LandingHero({
               ) : null}
             </div>
             <p className="mt-4 text-xs text-text-secondary">
-              한 줄로 시작해도 좋아요. 시집은 시가 쌓이면 작업실에서 천천히.
+              한 줄로 시작해도 좋아요.
             </p>
           </div>
 

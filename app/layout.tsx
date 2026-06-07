@@ -61,9 +61,9 @@ const nanumPen = Nanum_Pen_Script({
 });
 
 const siteUrl = getSiteUrl();
-const defaultTitle = "시담 — 시를 짓고, 마음을 나눕니다";
+const defaultTitle = "시담 — 시를 짓고, 시를 읽습니다";
 const defaultDescription =
-  "시담은 오늘의 마음을 적고, 한 편의 시로 묶고, 시 명상으로 머무는 조용한 문학의 방입니다.";
+  "한 줄의 시를 적고, 다른 이의 시를 천천히 읽는 조용한 자리. 시담입니다.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
