@@ -10,12 +10,12 @@ interface FinalCTAProps {
  */
 export function FinalCTA({
   ctaHref,
-  ctaLabel = "내 첫 시집 만들기",
+  ctaLabel = "나의 시 짓기",
 }: FinalCTAProps) {
   return (
     <section className="mx-auto max-w-3xl px-5 pb-28 pt-4 text-center">
       <p className="font-serif text-[1.9rem] md:text-3xl text-text-primary leading-snug">
-        첫 시집을 만들어보세요.
+        오늘, 한 줄을 적어볼까요.
       </p>
       <p className="mt-3 text-sm text-text-secondary">
         한 줄에서 시작하면 충분합니다.

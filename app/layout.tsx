@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Noto_Serif_KR, Noto_Sans_KR } from "next/font/google";
+import {
+  Noto_Serif_KR,
+  Noto_Sans_KR,
+  Nanum_Myeongjo,
+  Gowun_Batang,
+  Gowun_Dodum,
+  Nanum_Pen_Script,
+} from "next/font/google";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -15,6 +22,42 @@ const serifPoem = Noto_Serif_KR({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   display: "swap",
+});
+
+/**
+ * 시 에디터에서 선택할 수 있는 보조 한글 폰트들.
+ * 사용자가 선택해야만 실제로 다운로드되도록 preload: false 로 둡니다.
+ */
+const nanumMyeongjo = Nanum_Myeongjo({
+  variable: "--font-nanum-myeongjo",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+  preload: false,
+});
+
+const gowunBatang = Gowun_Batang({
+  variable: "--font-gowun-batang",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+  preload: false,
+});
+
+const gowunDodum = Gowun_Dodum({
+  variable: "--font-gowun-dodum",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+  preload: false,
+});
+
+const nanumPen = Nanum_Pen_Script({
+  variable: "--font-nanum-pen",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+  preload: false,
 });
 
 const siteUrl = getSiteUrl();
@@ -87,7 +130,7 @@ export default function RootLayout({
     <html
       lang="ko"
       data-theme="light"
-      className={`${sansUi.variable} ${serifPoem.variable} h-full antialiased`}
+      className={`${sansUi.variable} ${serifPoem.variable} ${nanumMyeongjo.variable} ${gowunBatang.variable} ${gowunDodum.variable} ${nanumPen.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background text-text-primary">
         {children}

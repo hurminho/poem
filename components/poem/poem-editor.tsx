@@ -7,10 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { PoemPreview } from "@/components/poem/poem-preview";
 import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-selector";
 import { TagInput } from "@/components/poem/tag-input";
-import { WritingPrompts } from "@/components/poem/writing-prompts";
+import {
+  PoemFontSelector,
+  getFontClassName,
+  readSavedFont,
+  type PoemFontKey,
+} from "@/components/poem/poem-font-selector";
 import { savePoemAction, autosavePoemAction } from "@/lib/poems/actions";
 import type { Poem, TextAlign, Visibility } from "@/types";
 import { cn } from "@/lib/utils";
@@ -54,7 +58,12 @@ export function PoemEditor({
   const [tags, setTags] = React.useState<string[]>(initial?.tags ?? []);
   const [pending, startTransition] = React.useTransition();
   const [actionLabel, setActionLabel] = React.useState<string>("");
-  const [previewMode, setPreviewMode] = React.useState(false);
+  // 시 본문에 적용할 글꼴 — 사용자가 직접 고르는 무료 한글 폰트.
+  // localStorage 에 저장해 두고 다음 작성 때 복원합니다.
+  const [fontKey, setFontKey] = React.useState<PoemFontKey>("default");
+  React.useEffect(() => {
+    setFontKey(readSavedFont());
+  }, []);
 
   const [autoSave, setAutoSave] = React.useState<AutoSaveState>(
     initial?.id ? "saved" : "idle",
@@ -132,211 +141,152 @@ export function PoemEditor({
     error: t.autoError,
   };
 
-  // 모바일에서는 미리보기 카드를 숨기고, 큰 화면(md 이상)에서만 좌우 분할.
+  // 단일 컬럼 — 우측 미리보기 카드는 제거되었습니다.
   return (
-    <div
-      className={cn(
-        "grid gap-6",
-        previewMode ? "" : "md:grid-cols-[1fr_1fr]",
-      )}
-    >
-      {!previewMode && (
-        <Card className="p-5 sm:p-6">
-          <div className="flex items-center justify-between mb-5 gap-3">
-            <h2 className="font-serif text-base font-semibold text-text-primary">{t.heading}</h2>
-            <span
-              className="inline-flex items-center gap-1.5 text-xs text-text-secondary"
-              aria-live="polite"
-            >
-              <AutoSaveDot
-                state={pending ? "saving" : status === "published" || status === "archived" ? "saved" : autoSave}
-              />
-              {pending
-                ? actionLabel
-                : status === "published"
-                  ? t.published
-                  : status === "archived"
-                    ? t.archived
-                    : autoSaveText[autoSave]}
-            </span>
+    <div className="grid gap-6">
+      <Card className="p-5 sm:p-6">
+        <div className="flex items-center justify-between mb-5 gap-3">
+          <h2 className="font-serif text-base font-semibold text-text-primary">{t.heading}</h2>
+          <span
+            className="inline-flex items-center gap-1.5 text-xs text-text-secondary"
+            aria-live="polite"
+          >
+            <AutoSaveDot
+              state={pending ? "saving" : status === "published" || status === "archived" ? "saved" : autoSave}
+            />
+            {pending
+              ? actionLabel
+              : status === "published"
+                ? t.published
+                : status === "archived"
+                  ? t.archived
+                  : autoSaveText[autoSave]}
+          </span>
+        </div>
+
+        {notice ? (
+          <p className="mb-4 rounded-lg border border-border-soft bg-accent-soft px-3 py-2 text-xs text-text-primary">
+            {notice}
+          </p>
+        ) : null}
+        {errorMessage ? (
+          <p className="mb-4 rounded-lg border border-rose-200/60 bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            {errorMessage}
+          </p>
+        ) : null}
+
+        <div className="space-y-5">
+          <div className="space-y-1.5">
+            <Label htmlFor="title">{t.title}</Label>
+            <Input
+              id="title"
+              placeholder={t.titlePlaceholder}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </div>
 
-          {notice ? (
-            <p className="mb-4 rounded-lg border border-border-soft bg-accent-soft px-3 py-2 text-xs text-text-primary">
-              {notice}
-            </p>
-          ) : null}
-          {errorMessage ? (
-            <p className="mb-4 rounded-lg border border-rose-200/60 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-              {errorMessage}
-            </p>
-          ) : null}
-
-          <div className="space-y-5">
-            <WritingPrompts
-              lang={lang}
-              visible={content.trim().length === 0}
-              onPickPrompt={(p) => {
-                setContent(p.starter);
-                // 본문 영역에 자연스럽게 포커스를 옮겨, 사용자가 바로 이어 쓸 수 있게.
-                window.requestAnimationFrame(() => {
-                  const el = document.getElementById("content") as
-                    | HTMLTextAreaElement
-                    | null;
-                  if (el) {
-                    el.focus();
-                    const end = el.value.length;
-                    el.setSelectionRange(end, end);
-                  }
-                });
-              }}
-            />
-
-            <div className="space-y-1.5">
-              <Label htmlFor="title">{t.title}</Label>
-              <Input
-                id="title"
-                placeholder={t.titlePlaceholder}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between gap-2">
-                <Label htmlFor="content">{t.body}</Label>
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Label htmlFor="content">{t.body}</Label>
+              <div className="flex items-center gap-3">
+                <PoemFontSelector value={fontKey} onChange={setFontKey} />
                 <AlignToolbar value={textAlign} onChange={setTextAlign} t={t} />
               </div>
-              {/* 본문 — 미리보기와 동일한 명조 글꼴 / 동일한 행간 / 동일한 글자 크기.
-                  높이는 약 10줄로 제한하고, 그 이후로는 스크롤로 처리합니다. */}
-              <Textarea
-                id="content"
-                placeholder={t.bodyPlaceholder}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className={cn(
-                  "poem-editor-textarea px-5 py-4",
-                  textAlign === "left" && "text-left",
-                  textAlign === "center" && "text-center",
-                  textAlign === "right" && "text-right",
-                )}
+            </div>
+            <Textarea
+              id="content"
+              placeholder={t.bodyPlaceholder}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className={cn(
+                "poem-editor-textarea px-5 py-4",
+                getFontClassName(fontKey),
+                textAlign === "left" && "text-left",
+                textAlign === "center" && "text-center",
+                textAlign === "right" && "text-right",
+              )}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="note">{t.note}</Label>
+            <Textarea
+              id="note"
+              placeholder={t.notePlaceholder}
+              value={note ?? ""}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>{t.tags}</Label>
+            <TagInput
+              value={tags}
+              onChange={setTags}
+              suggestions={tagSuggestions}
+              lang={lang}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>{t.visibility}</Label>
+            <PoemVisibilitySelector value={visibility} onChange={setVisibility} lang={lang} />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-text-secondary">
+              <input
+                type="checkbox"
+                checked={allowComments}
+                onChange={(e) => setAllowComments(e.target.checked)}
               />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="note">{t.note}</Label>
-              <Textarea
-                id="note"
-                placeholder={t.notePlaceholder}
-                value={note ?? ""}
-                onChange={(e) => setNote(e.target.value)}
-                rows={3}
+              {t.allowComments}
+            </label>
+            <label className="flex items-center gap-2 text-sm text-text-secondary">
+              <input
+                type="checkbox"
+                checked={allowCopy}
+                onChange={(e) => setAllowCopy(e.target.checked)}
               />
-            </div>
+              {t.allowCopy}
+            </label>
+          </div>
 
-            <div className="space-y-1.5">
-              <Label>{t.tags}</Label>
-              <TagInput
-                value={tags}
-                onChange={setTags}
-                suggestions={tagSuggestions}
-                lang={lang}
-              />
-            </div>
+          <hr className="divider" />
 
-            <div className="space-y-1.5">
-              <Label>{t.visibility}</Label>
-              <PoemVisibilitySelector value={visibility} onChange={setVisibility} lang={lang} />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4">
-              <label className="flex items-center gap-2 text-sm text-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={allowComments}
-                  onChange={(e) => setAllowComments(e.target.checked)}
-                />
-                {t.allowComments}
-              </label>
-              <label className="flex items-center gap-2 text-sm text-text-secondary">
-                <input
-                  type="checkbox"
-                  checked={allowCopy}
-                  onChange={(e) => setAllowCopy(e.target.checked)}
-                />
-                {t.allowCopy}
-              </label>
-            </div>
-
-            <hr className="divider" />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                onClick={() => submit("publish")}
-                disabled={pending || !isValid}
-              >
-                {t.publish}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => submit("draft")}
-                disabled={pending || !isValid}
-              >
-                {t.draft}
-              </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              onClick={() => submit("publish")}
+              disabled={pending || !isValid}
+            >
+              {t.publish}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => submit("draft")}
+              disabled={pending || !isValid}
+            >
+              {t.draft}
+            </Button>
+            {id ? (
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => setPreviewMode(true)}
-                disabled={!isValid}
-                className="hidden md:inline-flex"
+                onClick={() => submit("archive")}
+                disabled={pending}
               >
-                {t.preview}
+                {t.toArchive}
               </Button>
-              {id ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => submit("archive")}
-                  disabled={pending}
-                >
-                  {t.toArchive}
-                </Button>
-              ) : null}
-            </div>
-            <p className="text-[11px] text-text-secondary">
-              {t.autosaveHint}
-            </p>
+            ) : null}
           </div>
-        </Card>
-      )}
-
-      <Card
-        className={cn(
-          "poem-page p-8",
-          // 모바일(md 미만)에서는 옆에 보일 미리보기 카드를 숨깁니다.
-          previewMode ? "" : "hidden md:block md:order-last",
-        )}
-      >
-        {previewMode && (
-          <div className="mx-auto max-w-prose mb-8 flex items-center justify-between">
-            <p className="poem-muted tracking-wider">{t.previewDivider}</p>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setPreviewMode(false)}>
-              {t.toEdit}
-            </Button>
-          </div>
-        )}
-        {!previewMode && (
-          <p className="poem-muted text-center mb-6 tracking-wider">{t.previewDivider}</p>
-        )}
-        <PoemPreview title={title} content={content} textAlign={textAlign} lang={lang} />
-        {previewMode && note && (
-          <p className="mt-12 mx-auto max-w-prose text-center poem-muted italic">
-            {note}
+          <p className="text-[11px] text-text-secondary">
+            {t.autosaveHint}
           </p>
-        )}
+        </div>
       </Card>
     </div>
   );

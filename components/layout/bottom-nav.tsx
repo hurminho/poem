@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  BookPlus,
+  PenLine,
   Compass,
   Library,
   User,
@@ -40,7 +40,13 @@ export function BottomNav({ authed }: BottomNavProps) {
 
   const tabs: Tab[] = [
     { href: "/", label: "홈", Icon: Home, exact: true },
-    { href: "/start", label: "시집 만들기", Icon: BookPlus, primary: true },
+    // 1차 CTA — 메인 동선은 ‘간단한 시 쓰기’. 시집 만들기는 작업실 안에서.
+    {
+      href: authed ? "/studio/new" : "/signup?next=/studio/new",
+      label: "시 쓰기",
+      Icon: PenLine,
+      primary: true,
+    },
     { href: "/explore", label: "둘러보기", Icon: Compass },
     {
       href: authed ? "/library" : "/samples",

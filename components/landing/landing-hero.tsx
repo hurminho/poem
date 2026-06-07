@@ -20,7 +20,7 @@ interface LandingHeroProps {
  */
 export function LandingHero({
   primaryHref,
-  primaryLabel = "내 첫 시집 만들기",
+  primaryLabel = "나의 시 짓기",
   secondaryHref,
   secondaryLabel = "샘플 시집 보기",
 }: LandingHeroProps) {
@@ -55,7 +55,7 @@ export function LandingHero({
               ) : null}
             </div>
             <p className="mt-4 text-xs text-text-secondary">
-              한 줄짜리 시 한 편으로도 한 권이 됩니다.
+              한 줄로 시작해도 좋아요. 시집은 시가 쌓이면 작업실에서 천천히.
             </p>
           </div>
 

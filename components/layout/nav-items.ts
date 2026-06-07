@@ -45,7 +45,9 @@ export const PRIMARY_NAV: PrimaryNavItem[] = [
   // 로그인 데스크톱 헤더 항목 (auth: true && desktop: true)
   { href: "/studio", label: "작업실", hint: "오늘의 작업 자리", auth: true, desktop: true },
   { href: "/studio/poems", label: "나의 시", hint: "내가 쓴 시", auth: true, desktop: true },
-  { href: "/studio/books", label: "나의 시집", hint: "묶은 책들", auth: true, desktop: true },
+  // ‘나의 시집’ 은 작업실 사이드바에서만 진입 가능 — 메인 네비에서는 숨깁니다.
+  // 시가 쌓이거나 작가가 원할 때 작업실에서 천천히 묶도록 유도합니다.
+  // (코드는 보존: /studio/books 라우트와 컴포넌트는 그대로 유지.)
   {
     href: "/studio/reflections",
     label: "받은 감상평",

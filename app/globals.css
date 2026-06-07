@@ -246,6 +246,28 @@ textarea.poem-editor-textarea {
   overflow-y: auto;
 }
 
+/* ──────────────────────────────────────────────────────────
+   시 에디터 폰트 옵션 — 사용자가 직접 고르는 한글 무료 폰트.
+   기본 .poem-editor-textarea 가 var(--font-serif-poem) 을 쓰므로,
+   아래 클래스를 함께 적용하면 해당 폰트로 덮어씁니다.
+   ────────────────────────────────────────────────────────── */
+.poem-font-nanum-myeongjo {
+  font-family: var(--font-nanum-myeongjo), "Nanum Myeongjo",
+    "Noto Serif KR", ui-serif, Georgia, serif;
+}
+.poem-font-gowun-batang {
+  font-family: var(--font-gowun-batang), "Gowun Batang",
+    "Noto Serif KR", ui-serif, Georgia, serif;
+}
+.poem-font-gowun-dodum {
+  font-family: var(--font-gowun-dodum), "Gowun Dodum",
+    "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, sans-serif;
+}
+.poem-font-nanum-pen {
+  font-family: var(--font-nanum-pen), "Nanum Pen Script", cursive,
+    "Noto Serif KR", serif;
+}
+
 /* 작가의 말, 메타, 보조 텍스트 */
 .poem-muted {
   color: var(--text-secondary);

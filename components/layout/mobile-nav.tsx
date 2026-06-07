@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
 import { visiblePrimaryNav, FOOTER_NAV } from "@/components/layout/nav-items";
+import { getIsAdminAction } from "@/lib/admin/check-actions";
 
 const SECONDARY_AUTHED = [
   { href: "/me", label: "마이페이지" },
@@ -26,18 +27,34 @@ const FOOTER_LINKS = [
 
 export function MobileNavToggle({
   authed,
-  isAdmin = false,
 }: {
   authed: boolean;
-  isAdmin?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // 운영자 여부는 드로어가 열린 후에만 lazy 로 확인합니다.
+  // (헤더 SSR 에서 무거운 admin 조회를 제거해 페이지 전환을 빠르게 합니다.)
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   // 클라이언트에서만 portal 을 사용하도록 — SSR 단계에서는 button 만 렌더링.
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!authed || !open || isAdmin !== null) return;
+    let cancelled = false;
+    getIsAdminAction()
+      .then((v) => {
+        if (!cancelled) setIsAdmin(v);
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [authed, open, isAdmin]);
 
   useEffect(() => {
     function onEsc(e: KeyboardEvent) {
@@ -61,7 +78,7 @@ export function MobileNavToggle({
   const secondary = authed
     ? [
         ...SECONDARY_AUTHED.slice(0, 1),
-        ...(isAdmin ? [{ href: "/admin", label: "운영자 콘솔" }] : []),
+        ...(isAdmin === true ? [{ href: "/admin", label: "운영자 콘솔" }] : []),
         ...SECONDARY_AUTHED.slice(1),
       ]
     : SECONDARY_GUEST;

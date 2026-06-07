@@ -34,27 +34,31 @@ export default async function HomePage() {
     getPublicPoems(6),
   ]);
   const isLoggedIn = !!profile;
-  // 1차 CTA — 첫 시집 만들기 위저드로 직행.
-  const primaryHref = isLoggedIn ? "/start" : "/signup?next=/start";
+  // 1차 CTA — '나의 시 짓기'로 직행. (간단한 시 쓰기부터 시작 유도)
+  // 시집(/start 위저드)은 작업실 안에서 천천히 만들도록 안내합니다.
+  const primaryHref = isLoggedIn ? "/studio/new" : "/signup?next=/studio/new";
+  // ‘이런 시집을 만들 수 있어요’ 섹션의 CTA — 작업실로 보내,
+  // 시가 쌓이거나 작가가 원할 때 거기서 시집을 묶을 수 있도록.
+  const studioHref = isLoggedIn ? "/studio" : "/signup?next=/studio";
 
   return (
     <div className="poem-page">
       {/* 1. HERO */}
       <LandingHero
         primaryHref={primaryHref}
-        primaryLabel="내 첫 시집 만들기"
+        primaryLabel="나의 시 짓기"
         secondaryHref="/samples"
         secondaryLabel="샘플 시집 보기"
       />
 
-      {/* 2. 샘플 시집 — 큰 표지 그리드 */}
-      <SampleBooksSection />
+      {/* 2. 샘플 시집 — 큰 표지 그리드. 클릭하면 작업실로 안내합니다. */}
+      <SampleBooksSection studioHref={studioHref} />
 
       {/* 3. 공개된 시 — '누군가의 시' 미리보기 */}
       <PublicPoemsSection poems={publicPoems} isLoggedIn={isLoggedIn} />
 
       {/* 4. FINAL CTA */}
-      <FinalCTA ctaHref={primaryHref} ctaLabel="내 첫 시집 만들기" />
+      <FinalCTA ctaHref={primaryHref} ctaLabel="나의 시 짓기" />
     </div>
   );
 }
@@ -62,33 +66,35 @@ export default async function HomePage() {
 /* ────────────────────────────────────────────────────────── */
 /* 샘플 시집 섹션                                              */
 /* ────────────────────────────────────────────────────────── */
-function SampleBooksSection() {
+function SampleBooksSection({ studioHref }: { studioHref: string }) {
   return (
     <section className="mx-auto max-w-5xl px-5 pb-16 md:pb-20">
       <header className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-[11px] tracking-[0.3em] uppercase text-text-secondary">
-            · 샘플 시집
+            · 시집은 작업실에서
           </p>
           <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
             이런 시집을 만들 수 있어요
           </h2>
           <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
-            짧은 다섯 편이면 한 권이 됩니다. 표지부터 살펴보세요.
+            지금은 시 한 편부터 천천히. 시가 모이면 작업실에서 한 권으로 묶어보세요.
           </p>
         </div>
         <Link
-          href="/samples"
+          href={studioHref}
+          prefetch
           className="self-start md:self-end inline-flex h-10 items-center rounded-full border border-border-soft bg-surface px-5 text-sm text-text-primary hover:border-accent transition-colors whitespace-nowrap"
         >
-          전체 샘플 보기 →
+          작업실로 이동 →
         </Link>
       </header>
 
       <ul className="grid grid-cols-2 gap-x-5 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
         {SAMPLE_BOOKS.map((b) => (
           <li key={b.slug}>
-            <SampleBookCard book={b} />
+            {/* 카드를 누르면 샘플 상세가 아닌 작업실로 이동 — 시집은 작업실에서. */}
+            <SampleBookCard book={b} href={studioHref} />
           </li>
         ))}
       </ul>

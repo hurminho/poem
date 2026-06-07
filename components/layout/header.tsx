@@ -1,18 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCurrentProfile } from "@/lib/auth/current";
-import { getAdminContext } from "@/lib/admin/auth";
 import { HeaderUserMenu } from "@/components/layout/header-user-menu";
 import { MobileNavToggle } from "@/components/layout/mobile-nav";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { desktopHeaderNav } from "@/components/layout/nav-items";
 
 export async function Header() {
-  const [profile, adminCtx] = await Promise.all([
-    getCurrentProfile(),
-    getAdminContext(),
-  ]);
-  const isAdmin = !!adminCtx;
+  // 페이지 이동마다 SSR 되는 헤더에서는 무거운 admin 검사를 하지 않습니다.
+  // 운영자 메뉴는 드롭다운이 열리는 순간에 클라이언트에서 lazy 하게 확인합니다.
+  // (`lib/admin/actions.ts` 의 `getIsAdminAction` 참조)
+  const profile = await getCurrentProfile();
   const items = desktopHeaderNav(!!profile);
   // 첫 진입은 '시 쓰기'로 — 시집은 /studio 안에서 만듭니다.
   const ctaHref = profile ? "/studio/new" : "/signup?next=/studio/new";
@@ -70,7 +68,6 @@ export async function Header() {
               <HeaderUserMenu
                 displayName={profile.display_name}
                 username={profile.username}
-                isAdmin={isAdmin}
               />
             </>
           ) : (
@@ -91,7 +88,7 @@ export async function Header() {
               </Link>
             </>
           )}
-          <MobileNavToggle authed={!!profile} isAdmin={isAdmin} />
+          <MobileNavToggle authed={!!profile} />
         </div>
       </div>
     </header>

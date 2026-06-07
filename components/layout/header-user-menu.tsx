@@ -3,18 +3,19 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { signOutAction } from "@/lib/auth/actions";
+import { getIsAdminAction } from "@/lib/admin/check-actions";
 
 export function HeaderUserMenu({
   displayName,
   username,
-  isAdmin = false,
 }: {
   displayName: string;
   username: string | null;
-  /** admin_users 에 active 로 등록된 운영자일 때 true */
-  isAdmin?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  // 운영자 여부는 메뉴를 처음 열 때 한 번만 확인합니다.
+  // (SSR 단계에서 무거운 admin 조회를 빼서 페이지 전환을 빠르게 합니다.)
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,6 +25,21 @@ export function HeaderUserMenu({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
+
+  useEffect(() => {
+    if (!open || isAdmin !== null) return;
+    let cancelled = false;
+    getIsAdminAction()
+      .then((v) => {
+        if (!cancelled) setIsAdmin(v);
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, isAdmin]);
 
   return (
     <div ref={ref} className="relative ml-2">
@@ -64,7 +80,7 @@ export function HeaderUserMenu({
                 마이페이지
               </Link>
             </li>
-            {isAdmin ? (
+            {isAdmin === true ? (
               <li>
                 <Link
                   href="/admin"
