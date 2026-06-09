@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Pencil } from "lucide-react";
 import { PoemReader } from "@/components/poem/poem-reader";
 import { ReflectionSection } from "@/components/reflections/reflection-section";
 import { ReaderThemeToggle } from "@/components/reader/reader-theme-toggle";
@@ -31,6 +32,7 @@ export default async function EnSinglePoemPage({ params }: PageProps) {
 
   const user = await getCurrentUser();
   const isLoggedIn = !!user;
+  const isOwner = !!user && user.id === poem.author_id;
   const [liked, likeCount, orderedIds] = await Promise.all([
     user ? hasReacted(user.id, "poem", poem.id, "like") : Promise.resolve(false),
     countReactionsFor("poem", poem.id, "like"),
@@ -75,7 +77,19 @@ export default async function EnSinglePoemPage({ params }: PageProps) {
               </span>
             </p>
           </div>
-          <ReaderThemeToggle lang="en" />
+          <div className="flex items-center gap-2">
+            {isOwner ? (
+              <Link
+                href={`/en/studio/poems/${poem.id}/edit`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-soft bg-surface px-3 text-xs text-text-secondary hover:text-text-primary hover:border-accent transition-colors"
+                aria-label="Edit this poem"
+              >
+                <Pencil className="size-3.5" />
+                Edit
+              </Link>
+            ) : null}
+            <ReaderThemeToggle lang="en" />
+          </div>
         </div>
       </div>
 

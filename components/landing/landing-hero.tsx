@@ -32,9 +32,9 @@ export function LandingHero({
           {/* ── TEXT ─────────────────────────────────────────── */}
           <div className="relative z-10 order-2 md:order-1 px-6 py-10 md:px-8 md:py-16">
             <h1 className="mt-4 font-serif text-[2.1rem] md:text-[2.8rem] lg:text-[3.1rem] font-semibold text-text-primary leading-[1.18]">
-              내 마음 속에 있는 글을,
+              오늘의 마음을 
               <br />
-              <span className="text-accent">이곳에 담습니다.</span>
+              <span className="text-accent">한 편의 시에 담습니다.</span>
               
             </h1>
             <div className="mt-8 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:flex-wrap">
@@ -55,7 +55,6 @@ export function LandingHero({
               ) : null}
             </div>
             <p className="mt-4 text-xs text-text-secondary">
-              한 줄로 시작해도 좋아요.
             </p>
           </div>
 

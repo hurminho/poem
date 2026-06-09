@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { submitReflectionAction } from "@/lib/reflections/actions";
-import { getReflectionChips } from "@/lib/reflections/chips";
 import { trackActivation } from "@/lib/analytics/events";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -15,9 +14,9 @@ interface Props {
   targetType: "poem" | "book";
   targetId: string;
   isLoggedIn?: boolean;
-  /** UI 문구를 시 / 시집 별로 살짝 바꾸기 위한 힌트. */
+  /** UI 문구를 시 / 시집 별로 살짝 바꾸기 위한 힌트. (현재는 동일한 폼) */
   kind?: "poem" | "book";
-  /** 비로그인 사용자에게 표시되는 사용자 이름. 로그인 사용자는 자동 사용. */
+  /** 로그인 사용자에게 ‘OO 으로 남겨집니다’ 안내를 표시할 때 사용. 더 이상 노출하지 않습니다. */
   loggedInName?: string | null;
   lang?: Locale;
 }
@@ -33,15 +32,13 @@ export function ReflectionForm({
   loggedInName,
   lang = "ko",
 }: Props) {
+  void kind;
+  void loggedInName;
   const t = getDictionary(lang).reflections;
-  const chips = getReflectionChips(lang);
   const [name, setName] = React.useState("");
   const [content, setContent] = React.useState("");
   const [pending, startTransition] = React.useTransition();
   const [message, setMessage] = React.useState<{ kind: "ok" | "error"; text: string } | null>(null);
-
-  const k = kind ?? targetType;
-  const prompt = k === "book" ? t.promptBook : t.promptPoem;
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,10 +48,7 @@ export function ReflectionForm({
       setMessage({ kind: "error", text: t.errTooLong.replace("{max}", String(MAX_CONTENT)) });
       return;
     }
-    if (!isLoggedIn && !name.trim()) {
-      setMessage({ kind: "error", text: t.errNameRequired });
-      return;
-    }
+    // 게스트는 이름을 비워도 ‘익명의 독자’로 저장됩니다.
     if (!isLoggedIn && name.trim().length > MAX_GUEST_NAME) {
       setMessage({
         kind: "error",
@@ -87,56 +81,29 @@ export function ReflectionForm({
     });
   };
 
-  const pickChip = (chip: string) => {
-    setContent((prev) => {
-      const trimmed = prev.trim();
-      if (!trimmed) return chip;
-      // 이미 있으면 추가하지 않음.
-      if (trimmed.includes(chip)) return prev;
-      return `${trimmed} ${chip}`;
-    });
-  };
-
   return (
     <form
       onSubmit={onSubmit}
       className="space-y-3 rounded-xl border border-dashed border-border-soft bg-surface/60 p-5"
     >
       <p className="font-serif text-sm font-semibold text-text-primary">{t.formTitle}</p>
-      <p className="text-xs text-text-secondary">{prompt}</p>
 
-      {isLoggedIn ? (
-        <p className="text-xs text-text-secondary">
-          {loggedInName ? t.loggedInAs.replace("{name}", loggedInName) : t.loggedInDefault}
-        </p>
-      ) : (
+      {!isLoggedIn && (
         <div className="space-y-1.5">
           <Label htmlFor="guest_name">{t.nameLabel}</Label>
           <Input
             id="guest_name"
-            placeholder={t.namePlaceholder}
+            placeholder={t.namePlaceholderAnon}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={MAX_GUEST_NAME}
           />
+          <p className="text-[11px] text-text-secondary">{t.anonHint}</p>
         </div>
       )}
 
       <div className="space-y-1.5">
         <Label htmlFor="reflection">{t.contentLabel}</Label>
-        <ul className="flex flex-wrap gap-1.5" aria-label={t.chipsAria}>
-          {chips.map((chip) => (
-            <li key={chip}>
-              <button
-                type="button"
-                onClick={() => pickChip(chip)}
-                className="rounded-full border border-border-soft bg-background/70 px-3 py-1 text-[11px] text-text-secondary hover:border-accent hover:text-text-primary transition-colors"
-              >
-                {chip}
-              </button>
-            </li>
-          ))}
-        </ul>
         <Textarea
           id="reflection"
           rows={3}

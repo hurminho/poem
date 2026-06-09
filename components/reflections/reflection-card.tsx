@@ -36,7 +36,10 @@ export function ReflectionCard({
   const t = getDictionary(lang).reflections;
   const reactionsT = getDictionary(lang).reactions;
   const loginHref = lang === "en" ? "/en/login" : "/login";
-  const name = authorName ?? reflection.guest_name ?? t.anon;
+  // 모든 감상평은 ‘익명의 독자’ 로 노출됩니다.
+  // (작성자 식별은 user_id 로만 내부 처리 — 본인만 수정·삭제 가능.)
+  void authorName;
+  const name = t.anon;
   const router = useRouter();
 
   const canEdit = !!currentUserId && reflection.user_id === currentUserId;

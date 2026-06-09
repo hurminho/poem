@@ -9,7 +9,6 @@ import { getIsAdminAction } from "@/lib/admin/check-actions";
 
 const SECONDARY_AUTHED = [
   { href: "/me", label: "마이페이지" },
-  { href: "/settings", label: "설정" },
 ];
 
 const SECONDARY_GUEST = [

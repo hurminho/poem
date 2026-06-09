@@ -28,7 +28,7 @@ export default async function StudioNewPoemPage({ searchParams }: PageProps) {
       <PageTitle
         eyebrow="Studio"
         title="시 쓰기"
-        description="왼쪽에 적은 글이 오른쪽에 그대로 펼쳐집니다."
+        description="제목과 본문 한 편으로 충분합니다. 3분마다 자동 임시 저장돼요."
       />
       <PoemEditor
         notice={sp.notice}

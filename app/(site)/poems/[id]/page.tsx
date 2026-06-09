@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Pencil } from "lucide-react";
 import { PoemReader } from "@/components/poem/poem-reader";
 import { ReflectionSection } from "@/components/reflections/reflection-section";
 import { ReaderThemeToggle } from "@/components/reader/reader-theme-toggle";
@@ -28,6 +29,8 @@ export default async function SinglePoemPage({ params }: PageProps) {
 
   const user = await getCurrentUser();
   const isLoggedIn = !!user;
+  // 작성자 본인이 자기 시를 보고 있을 때는 ‘수정’ 버튼을 항상 노출합니다.
+  const isOwner = !!user && user.id === poem.author_id;
   // 게스트에게는 좌/우 네비를 노출하지 않습니다 — 다른 시도 차피 가입해야 보입니다.
   const [liked, likeCount, orderedIds] = await Promise.all([
     user
@@ -81,7 +84,20 @@ export default async function SinglePoemPage({ params }: PageProps) {
               </span>
             </p>
           </div>
-          <ReaderThemeToggle />
+          <div className="flex items-center gap-2">
+            {/* 본인 시일 때는 항상 ‘수정’ 진입 — 발행/임시 어디서든 같은 자리에서 편집할 수 있게 */}
+            {isOwner ? (
+              <Link
+                href={`/studio/poems/${poem.id}/edit`}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-soft bg-surface px-3 text-xs text-text-secondary hover:text-text-primary hover:border-accent transition-colors"
+                aria-label="이 시 수정하기"
+              >
+                <Pencil className="size-3.5" />
+                수정
+              </Link>
+            ) : null}
+            <ReaderThemeToggle />
+          </div>
         </div>
       </div>
 

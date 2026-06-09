@@ -7,7 +7,7 @@ import {
   PenLine,
   Compass,
   Library,
-  User,
+  NotebookPen,
   LogIn,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ export function BottomNav({ authed }: BottomNavProps) {
 
   const tabs: Tab[] = [
     { href: "/", label: "홈", Icon: Home, exact: true },
-    // 1차 CTA — 메인 동선은 ‘간단한 시 쓰기’. 시집 만들기는 작업실 안에서.
+    // 1차 CTA — 메인 동선은 ‘간단한 시 쓰기’.
     {
       href: authed ? "/studio/new" : "/signup?next=/studio/new",
       label: "시 쓰기",
@@ -54,7 +54,7 @@ export function BottomNav({ authed }: BottomNavProps) {
       Icon: Library,
     },
     authed
-      ? { href: "/me", label: "마이", Icon: User }
+      ? { href: "/studio", label: "작업실", Icon: NotebookPen }
       : { href: "/login", label: "로그인", Icon: LogIn },
   ];
 
@@ -77,7 +77,7 @@ export function BottomNav({ authed }: BottomNavProps) {
                 href={t.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex h-full w-full flex-col items-center justify-center gap-0.5 transition-colors",
+                  "flex h-full w-full flex-col items-center justify-center gap-0.5 transition-colors focus:outline-none focus-visible:outline-none",
                   "text-[10px] tracking-tight",
                   active
                     ? "text-text-primary"
@@ -85,11 +85,13 @@ export function BottomNav({ authed }: BottomNavProps) {
                 )}
                 style={{ WebkitTapHighlightColor: "transparent" }}
               >
+                {/* 아이콘 캡슐 — 활성 여부와 'primary' 강조에 따라서만 배경을 입힙니다.
+                    이전에는 primary 탭이 비활성 상태에서도 항상 accent-soft 배경이 있어
+                    “계속 포커스되어 있다”는 인상을 주었기 때문에 그 효과를 제거했습니다. */}
                 <span
                   className={cn(
                     "inline-flex h-7 w-7 items-center justify-center rounded-full",
-                    t.primary && !active && "bg-accent-soft",
-                    t.primary && active && "bg-text-primary text-background",
+                    active && t.primary && "bg-text-primary text-background",
                     active && !t.primary && "bg-accent-soft",
                   )}
                   aria-hidden

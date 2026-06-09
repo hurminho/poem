@@ -91,15 +91,6 @@ export function HeaderUserMenu({
                 </Link>
               </li>
             ) : null}
-            <li>
-              <Link
-                href="/settings"
-                className="block px-4 py-2 hover:bg-accent-soft text-text-primary"
-                onClick={() => setOpen(false)}
-              >
-                설정
-              </Link>
-            </li>
             <li className="border-t border-border-soft">
               <form action={signOutAction}>
                 <button

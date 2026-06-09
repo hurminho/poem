@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,14 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-selector";
 import { TagInput } from "@/components/poem/tag-input";
-import {
-  PoemFontSelector,
-  getFontClassName,
-  readSavedFont,
-  type PoemFontKey,
-} from "@/components/poem/poem-font-selector";
 import { savePoemAction, autosavePoemAction } from "@/lib/poems/actions";
-import type { Poem, TextAlign, Visibility } from "@/types";
+import type { Poem, Visibility } from "@/types";
 import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -52,18 +45,12 @@ export function PoemEditor({
   );
   const [allowComments, setAllowComments] = React.useState(initial?.allow_comments ?? true);
   const [allowCopy, setAllowCopy] = React.useState(initial?.allow_copy ?? false);
-  const [textAlign, setTextAlign] = React.useState<TextAlign>(
-    (initial?.text_align as TextAlign | null | undefined) ?? "center",
-  );
+  // 시 본문 정렬·글꼴은 ‘가운데 / 본명조’로 통일됩니다.
+  // (개별 선택 UI 는 추후 ‘시집 만들기’ 단계에서 다시 제공할 예정 — 코드는 보존)
+  const textAlign = "center" as const;
   const [tags, setTags] = React.useState<string[]>(initial?.tags ?? []);
   const [pending, startTransition] = React.useTransition();
   const [actionLabel, setActionLabel] = React.useState<string>("");
-  // 시 본문에 적용할 글꼴 — 사용자가 직접 고르는 무료 한글 폰트.
-  // localStorage 에 저장해 두고 다음 작성 때 복원합니다.
-  const [fontKey, setFontKey] = React.useState<PoemFontKey>("default");
-  React.useEffect(() => {
-    setFontKey(readSavedFont());
-  }, []);
 
   const [autoSave, setAutoSave] = React.useState<AutoSaveState>(
     initial?.id ? "saved" : "idle",
@@ -176,52 +163,47 @@ export function PoemEditor({
         ) : null}
 
         <div className="space-y-5">
+          {/* 제목 — 본문보다 한 단계 작게 표시 */}
           <div className="space-y-1.5">
-            <Label htmlFor="title">{t.title}</Label>
+            <Label htmlFor="title" className="text-xs">{t.title}</Label>
             <Input
               id="title"
               placeholder={t.titlePlaceholder}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              className="font-serif text-base"
             />
           </div>
 
+          {/* 본문 — 크게, 가운데 정렬, 명조체 (시담 기본). 폰트·정렬 토글 없음. */}
           <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <Label htmlFor="content">{t.body}</Label>
-              <div className="flex items-center gap-3">
-                <PoemFontSelector value={fontKey} onChange={setFontKey} />
-                <AlignToolbar value={textAlign} onChange={setTextAlign} t={t} />
-              </div>
-            </div>
+            <Label htmlFor="content" className="text-xs">{t.body}</Label>
             <Textarea
               id="content"
               placeholder={t.bodyPlaceholder}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className={cn(
-                "poem-editor-textarea px-5 py-4",
-                getFontClassName(fontKey),
-                textAlign === "left" && "text-left",
-                textAlign === "center" && "text-center",
-                textAlign === "right" && "text-right",
+                "poem-editor-textarea poem-editor-textarea-lg px-5 py-4 text-center",
               )}
             />
           </div>
 
+          {/* 작가의 말 — 본문보다 작게 */}
           <div className="space-y-1.5">
-            <Label htmlFor="note">{t.note}</Label>
+            <Label htmlFor="note" className="text-xs">{t.note}</Label>
             <Textarea
               id="note"
               placeholder={t.notePlaceholder}
               value={note ?? ""}
               onChange={(e) => setNote(e.target.value)}
-              rows={3}
+              rows={2}
+              className="text-sm"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label>{t.tags}</Label>
+            <Label className="text-xs">{t.tags}</Label>
             <TagInput
               value={tags}
               onChange={setTags}
@@ -231,12 +213,12 @@ export function PoemEditor({
           </div>
 
           <div className="space-y-1.5">
-            <Label>{t.visibility}</Label>
+            <Label className="text-xs">{t.visibility}</Label>
             <PoemVisibilitySelector value={visibility} onChange={setVisibility} lang={lang} />
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-text-secondary">
+            <label className="flex items-center gap-2 text-xs text-text-secondary">
               <input
                 type="checkbox"
                 checked={allowComments}
@@ -244,7 +226,7 @@ export function PoemEditor({
               />
               {t.allowComments}
             </label>
-            <label className="flex items-center gap-2 text-sm text-text-secondary">
+            <label className="flex items-center gap-2 text-xs text-text-secondary">
               <input
                 type="checkbox"
                 checked={allowCopy}
@@ -314,48 +296,3 @@ function AutoSaveDot({ state }: { state: AutoSaveState }) {
   );
 }
 
-function AlignToolbar({
-  value,
-  onChange,
-  t,
-}: {
-  value: TextAlign;
-  onChange: (v: TextAlign) => void;
-  t: { alignLeft: string; alignCenter: string; alignRight: string; alignToolbar: string };
-}) {
-  const ALIGN_OPTIONS: Array<{ value: TextAlign; label: string; Icon: typeof AlignLeft }> = [
-    { value: "left", label: t.alignLeft, Icon: AlignLeft },
-    { value: "center", label: t.alignCenter, Icon: AlignCenter },
-    { value: "right", label: t.alignRight, Icon: AlignRight },
-  ];
-  return (
-    <div
-      role="radiogroup"
-      aria-label={t.alignToolbar}
-      className="inline-flex rounded-md border border-border-soft bg-surface p-0.5"
-    >
-      {ALIGN_OPTIONS.map((o) => {
-        const active = value === o.value;
-        const { Icon } = o;
-        return (
-          <button
-            key={o.value}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            aria-label={o.label}
-            onClick={() => onChange(o.value)}
-            className={cn(
-              "inline-flex h-7 w-8 items-center justify-center rounded-[5px] transition-colors",
-              active
-                ? "bg-text-primary text-background"
-                : "text-text-secondary hover:bg-accent-soft hover:text-text-primary",
-            )}
-          >
-            <Icon className="size-3.5" />
-          </button>
-        );
-      })}
-    </div>
-  );
-}

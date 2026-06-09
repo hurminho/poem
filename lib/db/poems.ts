@@ -19,10 +19,10 @@ export interface PublicPoemCard extends Poem {
 const POEM_COLS = "id,author_id,title,content,note,visibility,status,allow_comments,allow_copy,text_align,published_at,created_at,updated_at";
 
 export async function getMyPoems(authorId: string): Promise<Poem[]> {
-  if (!isSupabaseConfigured()) return phMyPoems();
   // authorId 가 비어 있으면 절대 데이터를 노출하지 않습니다 — 모든 사용자의
   // 시를 잠깐이라도 보여주는 것을 방지하는 안전장치.
   if (!authorId) return [];
+  if (!isSupabaseConfigured()) return phMyPoems(authorId);
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -36,6 +36,8 @@ export async function getMyPoems(authorId: string): Promise<Poem[]> {
   }
   // 벨트 + 멜빵 — 혹시 RLS / WHERE 가 잘못 풀려 다른 사람의 시가 끼어와도
   // 클라이언트로 보내기 전에 한 번 더 거릅니다.
+  // poems_public_read 정책이 published+public/link 를 누구나 select 가능하게 하므로,
+  // 만약 호출 시점에 RLS 의 author_id 조건이 풀려도 .eq + 이 filter 로 본인 것만 보입니다.
   return (data ?? []).filter(
     (p) => (p as Poem).author_id === authorId,
   ) as Poem[];

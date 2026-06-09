@@ -475,9 +475,16 @@ function attachAuthor(p: Poem): PoemWithAuthor {
   return { ...p, author: publicProfile(author) };
 }
 
-export function getMyPoems(): Poem[] {
+/**
+ * 데모/placeholder 모드의 ‘나의 시’.
+ *
+ * 전달받은 authorId 가 있으면 정확히 그 사용자의 시만 반환합니다.
+ * (Supabase 미연결 상태에서도 다른 작가의 시가 섞이지 않도록 보장)
+ */
+export function getMyPoems(authorId?: string): Poem[] {
+  const targetId = authorId && authorId.length > 0 ? authorId : me.id;
   return [...placeholderPoems]
-    .filter((p) => p.author_id === me.id)
+    .filter((p) => p.author_id === targetId)
     .sort((a, b) => +new Date(b.updated_at) - +new Date(a.updated_at));
 }
 

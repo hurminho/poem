@@ -8,40 +8,36 @@ interface PoemPreviewProps {
   content: string;
   className?: string;
   /**
-   * 본문 가로 정렬. 지정하지 않으면 'center' 로 폴백합니다.
+   * 시 본문 가로 정렬은 ‘가운데’로 일괄 통일되었습니다.
+   * 저장된 text_align 값은 시집 만들기 단계에서만 활용할 예정이라
+   * 표시 단계에서는 무시합니다. prop 시그니처는 호환 위해 남깁니다.
    */
   textAlign?: TextAlign | null;
   lang?: Locale;
 }
 
-const ALIGN_CLASS: Record<TextAlign, string> = {
-  left: "text-left",
-  center: "text-center",
-  right: "text-right",
-};
-
 /**
  * 시 본문은 .poem-body 클래스가 명조체 + 줄바꿈 보존 + 큰 행간을 보장합니다.
  *
- * 본문/제목 모두 동일한 정렬을 적용해 편집기와 미리보기가 같은 자리에서 줄바꿈됩니다.
+ * 시담 정책: 시 표시 글꼴·정렬은 ‘본명조 / 가운데’로 통일합니다.
+ * (개별 폰트·정렬 커스터마이즈는 추후 ‘시집 만들기’ 단계에서 제공)
  */
 export function PoemPreview({
   title,
   content,
   className,
-  textAlign = "center",
+  textAlign,
   lang = "ko",
 }: PoemPreviewProps) {
-  const align = textAlign ?? "center";
-  const cls = ALIGN_CLASS[align];
+  void textAlign;
   return (
     <article className={cn("max-w-prose mx-auto", className)}>
       {title && (
-        <h1 className={cn("poem-title text-2xl md:text-3xl mb-8", cls)}>
+        <h1 className="poem-title text-2xl md:text-3xl mb-8 text-center">
           {title}
         </h1>
       )}
-      <div className={cn("poem-body", cls)}>
+      <div className="poem-body text-center">
         {content || (
           <span className="text-text-secondary italic">
             {getDictionary(lang).studio.poemPreview.emptyBody}

@@ -8,6 +8,10 @@ import { getProfileByUsername } from "@/lib/db/profiles";
 import { getPublicBooksByAuthor } from "@/lib/db/books";
 import { getPublicPoemsByAuthor } from "@/lib/db/poems";
 import { getCurrentUser } from "@/lib/auth/current";
+import {
+  getFollowerCountAction,
+  isFollowingAction,
+} from "@/lib/follows/actions";
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -24,10 +28,12 @@ export default async function AuthorPage({ params }: PageProps) {
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
 
-  const [books, poems, viewer] = await Promise.all([
+  const [books, poems, viewer, followerCount, isFollowing] = await Promise.all([
     getPublicBooksByAuthor(profile.id),
     getPublicPoemsByAuthor(profile.id),
     getCurrentUser(),
+    getFollowerCountAction(profile.id),
+    isFollowingAction(profile.id),
   ]);
 
   return (
@@ -57,8 +63,9 @@ export default async function AuthorPage({ params }: PageProps) {
             authorId={profile.id}
             isLoggedIn={!!viewer}
             isSelf={viewer?.id === profile.id}
+            initialFollowing={isFollowing}
+            initialCount={followerCount}
           />
-          <span className="text-xs text-text-secondary">팔로워 —</span>
         </div>
       </header>
 

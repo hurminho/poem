@@ -246,6 +246,19 @@ textarea.poem-editor-textarea {
   overflow-y: auto;
 }
 
+/* 본문 입력은 ‘시 보기’ 와 같은 크기 + 한 단계 더 크게 — 시담의 새 정책.
+   제목/작가의 말/태그/공개 범위는 작은 보조 입력으로, 본문만 큰 명조로. */
+textarea.poem-editor-textarea-lg {
+  font-size: 19px;
+  line-height: 2.1;
+}
+@media (min-width: 768px) {
+  textarea.poem-editor-textarea-lg { font-size: 22px; line-height: 2.15; }
+}
+@media (min-width: 1280px) {
+  textarea.poem-editor-textarea-lg { font-size: 23px; line-height: 2.2; }
+}
+
 /* ──────────────────────────────────────────────────────────
    시 에디터 폰트 옵션 — 사용자가 직접 고르는 한글 무료 폰트.
    기본 .poem-editor-textarea 가 var(--font-serif-poem) 을 쓰므로,

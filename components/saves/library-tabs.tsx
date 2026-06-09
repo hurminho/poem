@@ -5,10 +5,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 
+// ‘저장한 시’ 탭은 좋아한 시로 통합되었습니다.
+// (saves 테이블/관련 코드는 보존 — 추후 별도 자리로 다시 분리할 수 있도록)
 const TABS = [
-  { id: "books", label: "저장한 시집" },
-  { id: "poems", label: "저장한 시" },
   { id: "liked", label: "좋아한 시" },
+  { id: "books", label: "저장한 시집" },
   { id: "highlights", label: "저장한 구절" },
 ] as const;
 
@@ -25,7 +26,8 @@ export function LibraryTabs({ active }: Props) {
       <ul className="flex gap-1">
         {TABS.map((t) => {
           const params = new URLSearchParams(sp?.toString());
-          if (t.id === "books") params.delete("tab");
+          // 기본 탭(좋아한 시)은 query 없이, 나머지는 ?tab= 으로 식별
+          if (t.id === "liked") params.delete("tab");
           else params.set("tab", t.id);
           const href = params.size ? `/library?${params.toString()}` : "/library";
           const isActive = active === t.id;
