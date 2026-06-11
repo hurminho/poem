@@ -179,6 +179,60 @@ body {
 }
 
 /* ──────────────────────────────────────────────────────────
+   로딩 일러스트 — ‘나뭇잎이 한 줄을 적는’ 모션
+   (components/ui/leaf-writing-loader.tsx 에서 사용)
+   ────────────────────────────────────────────────────────── */
+.sidam-loader { overflow: visible; }
+
+/* 잎 달린 가지: 펜처럼 좌우로 살짝 흔들리며 ‘쓰는’ 느낌 */
+.sidam-loader-sprig {
+  transform-box: fill-box;
+  transform-origin: 18% 92%;
+  animation: sidam-loader-sway 2.4s ease-in-out infinite;
+}
+
+/* 전체가 아주 살짝 떠올랐다 가라앉음 */
+.sidam-loader-float {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sidam-loader-float 3.2s ease-in-out infinite;
+}
+
+/* 손글씨 곡선: 왼쪽→오른쪽으로 그려졌다가 다시 지워지길 반복 */
+.sidam-loader-write {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: sidam-loader-write 2.4s ease-in-out infinite;
+}
+
+@keyframes sidam-loader-write {
+  0%   { stroke-dashoffset: 100; }
+  55%  { stroke-dashoffset: 0; }
+  72%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -100; }
+}
+
+@keyframes sidam-loader-sway {
+  0%, 100% { transform: rotate(-2.5deg); }
+  55%      { transform: rotate(3deg); }
+}
+
+@keyframes sidam-loader-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+
+/* 모션 민감 사용자에게는 정적인 그림으로 */
+@media (prefers-reduced-motion: reduce) {
+  .sidam-loader-sprig,
+  .sidam-loader-float,
+  .sidam-loader-write {
+    animation: none;
+  }
+  .sidam-loader-write { stroke-dashoffset: 0; }
+}
+
+/* ──────────────────────────────────────────────────────────
    재사용 클래스 (시담 디자인 시스템)
    ────────────────────────────────────────────────────────── */
 
