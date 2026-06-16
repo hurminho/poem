@@ -18,15 +18,18 @@ export function PoemVisibilitySelector({ value, onChange, className, lang = "ko"
   const OPTIONS: {
     value: Visibility;
     label: string;
-    description: string;
     icon: React.ComponentType<{ className?: string }>;
   }[] = [
-    { value: "private", label: t.private, description: t.privateDesc, icon: Lock },
-    { value: "link", label: t.link, description: t.linkDesc, icon: LinkIcon },
-    { value: "public", label: t.public, description: t.publicDesc, icon: Globe },
+    { value: "private", label: t.private, icon: Lock },
+    { value: "link", label: t.link, icon: LinkIcon },
+    { value: "public", label: t.public, icon: Globe },
   ];
   return (
-    <div className={cn("space-y-2", className)} role="radiogroup" aria-label={t.aria}>
+    <div
+      className={cn("inline-flex rounded-lg border border-border-soft bg-surface p-0.5", className)}
+      role="radiogroup"
+      aria-label={t.aria}
+    >
       {OPTIONS.map((o) => {
         const Icon = o.icon;
         const active = value === o.value;
@@ -38,17 +41,14 @@ export function PoemVisibilitySelector({ value, onChange, className, lang = "ko"
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              "w-full flex items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors",
+              "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors",
               active
-                ? "border-accent bg-accent-soft/40"
-                : "border-border-soft bg-surface hover:border-accent/60",
+                ? "bg-text-primary text-background"
+                : "text-text-secondary hover:bg-accent-soft hover:text-text-primary",
             )}
           >
-            <Icon className="size-4 text-text-secondary shrink-0" />
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-text-primary">{o.label}</p>
-              <p className="text-xs text-text-secondary">{o.description}</p>
-            </div>
+            <Icon className="size-3.5 shrink-0" />
+            {o.label}
           </button>
         );
       })}

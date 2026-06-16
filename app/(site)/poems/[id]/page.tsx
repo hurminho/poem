@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
 import { PoemReader } from "@/components/poem/poem-reader";
 import { ReflectionSection } from "@/components/reflections/reflection-section";
 import { ReaderThemeToggle } from "@/components/reader/reader-theme-toggle";
@@ -8,6 +7,7 @@ import { ReaderActions } from "@/components/reader/reader-actions";
 import { ShareButton } from "@/components/ui/share-button";
 import { LikeButton } from "@/components/reactions/like-button";
 import { PoemNavSwipe } from "@/components/poem/poem-nav-swipe";
+import { PoemOwnerMenu } from "@/components/poem/poem-owner-menu";
 import { getPublicPoemById, getPublicPoemIdsOrdered } from "@/lib/db/poems";
 import { getCurrentUser } from "@/lib/auth/current";
 import { countReactionsFor, hasReacted } from "@/lib/db/reactions";
@@ -29,9 +29,7 @@ export default async function SinglePoemPage({ params }: PageProps) {
 
   const user = await getCurrentUser();
   const isLoggedIn = !!user;
-  // 작성자 본인이 자기 시를 보고 있을 때는 ‘수정’ 버튼을 항상 노출합니다.
   const isOwner = !!user && user.id === poem.author_id;
-  // 게스트에게는 좌/우 네비를 노출하지 않습니다 — 다른 시도 차피 가입해야 보입니다.
   const [liked, likeCount, orderedIds] = await Promise.all([
     user
       ? hasReacted(user.id, "poem", poem.id, "like")
@@ -40,10 +38,6 @@ export default async function SinglePoemPage({ params }: PageProps) {
     isLoggedIn ? getPublicPoemIdsOrdered(500) : Promise.resolve<string[]>([]),
   ]);
 
-  // ordered list 는 published_at 내림차순 (최신이 앞).
-  // 화면 직관(왼쪽으로 쓸기 = 다음 시) 에 맞춰 prev/next 를 다음과 같이 매핑합니다.
-  //   prevId = 더 최근 발행된 시 (현재 인덱스 − 1) → 우측 ▶︎
-  //   nextId = 더 오래 발행된 시 (현재 인덱스 + 1) → 좌측 ◀︎ (= 왼쪽으로 쓸기)
   let prevId: string | null = null;
   let nextId: string | null = null;
   if (isLoggedIn) {
@@ -55,7 +49,6 @@ export default async function SinglePoemPage({ params }: PageProps) {
     }
   }
 
-  // 게스트는 본문 전체가 아닌 첫 두 줄까지만 노출.
   const teaserPoem = isLoggedIn
     ? poem
     : {
@@ -85,18 +78,8 @@ export default async function SinglePoemPage({ params }: PageProps) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {/* 본인 시일 때는 항상 ‘수정’ 진입 — 발행/임시 어디서든 같은 자리에서 편집할 수 있게 */}
-            {isOwner ? (
-              <Link
-                href={`/studio/poems/${poem.id}/edit`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-soft bg-surface px-3 text-xs text-text-secondary hover:text-text-primary hover:border-accent transition-colors"
-                aria-label="이 시 수정하기"
-              >
-                <Pencil className="size-3.5" />
-                수정
-              </Link>
-            ) : null}
             <ReaderThemeToggle />
+            {isOwner ? <PoemOwnerMenu poemId={poem.id} /> : null}
           </div>
         </div>
       </div>

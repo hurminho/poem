@@ -6,9 +6,9 @@ import { getPublicPoems } from "@/lib/db/poems";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
-  title: "시담 — 나만의 시를 담습니다.",
+  title: "시담",
   description:
-    "한 줄의 시를 적고, 다른 이의 시를 천천히 읽는 조용한 자리. 시담입니다.",
+    "오늘의 마음을 한 편의 시에 담습니다.",
 };
 
 const PASTEL_TONES = [
@@ -74,10 +74,9 @@ function PublicPoemsSection({ poems, isLoggedIn }: PublicPoemsSectionProps) {
             · 누군가의 시
           </p>
           <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">
-            오늘 누군가가 두고 간 시
+            누군가의 마음에 담긴 시
           </h2>
           <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
-            전체 공개로 발행된 시들을 한 자리에 모았어요. 마음에 닿는 한 편을 천천히.
           </p>
         </div>
         <Link

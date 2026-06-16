@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
 import { PoemReader } from "@/components/poem/poem-reader";
 import { ReflectionSection } from "@/components/reflections/reflection-section";
 import { ReaderThemeToggle } from "@/components/reader/reader-theme-toggle";
@@ -8,6 +7,7 @@ import { ReaderActions } from "@/components/reader/reader-actions";
 import { ShareButton } from "@/components/ui/share-button";
 import { LikeButton } from "@/components/reactions/like-button";
 import { PoemNavSwipe } from "@/components/poem/poem-nav-swipe";
+import { PoemOwnerMenu } from "@/components/poem/poem-owner-menu";
 import { getPublicPoemById, getPublicPoemIdsOrdered } from "@/lib/db/poems";
 import { getCurrentUser } from "@/lib/auth/current";
 import { countReactionsFor, hasReacted } from "@/lib/db/reactions";
@@ -78,17 +78,8 @@ export default async function EnSinglePoemPage({ params }: PageProps) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {isOwner ? (
-              <Link
-                href={`/en/studio/poems/${poem.id}/edit`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-soft bg-surface px-3 text-xs text-text-secondary hover:text-text-primary hover:border-accent transition-colors"
-                aria-label="Edit this poem"
-              >
-                <Pencil className="size-3.5" />
-                Edit
-              </Link>
-            ) : null}
             <ReaderThemeToggle lang="en" />
+            {isOwner ? <PoemOwnerMenu poemId={poem.id} lang="en" /> : null}
           </div>
         </div>
       </div>
