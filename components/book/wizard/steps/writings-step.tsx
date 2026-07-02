@@ -4,16 +4,21 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { BookPoemPicker } from "@/components/book/book-poem-picker";
+import { BookPagePreview, type PagePreviewData } from "@/components/book/book-page-preview";
 import type { Poem } from "@/types";
 import type { Locale } from "@/lib/i18n/config";
 
-type Tab = "select" | "new" | "paste";
+type Tab = "select" | "paste";
 
 interface Props {
   myPoems: Poem[];
   selectedPoemIds: string[];
   onSelectedChange: (ids: string[]) => void;
   onPastedDrafts?: (blocks: string[]) => void;
+  /** 이전 스텝에서 고른 레이아웃 — 미리보기 반영 */
+  layout?: string;
+  imageMode?: string;
+  pageImageUrls?: string[];
   lang?: Locale;
 }
 
@@ -22,6 +27,9 @@ export function WritingsStep({
   selectedPoemIds,
   onSelectedChange,
   onPastedDrafts,
+  layout = "basic_collection",
+  imageMode,
+  pageImageUrls,
   lang = "ko",
 }: Props) {
   const isEn = lang === "en";
@@ -38,13 +46,28 @@ export function WritingsStep({
     .map((b) => b.trim())
     .filter(Boolean);
 
+  // 담긴 글 목록 → 페이지 미리보기 데이터
+  const previewPages: PagePreviewData[] = React.useMemo(() => {
+    const result: PagePreviewData[] = [];
+    selectedPoemIds.forEach((id, i) => {
+      const poem = myPoems.find((p) => p.id === id);
+      if (!poem) return;
+      result.push({
+        title: poem.title,
+        body: poem.content,
+        imageUrl: imageMode === "per_writing" ? pageImageUrls?.[i] : undefined,
+      });
+    });
+    return result;
+  }, [selectedPoemIds, myPoems, imageMode, pageImageUrls]);
+
   return (
     <div className="space-y-6">
       <h2 className="font-serif text-xl font-semibold text-text-primary">
         {isEn ? "Add your writings" : "글을 담아주세요"}
       </h2>
 
-      <div className="flex gap-1 rounded-lg border border-border-soft bg-surface p-0.5">
+      <div className="flex gap-1 rounded-lg border border-border-soft bg-surface p-0.5 max-w-md">
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -88,7 +111,9 @@ export function WritingsStep({
           {blocks.length > 0 && (
             <div className="flex items-center justify-between">
               <p className="text-xs text-text-secondary">
-                {isEn ? `${blocks.length} pieces detected` : `${blocks.length}편 감지됨`}
+                {isEn
+                  ? `${blocks.length} pieces detected`
+                  : `${blocks.length}편 감지됨`}
               </p>
               <button
                 type="button"
@@ -102,6 +127,18 @@ export function WritingsStep({
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* 선택된 글이 있으면 인쇄 미리보기처럼 페이지 배치를 확인 */}
+      {previewPages.length > 0 && (
+        <div className="rounded-xl border border-border-soft bg-accent-soft/20 p-4 sm:p-6">
+          <BookPagePreview
+            pages={previewPages}
+            layout={layout}
+            imageMode={imageMode}
+            lang={lang}
+          />
         </div>
       )}
     </div>

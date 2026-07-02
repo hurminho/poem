@@ -9,6 +9,7 @@ import { LayoutStep } from "./steps/layout-step";
 import { ImageStep } from "./steps/image-step";
 import { CompletionStep } from "./steps/completion-step";
 import { BookCover } from "@/components/book/book-cover";
+import { BookPagePreview, type PagePreviewData } from "@/components/book/book-page-preview";
 import { saveBookAction } from "@/lib/books/actions";
 import type { Poem, BookAuthorPosition } from "@/types";
 import type { Locale } from "@/lib/i18n/config";
@@ -37,7 +38,13 @@ const STEPS_EN: WizardStep[] = [
   { key: "complete", label: "Finish" },
 ];
 
-export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "ko" }: Props) {
+export function BookWizard({
+  myPoems,
+  authorName,
+  notice,
+  errorMessage,
+  lang = "ko",
+}: Props) {
   const isEn = lang === "en";
   const steps = isEn ? STEPS_EN : STEPS_KO;
 
@@ -56,6 +63,8 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
   const [selectedPoemIds, setSelectedPoemIds] = React.useState<string[]>([]);
   const [layoutTemplate, setLayoutTemplate] = React.useState("basic_collection");
   const [imageMode, setImageMode] = React.useState("none");
+  const [coverImageUrl, setCoverImageUrl] = React.useState<string>("");
+  const [pageImageUrls, setPageImageUrls] = React.useState<string[]>([]);
   const [pending, startTransition] = React.useTransition();
 
   const handleBookTypeSelect = (slug: string | null) => {
@@ -69,9 +78,7 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
         "group-collection": { title: isEn ? "Group Collection" : "글쓰기 모임 문집", coverTheme: "modern" },
       };
       const d = typeDefaults[slug];
-      if (d) {
-        setCover((c) => ({ ...c, title: d.title, coverTheme: d.coverTheme }));
-      }
+      if (d) setCover((c) => ({ ...c, title: d.title, coverTheme: d.coverTheme }));
     }
     setShowTypeStep(false);
     setStep(0);
@@ -80,6 +87,23 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
   const selectedPoems = selectedPoemIds
     .map((id) => myPoems.find((p) => p.id === id))
     .filter((p): p is Poem => Boolean(p));
+
+  // 실제 글 목록을 미리보기용 PagePreviewData 로 변환
+  const userPages: PagePreviewData[] = React.useMemo(() => {
+    return selectedPoems.map((p, i) => ({
+      title: p.title,
+      body: p.content,
+      imageUrl: imageMode === "per_writing" ? pageImageUrls[i] : undefined,
+    }));
+  }, [selectedPoems, imageMode, pageImageUrls]);
+
+  const handlePageImageChange = (index: number, url: string) => {
+    setPageImageUrls((prev) => {
+      const next = [...prev];
+      next[index] = url;
+      return next;
+    });
+  };
 
   const submit = (action: "draft" | "publish") => {
     const fd = new FormData();
@@ -104,11 +128,8 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
   };
 
   const prev = () => {
-    if (step === 0) {
-      setShowTypeStep(true);
-    } else {
-      setStep((s) => Math.max(0, s - 1));
-    }
+    if (step === 0) setShowTypeStep(true);
+    else setStep((s) => Math.max(0, s - 1));
   };
 
   const next = () => {
@@ -122,6 +143,57 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
       </div>
     );
   }
+
+  // 사이드바 미리보기 — 스텝에 따라 표지 또는 페이지 미리보기 노출
+  const renderSidebarPreview = () => {
+    if (step === 4) return null; // 완성 단계는 자체 미리보기 사용
+
+    // 표지 스텝: 표지만
+    if (step === 0) {
+      return (
+        <div className="space-y-3">
+          <p className="text-center text-xs text-text-secondary">
+            {isEn ? "Preview" : "미리보기"}
+          </p>
+          <BookCover
+            title={cover.title || (isEn ? "Your Title" : "제목")}
+            subtitle={cover.subtitle || undefined}
+            authorName={cover.authorName || undefined}
+            authorPosition={cover.authorPosition}
+            theme={cover.coverTheme}
+            coverUrl={imageMode === "cover_only" ? coverImageUrl : undefined}
+            size="lg"
+            lang={lang}
+          />
+        </div>
+      );
+    }
+
+    // 글/모양/이미지 스텝: 표지 + 축소된 페이지 미리보기
+    return (
+      <div className="space-y-4">
+        <BookCover
+          title={cover.title || (isEn ? "Your Title" : "제목")}
+          subtitle={cover.subtitle || undefined}
+          authorName={cover.authorName || undefined}
+          authorPosition={cover.authorPosition}
+          theme={cover.coverTheme}
+          coverUrl={imageMode === "cover_only" ? coverImageUrl : undefined}
+          size="md"
+          lang={lang}
+        />
+        <p className="text-center text-xs text-text-secondary">
+          {userPages.length > 0
+            ? isEn
+              ? `${userPages.length} pieces`
+              : `${userPages.length}편`
+            : isEn
+              ? "No writings yet"
+              : "아직 글이 없어요"}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 pb-24 md:pb-6">
@@ -161,16 +233,17 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-[1fr_260px] lg:items-start">
         <div className="min-w-0">
-          {step === 0 && (
-            <CoverStep value={cover} onChange={setCover} lang={lang} />
-          )}
+          {step === 0 && <CoverStep value={cover} onChange={setCover} lang={lang} />}
           {step === 1 && (
             <WritingsStep
               myPoems={myPoems}
               selectedPoemIds={selectedPoemIds}
               onSelectedChange={setSelectedPoemIds}
+              layout={layoutTemplate}
+              imageMode={imageMode}
+              pageImageUrls={pageImageUrls}
               lang={lang}
             />
           )}
@@ -178,11 +251,23 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
             <LayoutStep
               value={layoutTemplate}
               onChange={setLayoutTemplate}
+              userPages={userPages}
+              imageMode={imageMode}
               lang={lang}
             />
           )}
           {step === 3 && (
-            <ImageStep value={imageMode} onChange={setImageMode} lang={lang} />
+            <ImageStep
+              value={imageMode}
+              onChange={setImageMode}
+              coverImageUrl={coverImageUrl}
+              onCoverImageChange={setCoverImageUrl}
+              pageImageUrls={pageImageUrls}
+              onPageImageChange={handlePageImageChange}
+              userPages={userPages}
+              layout={layoutTemplate}
+              lang={lang}
+            />
           )}
           {step === 4 && (
             <CompletionStep
@@ -201,33 +286,33 @@ export function BookWizard({ myPoems, authorName, notice, errorMessage, lang = "
         </div>
 
         {step < 4 && (
-          <div className="hidden lg:block sticky top-20 space-y-4">
-            <p className="text-xs text-text-secondary text-center">
-              {isEn ? "Preview" : "미리보기"}
-            </p>
-            <BookCover
-              title={cover.title || (isEn ? "Your Title" : "제목")}
-              subtitle={cover.subtitle || undefined}
-              authorName={cover.authorName || undefined}
-              authorPosition={cover.authorPosition}
-              theme={cover.coverTheme}
-              size="lg"
-              lang={lang}
-            />
-            {selectedPoemIds.length > 0 && (
-              <p className="text-center text-xs text-text-secondary">
-                {isEn ? `${selectedPoemIds.length} pieces` : `${selectedPoemIds.length}편`}
-              </p>
-            )}
+          <div className="hidden lg:block sticky top-20">
+            {renderSidebarPreview()}
           </div>
         )}
       </div>
+
+      {/* 표지/모양/이미지 스텝에서 사용자 글이 있으면 하단에 페이지 미리보기 노출은
+          각 스텝이 자체적으로 처리합니다. 여기서는 중복 노출을 피합니다. */}
+      {step === 0 && userPages.length > 0 && (
+        <div className="rounded-xl border border-border-soft bg-accent-soft/20 p-4 sm:p-6 lg:hidden">
+          <BookPagePreview
+            pages={userPages}
+            layout={layoutTemplate}
+            imageMode={imageMode}
+            coverImageUrl={coverImageUrl}
+            lang={lang}
+          />
+        </div>
+      )}
 
       <WizardBottomNav
         onPrev={step > 0 || !showTypeStep ? prev : undefined}
         onNext={step < steps.length - 1 ? next : undefined}
         prevLabel={isEn ? "Back" : "이전"}
-        nextLabel={step === steps.length - 2 ? (isEn ? "Finish" : "완성") : (isEn ? "Next" : "다음")}
+        nextLabel={
+          step === steps.length - 2 ? (isEn ? "Finish" : "완성") : (isEn ? "Next" : "다음")
+        }
         nextDisabled={!canGoNext()}
         isLast={step === steps.length - 2}
       />

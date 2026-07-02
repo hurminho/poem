@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { BookPagePreview, type PagePreviewData } from "@/components/book/book-page-preview";
 import type { Locale } from "@/lib/i18n/config";
 
 interface LayoutOption {
@@ -26,15 +27,51 @@ const LAYOUTS_EN: LayoutOption[] = [
   { slug: "photo_text", label: "Photo & Text", description: "A visual collection where images and writings alternate.", icon: "🖼" },
 ];
 
+// 각 레이아웃 감성을 보여주는 짧은 샘플 페이지.
+// 실제 사용자의 글이 있으면 그 글로, 없으면 이 샘플로 보여줍니다.
+const SAMPLE_PAGES_KO: PagePreviewData[] = [
+  {
+    title: "저녁의 창",
+    body: "붉은 빛이\n창을 지나가고\n\n그 자리에 남은\n따뜻함만 만져본다.",
+  },
+  {
+    title: "혼잣말",
+    body: "말하지 못한 문장은\n어디로 가는 걸까.\n\n오늘도\n입 안에서 조용히\n녹아 사라진다.",
+  },
+];
+
+const SAMPLE_PAGES_EN: PagePreviewData[] = [
+  {
+    title: "Evening Window",
+    body: "The red light\npasses through the window\n\nand I touch\nthe warmth it left behind.",
+  },
+  {
+    title: "To Myself",
+    body: "Where do the words\nI never said go?\n\nToday again,\nthey quietly melt\nin my mouth.",
+  },
+];
+
 interface Props {
   value: string;
   onChange: (slug: string) => void;
+  /** 실제 사용자의 글 (선택된 것). 없으면 샘플로 대체. */
+  userPages?: PagePreviewData[];
+  imageMode?: string;
   lang?: Locale;
 }
 
-export function LayoutStep({ value, onChange, lang = "ko" }: Props) {
+export function LayoutStep({
+  value,
+  onChange,
+  userPages,
+  imageMode,
+  lang = "ko",
+}: Props) {
   const isEn = lang === "en";
   const layouts = isEn ? LAYOUTS_EN : LAYOUTS_KO;
+  const samplePages = isEn ? SAMPLE_PAGES_EN : SAMPLE_PAGES_KO;
+  const previewPages =
+    userPages && userPages.length > 0 ? userPages : samplePages;
 
   return (
     <div className="space-y-6">
@@ -43,7 +80,9 @@ export function LayoutStep({ value, onChange, lang = "ko" }: Props) {
           {isEn ? "Choose reading layout" : "읽는 모양을 골라주세요"}
         </h2>
         <p className="mt-1.5 text-sm text-text-secondary">
-          {isEn ? "This changes how your collection feels to readers." : "문집이 읽히는 분위기가 달라집니다."}
+          {isEn
+            ? "This changes how your collection feels to readers."
+            : "문집이 읽히는 분위기가 달라집니다."}
         </p>
       </div>
 
@@ -67,11 +106,22 @@ export function LayoutStep({ value, onChange, lang = "ko" }: Props) {
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-text-primary">{l.label}</p>
-                <p className="mt-1 text-xs text-text-secondary leading-relaxed">{l.description}</p>
+                <p className="mt-1 text-xs text-text-secondary leading-relaxed">
+                  {l.description}
+                </p>
               </div>
             </button>
           );
         })}
+      </div>
+
+      <div className="rounded-xl border border-border-soft bg-accent-soft/20 p-4 sm:p-6">
+        <BookPagePreview
+          pages={previewPages}
+          layout={value}
+          imageMode={imageMode}
+          lang={lang}
+        />
       </div>
     </div>
   );
