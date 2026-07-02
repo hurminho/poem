@@ -102,6 +102,10 @@ export async function saveBookAction(formData: FormData) {
     status = "archived";
   }
 
+  const book_type = String(formData.get("book_type") || "").trim() || null;
+  const layout_template = String(formData.get("layout_template") || "basic_collection").trim();
+  const image_mode = String(formData.get("image_mode") || "none").trim();
+
   const payload = {
     author_id: user.id,
     title,
@@ -112,6 +116,9 @@ export async function saveBookAction(formData: FormData) {
     visibility,
     status,
     allow_reviews,
+    book_type,
+    layout_template,
+    image_mode,
     ...(action === "publish" ? { published_at } : {}),
   };
 

@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { PoemVisibilitySelector } from "@/components/poem/poem-visibility-selector";
 import { TagInput } from "@/components/poem/tag-input";
+import { WritingThemeSelector } from "@/components/poem/writing-theme-selector";
+import { PoemLivePreview } from "@/components/poem/poem-live-preview";
 import { savePoemAction, autosavePoemAction } from "@/lib/poems/actions";
 import type { Poem, Visibility } from "@/types";
 import { cn } from "@/lib/utils";
@@ -48,6 +50,7 @@ export function PoemEditor({
   // 시 본문 정렬·글꼴은 ‘가운데 / 본명조’로 통일됩니다.
   // (개별 선택 UI 는 추후 ‘시집 만들기’ 단계에서 다시 제공할 예정 — 코드는 보존)
   const textAlign = "center" as const;
+  const [theme, setTheme] = React.useState<string>(initial?.theme ?? "paper");
   const [tags, setTags] = React.useState<string[]>(initial?.tags ?? []);
   const [pending, startTransition] = React.useTransition();
   const [actionLabel, setActionLabel] = React.useState<string>("");
@@ -86,6 +89,7 @@ export function PoemEditor({
         allowComments,
         allowCopy,
         textAlign,
+        theme,
         tags,
       });
       if (res.ok) {
@@ -98,7 +102,7 @@ export function PoemEditor({
       }
     }, AUTOSAVE_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [title, content, note, visibility, allowComments, allowCopy, tags, textAlign, id]);
+  }, [title, content, note, visibility, allowComments, allowCopy, tags, textAlign, theme, id]);
 
   const submit = (action: "draft" | "publish" | "archive") => {
     const fd = new FormData();
@@ -111,6 +115,7 @@ export function PoemEditor({
     if (allowComments) fd.set("allow_comments", "on");
     if (allowCopy) fd.set("allow_copy", "on");
     fd.set("text_align", textAlign);
+    fd.set("theme", theme);
     fd.set("tags", tags.join(","));
     fd.set("locale", lang);
     setActionLabel(
@@ -128,9 +133,18 @@ export function PoemEditor({
     error: t.autoError,
   };
 
-  // 단일 컬럼 — 우측 미리보기 카드는 제거되었습니다.
+  const THEME_COLORS: Record<string, { bg: string; text: string }> = {
+    paper: { bg: "#F6F1E7", text: "#2F332D" },
+    white: { bg: "#FFFFFF", text: "#222222" },
+    night: { bg: "#16201C", text: "#F5F0E8" },
+    green: { bg: "#E8F1DC", text: "#2E4638" },
+    letter: { bg: "#FBF4E8", text: "#3A3028" },
+    cream: { bg: "#F8F3EA", text: "#2B2B2B" },
+  };
+  const tc = THEME_COLORS[theme] ?? THEME_COLORS.paper;
+
   return (
-    <div className="grid gap-6">
+    <div className="grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
       <Card className="p-5 sm:p-6">
         <div className="flex items-center justify-between mb-5 gap-3">
           <h2 className="font-serif text-base font-semibold text-text-primary">{t.heading}</h2>
@@ -184,12 +198,13 @@ export function PoemEditor({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               className={cn(
-                "poem-editor-textarea poem-editor-textarea-lg px-5 py-4 text-center",
+                "poem-editor-textarea poem-editor-textarea-lg px-5 py-4 text-center rounded-xl transition-colors",
               )}
+              style={{ backgroundColor: tc.bg, color: tc.text }}
             />
           </div>
 
-          {/* 작가의 말 — 본문보다 작게 */}
+          <WritingThemeSelector value={theme} onChange={setTheme} lang={lang} />
           <div className="space-y-1.5">
             <Label htmlFor="note" className="text-xs">{t.note}</Label>
             <Textarea
@@ -270,6 +285,15 @@ export function PoemEditor({
           </p>
         </div>
       </Card>
+
+      <div className="hidden lg:block sticky top-20">
+        <PoemLivePreview
+          title={title}
+          content={content}
+          theme={theme}
+          lang={lang}
+        />
+      </div>
     </div>
   );
 }

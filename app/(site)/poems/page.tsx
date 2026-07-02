@@ -5,7 +5,7 @@ import { getCurrentProfile } from "@/lib/auth/current";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
-  title: "누군가의 시",
+  title: "다른이의 시",
   description:
     "오늘 다른 작가들이 전체 공개로 적어둔 시들을 천천히 펼쳐봅니다.",
 };
@@ -55,8 +55,8 @@ export default async function PublicPoemsPage({ searchParams }: PageProps) {
     <div className="poem-page">
       <div className="mx-auto max-w-5xl px-5 py-12 space-y-12">
         <PageTitle
-          eyebrow="· 누군가의 시"
-          title="오늘은 누군가의 시 한 편을"
+          eyebrow="· 다른이의 시"
+          title="오늘은 다른이의 시 한 편을"
           description="작가들이 전체 공개로 두고 간 시들을 천천히 펼쳐봅니다. 태그를 골라 결을 맞춰 보세요."
         />
 

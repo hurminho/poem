@@ -40,6 +40,7 @@ export function PoemReader({ poem, showNote = true, actions, position, lang = "k
           title={poem.title}
           content={poem.content}
           textAlign={poem.text_align ?? "center"}
+          theme={poem.theme ?? undefined}
         />
         {showNote && poem.note && (
           <p className="mt-10 mx-auto max-w-prose text-center poem-muted italic">

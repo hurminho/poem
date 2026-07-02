@@ -39,6 +39,9 @@ export interface Profile {
 }
 
 export type TextAlign = "left" | "center" | "right";
+export type WritingTheme = "paper" | "white" | "night" | "green" | "letter" | "cream";
+export type BookLayoutTemplate = "basic_collection" | "spacious_poetry" | "essay" | "letter" | "photo_text";
+export type BookImageMode = "none" | "cover_only" | "per_writing" | "decorative";
 
 export interface Poem {
   id: string;
@@ -53,6 +56,8 @@ export interface Poem {
   moderation_status: ModerationStatus;
   /** 본문 가로 정렬 — 0005 마이그레이션 이전 시는 'center' 로 폴백. */
   text_align?: TextAlign | null;
+  /** 글의 분위기 테마 — 0008 마이그레이션 이전 시는 'paper' 로 폴백. */
+  theme?: WritingTheme | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -70,6 +75,9 @@ export interface PoemBook {
   cover_theme: string;
   /** 표지 위 작가 필명의 위치 — 0006 마이그레이션 이전 시집은 'bottom' 으로 폴백. */
   author_position?: BookAuthorPosition | null;
+  book_type?: string | null;
+  layout_template?: BookLayoutTemplate | null;
+  image_mode?: BookImageMode | null;
   visibility: Visibility;
   status: ContentStatus;
   allow_reviews: boolean;

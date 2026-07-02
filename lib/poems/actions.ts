@@ -72,6 +72,7 @@ export async function savePoemAction(formData: FormData) {
   const allow_comments = formData.get("allow_comments") === "on";
   const allow_copy = formData.get("allow_copy") === "on";
   const text_align = asAlign(formData.get("text_align"), "center");
+  const theme = String(formData.get("theme") || "paper").trim();
   const tagsRaw = String(formData.get("tags") || "");
   const tagNames = tagsRaw
     .split(",")
@@ -104,6 +105,7 @@ export async function savePoemAction(formData: FormData) {
     allow_comments,
     allow_copy,
     text_align,
+    theme,
     ...(action === "publish" ? { published_at } : {}),
   };
 
@@ -214,6 +216,7 @@ export async function autosavePoemAction(input: {
   allowComments?: boolean;
   allowCopy?: boolean;
   textAlign?: TextAlign;
+  theme?: string;
   tags?: string[];
 }): Promise<AutoSaveResult> {
   if (!isSupabaseConfigured()) {
@@ -256,6 +259,7 @@ export async function autosavePoemAction(input: {
     allow_comments: input.allowComments ?? true,
     allow_copy: input.allowCopy ?? false,
     text_align: textAlign,
+    theme: input.theme ?? "paper",
   };
 
   let savedId = id;

@@ -8,18 +8,37 @@ import { ShareButton } from "@/components/ui/share-button";
 import { LikeButton } from "@/components/reactions/like-button";
 import { PoemNavSwipe } from "@/components/poem/poem-nav-swipe";
 import { PoemOwnerMenu } from "@/components/poem/poem-owner-menu";
+import { PoemShareImageButton } from "@/components/poem/poem-share-button";
 import { getPublicPoemById, getPublicPoemIdsOrdered } from "@/lib/db/poems";
 import { getCurrentUser } from "@/lib/auth/current";
 import { countReactionsFor, hasReacted } from "@/lib/db/reactions";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const p = await getPublicPoemById(id);
-  return { title: p ? `${p.title} — ${p.author.display_name}` : "시담" };
+  if (!p) return { title: "시담" };
+
+  const desc = p.content.split("\n").slice(0, 3).join(" ").slice(0, 120);
+  return {
+    title: `${p.title} — ${p.author.display_name}`,
+    description: desc,
+    openGraph: {
+      title: p.title,
+      description: desc,
+      type: "article",
+      url: `/poems/${id}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: p.title,
+      description: desc,
+    },
+  };
 }
 
 export default async function SinglePoemPage({ params }: PageProps) {
@@ -55,6 +74,8 @@ export default async function SinglePoemPage({ params }: PageProps) {
         ...poem,
         content: poem.content.split("\n").slice(0, 2).join("\n"),
       };
+
+  const poemTheme = poem.theme ?? undefined;
 
   return (
     <div className="poem-page">
@@ -100,6 +121,13 @@ export default async function SinglePoemPage({ params }: PageProps) {
                   variant="compact"
                 />
                 <ShareButton title={poem.title} variant="compact" />
+                <PoemShareImageButton
+                  title={poem.title}
+                  content={poem.content}
+                  authorName={poem.author.display_name}
+                  theme={poemTheme}
+                  poemUrl={`/poems/${poem.id}`}
+                />
               </div>
             </div>
           ) : (

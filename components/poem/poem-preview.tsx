@@ -3,41 +3,52 @@ import type { TextAlign } from "@/types";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 
+const THEME_COLORS: Record<string, { bg: string; text: string }> = {
+  paper: { bg: "#F6F1E7", text: "#2F332D" },
+  white: { bg: "#FFFFFF", text: "#222222" },
+  night: { bg: "#16201C", text: "#F5F0E8" },
+  green: { bg: "#E8F1DC", text: "#2E4638" },
+  letter: { bg: "#FBF4E8", text: "#3A3028" },
+  cream: { bg: "#F8F3EA", text: "#2B2B2B" },
+};
+
 interface PoemPreviewProps {
   title?: string;
   content: string;
   className?: string;
-  /**
-   * 시 본문 가로 정렬은 ‘가운데’로 일괄 통일되었습니다.
-   * 저장된 text_align 값은 시집 만들기 단계에서만 활용할 예정이라
-   * 표시 단계에서는 무시합니다. prop 시그니처는 호환 위해 남깁니다.
-   */
   textAlign?: TextAlign | null;
+  theme?: string | null;
   lang?: Locale;
 }
 
-/**
- * 시 본문은 .poem-body 클래스가 명조체 + 줄바꿈 보존 + 큰 행간을 보장합니다.
- *
- * 시담 정책: 시 표시 글꼴·정렬은 ‘본명조 / 가운데’로 통일합니다.
- * (개별 폰트·정렬 커스터마이즈는 추후 ‘시집 만들기’ 단계에서 제공)
- */
 export function PoemPreview({
   title,
   content,
   className,
   textAlign,
+  theme,
   lang = "ko",
 }: PoemPreviewProps) {
   void textAlign;
+  const tc = theme && THEME_COLORS[theme] ? THEME_COLORS[theme] : null;
+
   return (
-    <article className={cn("max-w-prose mx-auto", className)}>
+    <article
+      className={cn("max-w-prose mx-auto rounded-xl px-6 py-8 transition-colors", className)}
+      style={tc ? { backgroundColor: tc.bg, color: tc.text } : undefined}
+    >
       {title && (
-        <h1 className="poem-title text-2xl md:text-3xl mb-8 text-center">
+        <h1
+          className="poem-title text-2xl md:text-3xl mb-8 text-center"
+          style={tc ? { color: tc.text } : undefined}
+        >
           {title}
         </h1>
       )}
-      <div className="poem-body text-center">
+      <div
+        className="poem-body text-center"
+        style={tc ? { color: tc.text } : undefined}
+      >
         {content || (
           <span className="text-text-secondary italic">
             {getDictionary(lang).studio.poemPreview.emptyBody}
