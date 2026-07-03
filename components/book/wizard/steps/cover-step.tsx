@@ -6,11 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookCover } from "@/components/book/book-cover";
 import { COVER_COLORS } from "@/lib/books/cover-colors";
-import {
-  CoverSampleArt,
-  SAMPLE_CATEGORY_LABELS,
-  type SampleImageCategory,
-} from "@/components/book/cover-sample-art";
+import type { SampleImageCategory } from "@/components/book/cover-sample-art";
 import type { BookAuthorPosition, CoverImagePosition } from "@/types";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -29,28 +25,6 @@ interface Props {
   onChange: (next: CoverStepValue) => void;
   lang?: Locale;
 }
-
-const SAMPLE_CATEGORIES: SampleImageCategory[] = [
-  "none",
-  "flower",
-  "tree",
-  "nature",
-  "leaf",
-  "sky",
-  "sea",
-  "window",
-  "paper_texture",
-  "minimal_line",
-];
-
-const IMAGE_POSITIONS: { value: CoverImagePosition; ko: string; en: string }[] = [
-  { value: "top_small", ko: "상단 작게", en: "Small, top" },
-  { value: "center_small", ko: "중앙 작게", en: "Small, center" },
-  { value: "bottom_small", ko: "하단 작게", en: "Small, bottom" },
-  { value: "background_blur", ko: "전체 배경 흐리게", en: "Blurred full background" },
-  { value: "bottom_right_deco", ko: "우측 하단 장식", en: "Bottom-right accent" },
-  { value: "top_left_deco", ko: "좌측 상단 장식", en: "Top-left accent" },
-];
 
 const DESIGNER_MAILTO = (() => {
   const subject = encodeURIComponent("시담 표지 디자인 협업 문의");
@@ -72,8 +46,8 @@ export function CoverStep({ value, onChange, lang = "ko" }: Props) {
         </h2>
         <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
           {isEn
-            ? "Start from a plain page and pick a color and an optional image."
-            : "흰 페이지에서 시작해 색상과 이미지를 골라 문집 표지를 만들어보세요."}
+            ? "Start from a plain page and pick a background color for your cover."
+            : "흰 페이지에서 시작해 색상을 골라 문집 표지를 만들어보세요."}
         </p>
       </div>
 
@@ -165,79 +139,6 @@ export function CoverStep({ value, onChange, lang = "ko" }: Props) {
             {isEn ? "+" : "직접"}
           </label>
         </div>
-      </div>
-
-      {/* 샘플 이미지 */}
-      <div className="space-y-3">
-        <p className="text-sm font-medium text-text-primary">
-          {isEn ? "Sample image (optional)" : "샘플 이미지 (선택)"}
-        </p>
-        <p className="text-xs text-text-secondary">
-          {isEn
-            ? "You don't need an image — color alone makes a clean cover."
-            : "이미지는 넣지 않아도 괜찮아요. 색상만으로도 깔끔한 표지를 만들 수 있습니다."}
-        </p>
-        <div className="grid grid-cols-5 gap-2">
-          {SAMPLE_CATEGORIES.map((cat) => {
-            const active = value.imageCategory === cat;
-            const label = SAMPLE_CATEGORY_LABELS[cat][isEn ? "en" : "ko"];
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() =>
-                  set({
-                    imageCategory: cat,
-                    imagePosition: cat === "none" ? "none" : value.imagePosition === "none" ? "bottom_right_deco" : value.imagePosition,
-                  })
-                }
-                className={cn(
-                  "flex flex-col items-center gap-1.5 rounded-lg border px-1 py-2.5 transition-colors",
-                  active
-                    ? "border-accent bg-accent-soft/40"
-                    : "border-border-soft hover:border-accent/60",
-                )}
-              >
-                <span className="flex size-7 items-center justify-center text-text-secondary">
-                  {cat === "none" ? (
-                    <span className="text-[10px]">✕</span>
-                  ) : (
-                    <CoverSampleArt category={cat} color="currentColor" className="size-6" />
-                  )}
-                </span>
-                <span className="text-[10px] text-text-secondary text-center leading-tight">
-                  {label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {value.imageCategory !== "none" && (
-          <div className="space-y-2 pt-1">
-            <p className="text-xs text-text-secondary">{isEn ? "Image placement" : "이미지 위치"}</p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {IMAGE_POSITIONS.map((p) => {
-                const active = value.imagePosition === p.value;
-                return (
-                  <button
-                    key={p.value}
-                    type="button"
-                    onClick={() => set({ imagePosition: p.value })}
-                    className={cn(
-                      "rounded-lg border px-3 py-2 text-xs transition-colors",
-                      active
-                        ? "border-accent bg-accent-soft/40 text-text-primary"
-                        : "border-border-soft text-text-secondary hover:border-accent/60",
-                    )}
-                  >
-                    {isEn ? p.en : p.ko}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* 작가 필명 위치 */}
