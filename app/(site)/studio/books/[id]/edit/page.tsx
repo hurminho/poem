@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { BookForm } from "@/components/book/book-form";
+import { BookWizard } from "@/components/book/wizard/book-wizard";
 import { PageTitle } from "@/components/ui/page-title";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
@@ -26,8 +26,8 @@ export default async function EditBookPage({ params, searchParams }: PageProps) 
 
   return (
     <div className="space-y-6">
-      <PageTitle title="시집 다듬기" description="차례를 다시 정렬하거나 시를 더 담아요." />
-      <BookForm
+      <PageTitle title="시집 다듬기" description="차례를 다시 정렬하거나 글을 더 담아요." />
+      <BookWizard
         initial={{ ...result.book, poem_ids: result.poemIds }}
         myPoems={myPoems}
         authorName={profile?.display_name}

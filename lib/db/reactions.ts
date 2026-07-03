@@ -26,6 +26,27 @@ export async function countReactionsFor(
   return count ?? 0;
 }
 
+/** 여러 대상의 좋아요 수를 한 번에 조회합니다 (홈/목록 카드용). */
+export async function countReactionsForMany(
+  targetType: ReactionTargetType,
+  targetIds: string[],
+  reactionType: ReactionType = "like",
+): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (!isSupabaseConfigured() || targetIds.length === 0) return out;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reactions")
+    .select("target_id")
+    .eq("target_type", targetType)
+    .eq("reaction_type", reactionType)
+    .in("target_id", targetIds);
+  for (const r of (data as { target_id: string }[] | null) ?? []) {
+    out.set(r.target_id, (out.get(r.target_id) ?? 0) + 1);
+  }
+  return out;
+}
+
 /** 현재 사용자가 해당 콘텐츠에 reaction 을 눌렀는지 여부. */
 export async function hasReacted(
   userId: string,

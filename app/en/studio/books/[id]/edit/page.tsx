@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { BookForm } from "@/components/book/book-form";
+import { BookWizard } from "@/components/book/wizard/book-wizard";
 import { PageTitle } from "@/components/ui/page-title";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { isSupabaseConfigured } from "@/lib/supabase/check";
@@ -30,7 +30,7 @@ export default async function EditBookPage({ params, searchParams }: PageProps) 
   return (
     <div className="space-y-6">
       <PageTitle title={t.title} description={t.desc} />
-      <BookForm
+      <BookWizard
         lang="en"
         initial={{ ...result.book, poem_ids: result.poemIds }}
         myPoems={myPoems}

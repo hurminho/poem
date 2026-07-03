@@ -4,7 +4,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { BookPoemPicker } from "@/components/book/book-poem-picker";
-import { BookPagePreview, type PagePreviewData } from "@/components/book/book-page-preview";
 import type { Poem } from "@/types";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -15,10 +14,7 @@ interface Props {
   selectedPoemIds: string[];
   onSelectedChange: (ids: string[]) => void;
   onPastedDrafts?: (blocks: string[]) => void;
-  /** 이전 스텝에서 고른 레이아웃 — 미리보기 반영 */
-  layout?: string;
-  imageMode?: string;
-  pageImageUrls?: string[];
+  pastingDrafts?: boolean;
   lang?: Locale;
 }
 
@@ -27,9 +23,7 @@ export function WritingsStep({
   selectedPoemIds,
   onSelectedChange,
   onPastedDrafts,
-  layout = "basic_collection",
-  imageMode,
-  pageImageUrls,
+  pastingDrafts,
   lang = "ko",
 }: Props) {
   const isEn = lang === "en";
@@ -46,26 +40,18 @@ export function WritingsStep({
     .map((b) => b.trim())
     .filter(Boolean);
 
-  // 담긴 글 목록 → 페이지 미리보기 데이터
-  const previewPages: PagePreviewData[] = React.useMemo(() => {
-    const result: PagePreviewData[] = [];
-    selectedPoemIds.forEach((id, i) => {
-      const poem = myPoems.find((p) => p.id === id);
-      if (!poem) return;
-      result.push({
-        title: poem.title,
-        body: poem.content,
-        imageUrl: imageMode === "per_writing" ? pageImageUrls?.[i] : undefined,
-      });
-    });
-    return result;
-  }, [selectedPoemIds, myPoems, imageMode, pageImageUrls]);
-
   return (
     <div className="space-y-6">
-      <h2 className="font-serif text-xl font-semibold text-text-primary">
-        {isEn ? "Add your writings" : "글을 담아주세요"}
-      </h2>
+      <div>
+        <h2 className="font-serif text-xl font-semibold text-text-primary">
+          {isEn ? "Add writings" : "글 담기"}
+        </h2>
+        <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
+          {isEn
+            ? "Choose from what you've written, or paste text from your notes or blog."
+            : "문집에 담을 글을 골라주세요. 메모장이나 블로그에 써둔 글을 붙여넣어도 됩니다."}
+        </p>
+      </div>
 
       <div className="flex gap-1 rounded-lg border border-border-soft bg-surface p-0.5 max-w-md">
         {tabs.map((t) => (
@@ -98,8 +84,8 @@ export function WritingsStep({
         <div className="space-y-4">
           <p className="text-sm text-text-secondary leading-relaxed">
             {isEn
-              ? "Paste text from your notes or blog. We'll split it into separate pieces by blank lines."
-              : "메모장이나 블로그에 써둔 글을 붙여넣어보세요. 빈 줄을 기준으로 글을 나눠 문집에 담아드립니다."}
+              ? "We'll split your text into separate pieces by blank lines."
+              : "빈 줄을 기준으로 글을 나누어 담아드립니다."}
           </p>
           <Textarea
             value={pasteText}
@@ -112,33 +98,22 @@ export function WritingsStep({
             <div className="flex items-center justify-between">
               <p className="text-xs text-text-secondary">
                 {isEn
-                  ? `${blocks.length} pieces detected`
-                  : `${blocks.length}편 감지됨`}
+                  ? `${blocks.length} pieces detected. We'll add them to this book.`
+                  : `총 ${blocks.length}개의 글로 나누어 담을게요.`}
               </p>
               <button
                 type="button"
+                disabled={pastingDrafts}
                 onClick={() => {
                   onPastedDrafts?.(blocks);
                   setPasteText("");
                 }}
-                className="rounded-lg bg-text-primary px-4 py-2 text-xs font-medium text-background hover:opacity-90 transition-opacity"
+                className="rounded-lg bg-text-primary px-4 py-2 text-xs font-medium text-background hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                {isEn ? "Add as drafts" : "초안으로 담기"}
+                {pastingDrafts ? (isEn ? "Adding…" : "담는 중…") : isEn ? "Add these" : "글로 담기"}
               </button>
             </div>
           )}
-        </div>
-      )}
-
-      {/* 선택된 글이 있으면 인쇄 미리보기처럼 페이지 배치를 확인 */}
-      {previewPages.length > 0 && (
-        <div className="rounded-xl border border-border-soft bg-accent-soft/20 p-4 sm:p-6">
-          <BookPagePreview
-            pages={previewPages}
-            layout={layout}
-            imageMode={imageMode}
-            lang={lang}
-          />
         </div>
       )}
     </div>

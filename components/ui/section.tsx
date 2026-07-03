@@ -2,6 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface SectionProps {
+  id?: string;
   title: string;
   description?: string;
   action?: React.ReactNode;
@@ -9,9 +10,9 @@ interface SectionProps {
   className?: string;
 }
 
-export function Section({ title, description, action, children, className }: SectionProps) {
+export function Section({ id, title, description, action, children, className }: SectionProps) {
   return (
-    <section className={cn("space-y-4", className)}>
+    <section id={id} className={cn("space-y-4", id && "scroll-mt-20", className)}>
       <header className="flex items-end justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight text-text-primary">{title}</h2>

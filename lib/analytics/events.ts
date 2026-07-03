@@ -15,7 +15,23 @@ export type ActivationEvent =
   | "book_link_copied"
   | "guest_reflection_created"
   | "import_text_used"
-  | "prompt_used";
+  | "prompt_used"
+  | "book_flow_started"
+  | "cover_color_selected"
+  | "cover_sample_image_selected"
+  | "designer_request_clicked"
+  | "writing_added_to_book"
+  | "text_settings_opened"
+  | "text_settings_changed"
+  | "book_preview_opened"
+  | "book_visibility_selected"
+  | "book_published"
+  | "book_opened_from_shared_link"
+  | "book_liked"
+  | "book_reflection_created"
+  | "public_book_card_clicked"
+  | "pdf_preview_clicked"
+  | "pdf_export_clicked";
 
 interface TrackOpts {
   /** 추적 대상의 종류 (예: "poem", "book", "template") */

@@ -28,6 +28,26 @@ export async function getReflectionsFor(
   return (data ?? []) as Reflection[];
 }
 
+/** 여러 대상(시집 등)의 감상평 수를 한 번에 조회합니다 (홈/목록 카드용). */
+export async function countReflectionsForMany(
+  targetType: ReflectionTargetType,
+  targetIds: string[],
+): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (!isSupabaseConfigured() || targetIds.length === 0) return out;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reflections")
+    .select("target_id")
+    .eq("target_type", targetType)
+    .eq("status", "visible")
+    .in("target_id", targetIds);
+  for (const r of (data as { target_id: string }[] | null) ?? []) {
+    out.set(r.target_id, (out.get(r.target_id) ?? 0) + 1);
+  }
+  return out;
+}
+
 /**
  * 감상평 좋아요 — 각 감상평별 좋아요 수와, 현재 사용자의 좋아요 여부 매핑을 한 번에 가져옵니다.
  */

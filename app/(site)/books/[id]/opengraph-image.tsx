@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getPublicBookById } from "@/lib/db/books";
+import { getContrastTextColor } from "@/lib/books/cover-colors";
 
 export const runtime = "edge";
 export const alt = "시담 — 시를 담는 곳";
@@ -34,7 +35,9 @@ export default async function OGImage({ params }: { params: Promise<{ id: string
     );
   }
 
-  const tc = COVER_COLORS[book.cover_theme] ?? COVER_COLORS.warm_paper;
+  const tc = book.cover_background_color
+    ? { from: book.cover_background_color, text: getContrastTextColor(book.cover_background_color) }
+    : COVER_COLORS[book.cover_theme] ?? COVER_COLORS.warm_paper;
 
   return new ImageResponse(
     (

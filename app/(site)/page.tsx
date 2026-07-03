@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { FinalCTA } from "@/components/landing/landing-final-cta";
+import { BookCover } from "@/components/book/book-cover";
 import { getCurrentProfile } from "@/lib/auth/current";
 import { getPublicPoems } from "@/lib/db/poems";
+import { getPublicBooks } from "@/lib/db/books";
+import { countReactionsForMany } from "@/lib/db/reactions";
+import { countReflectionsForMany } from "@/lib/db/reflections";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
@@ -27,16 +31,23 @@ function toneFor(seed: string): string {
 }
 
 export default async function HomePage() {
-  const [profile, publicPoems] = await Promise.all([
+  const [profile, publicPoems, publicBooks] = await Promise.all([
     getCurrentProfile(),
     // 3개씩 × 3줄 = 9편. 나머지는 ‘전체 보기’ 링크로 유도합니다.
     getPublicPoems(9),
+    getPublicBooks(6),
   ]);
   const isLoggedIn = !!profile;
   // 1차 CTA — ‘나의 시 짓기’. 비로그인은 가입 후 곧장 시 쓰기로.
   const primaryHref = isLoggedIn ? "/studio/new" : "/signup?next=/studio/new";
   // 2차 CTA — 누군가의 시 읽기. 게스트도 미리보기까지는 볼 수 있게.
   const readPoemsHref = "/poems";
+
+  const bookIds = publicBooks.map((b) => b.id);
+  const [likeCountByBook, reflectionCountByBook] = await Promise.all([
+    countReactionsForMany("book", bookIds),
+    countReflectionsForMany("book", bookIds),
+  ]);
 
   return (
     <div className="poem-page">
@@ -51,9 +62,90 @@ export default async function HomePage() {
       {/* 2. 누군가의 시 — 홈의 본문. 공개된 시를 한 자리에 모았습니다. */}
       <PublicPoemsSection poems={publicPoems} isLoggedIn={isLoggedIn} />
 
-      {/* 3. FINAL CTA — 마지막에 다시 한 번 '오늘 한 줄' 권유. */}
+      {/* 3. 공개 문집 — 공개된 시 아래, 다른 사람들이 엮은 작은 책들. */}
+      <PublicBooksSection
+        books={publicBooks}
+        likeCountByBook={likeCountByBook}
+        reflectionCountByBook={reflectionCountByBook}
+      />
+
+      {/* 4. FINAL CTA — 마지막에 다시 한 번 '오늘 한 줄' 권유. */}
       <FinalCTA ctaHref={primaryHref} ctaLabel="나의 시 짓기" />
     </div>
+  );
+}
+
+/* ────────────────────────────────────────────────────────── */
+/* 공개 문집 — 다른 사람들이 조용히 엮어낸 문집                   */
+/* ────────────────────────────────────────────────────────── */
+interface PublicBooksSectionProps {
+  books: Awaited<ReturnType<typeof getPublicBooks>>;
+  likeCountByBook: Map<string, number>;
+  reflectionCountByBook: Map<string, number>;
+}
+
+function PublicBooksSection({ books, likeCountByBook, reflectionCountByBook }: PublicBooksSectionProps) {
+  if (books.length === 0) return null;
+
+  return (
+    <section className="mx-auto max-w-5xl px-5 pb-20 md:pb-24">
+      <header className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-[11px] tracking-[0.3em] uppercase text-text-secondary">· 공개 문집</p>
+          <h2 className="mt-2 font-serif text-2xl md:text-3xl font-semibold text-text-primary">공개 문집</h2>
+          <p className="mt-1.5 text-sm text-text-secondary leading-relaxed">
+            다른 사람들이 조용히 엮어낸 문집을 읽어보세요.
+          </p>
+        </div>
+        <Link
+          href="/studio/books/new"
+          prefetch
+          className="self-start md:self-end inline-flex h-10 items-center rounded-full border border-border-soft bg-surface px-5 text-sm text-text-primary hover:border-accent transition-colors whitespace-nowrap"
+        >
+          내 문집 만들기 →
+        </Link>
+      </header>
+
+      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {books.map((book) => (
+          <li key={book.id}>
+            <Link
+              href={`/books/${book.id}`}
+              prefetch
+              className="flex h-full gap-4 rounded-2xl border border-border-soft/70 bg-surface p-4 transition-all hover:-translate-y-[2px] hover:shadow-md hover:border-accent"
+            >
+              <div className="w-[72px] shrink-0">
+                <BookCover
+                  title={book.title}
+                  subtitle={book.subtitle}
+                  theme={book.cover_theme}
+                  coverUrl={book.cover_background_color ? undefined : book.cover_url}
+                  backgroundColor={book.cover_background_color}
+                  imageCategory={book.cover_image_category}
+                  imagePosition={book.cover_image_position}
+                  authorName={null}
+                  size="sm"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-serif text-base font-semibold text-text-primary truncate">{book.title}</p>
+                <p className="mt-0.5 text-xs text-text-secondary truncate">{book.author.display_name}</p>
+                {book.description && (
+                  <p className="mt-2 text-xs text-text-secondary leading-relaxed line-clamp-2">
+                    {book.description}
+                  </p>
+                )}
+                <div className="mt-3 flex items-center gap-3 text-[11px] text-text-secondary">
+                  <span>{book.poem_count}편</span>
+                  <span>♡ {likeCountByBook.get(book.id) ?? 0}</span>
+                  <span>· 감상평 {reflectionCountByBook.get(book.id) ?? 0}</span>
+                </div>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

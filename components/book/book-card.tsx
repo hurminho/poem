@@ -20,7 +20,10 @@ export function BookCard({ book, href, showStatus = false, showAuthor = false, l
         title={book.title}
         subtitle={book.subtitle}
         theme={book.cover_theme}
-        coverUrl={book.cover_url}
+        coverUrl={book.cover_background_color ? undefined : book.cover_url}
+        backgroundColor={book.cover_background_color}
+        imageCategory={book.cover_image_category}
+        imagePosition={book.cover_image_position}
         authorName={author?.display_name}
         authorPosition={book.author_position ?? "bottom"}
         size="md"

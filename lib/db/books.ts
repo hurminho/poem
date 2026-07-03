@@ -17,7 +17,7 @@ import {
 } from "@/lib/db/placeholder";
 
 const BOOK_COLS =
-  "id,author_id,title,subtitle,description,cover_url,cover_theme,author_position,visibility,status,allow_reviews,published_at,created_at,updated_at";
+  "id,author_id,title,subtitle,description,cover_url,cover_theme,cover_background_color,cover_image_url,cover_image_category,cover_image_position,text_settings,author_position,visibility,status,allow_reviews,published_at,created_at,updated_at";
 
 export async function getMyBooks(authorId: string): Promise<PoemBook[]> {
   if (!isSupabaseConfigured()) return phMyBooks();

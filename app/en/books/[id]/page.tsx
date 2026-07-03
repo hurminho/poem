@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BookOpen } from "lucide-react";
 import { BookCover } from "@/components/book/book-cover";
 import { BookExportActions } from "@/components/book/book-export-actions";
 import { Section } from "@/components/ui/section";
@@ -14,6 +15,7 @@ import { getCurrentUser } from "@/lib/auth/current";
 import { isSaved } from "@/lib/db/saves";
 import { countReactionsFor, hasReacted } from "@/lib/db/reactions";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { resolveTextSettings, textSettingsToStyle } from "@/lib/books/text-settings";
 
 const t = getDictionary("en").books;
 const reflectionsT = getDictionary("en").reflections;
@@ -41,6 +43,9 @@ export default async function EnPublicBookPage({ params }: PageProps) {
   ]);
 
   const authorLine = `${book.author.display_name}${t.authorsBookSuffix}`;
+  const textSettings = resolveTextSettings(book.text_settings);
+  const style = textSettingsToStyle(textSettings);
+  const hasNewCover = Boolean(book.cover_background_color);
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-12 space-y-12">
@@ -50,10 +55,14 @@ export default async function EnPublicBookPage({ params }: PageProps) {
             title={book.title}
             subtitle={book.subtitle}
             theme={book.cover_theme}
-            coverUrl={book.cover_url}
+            coverUrl={hasNewCover ? undefined : book.cover_url}
+            backgroundColor={book.cover_background_color}
+            imageCategory={book.cover_image_category}
+            imagePosition={book.cover_image_position}
             authorName={book.author.display_name}
             authorPosition={book.author_position ?? "bottom"}
             size="lg"
+            lang="en"
           />
         </div>
         <div>
@@ -82,9 +91,7 @@ export default async function EnPublicBookPage({ params }: PageProps) {
           )}
           <div className="mt-6 flex flex-wrap items-center gap-2">
             {book.poems[0] ? (
-              <PrimaryCTA href={`/en/books/${book.id}/read?p=0`}>
-                {t.startReading}
-              </PrimaryCTA>
+              <PrimaryCTA href="#reading">{t.startReading}</PrimaryCTA>
             ) : (
               <QuietButton disabled>{t.startReading}</QuietButton>
             )}
@@ -116,25 +123,70 @@ export default async function EnPublicBookPage({ params }: PageProps) {
         {book.poems.length === 0 ? (
           <p className="text-sm text-text-secondary">{t.tocEmpty}</p>
         ) : (
-          <ol className="rounded-xl border border-border-soft bg-surface divide-y divide-border-soft">
-            {book.poems.map((p, idx) => (
-              <li key={p.id}>
-                <Link
-                  href={`/en/books/${book.id}/read?p=${idx}`}
-                  className="flex items-baseline gap-4 px-5 py-3 hover:bg-accent-soft/50 transition-colors"
-                >
-                  <span className="tabular-nums text-xs text-text-secondary w-6">
-                    {String(idx + 1).padStart(2, "0")}
-                  </span>
-                  <span className="font-serif text-base text-text-primary truncate">
-                    {p.title || t.untitled}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ol>
+          <div className="space-y-3">
+            <ol className="rounded-xl border border-border-soft bg-surface divide-y divide-border-soft">
+              {book.poems.map((p, idx) => (
+                <li key={p.id}>
+                  <a
+                    href={`#item-${idx}`}
+                    className="flex items-baseline gap-4 px-5 py-3 hover:bg-accent-soft/50 transition-colors"
+                  >
+                    <span className="tabular-nums text-xs text-text-secondary w-6">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <span className="font-serif text-base text-text-primary truncate">
+                      {p.title || t.untitled}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+            <Link
+              href={`/en/books/${book.id}/read?p=0`}
+              className="inline-flex items-center gap-1.5 text-xs text-text-secondary hover:text-text-primary transition-colors"
+            >
+              <BookOpen className="size-3.5" />
+              Read one piece at a time →
+            </Link>
+          </div>
         )}
       </Section>
+
+      {book.poems.length > 0 && (
+        <Section id="reading" title="Continue reading">
+          <div
+            className="rounded-2xl border border-border-soft bg-white divide-y divide-border-soft/70"
+            style={style.container}
+          >
+            {book.poems.map((p, idx) => (
+              <article key={p.id} id={`item-${idx}`} className="px-5 py-10 sm:px-10 scroll-mt-20">
+                <p className="mb-3 text-center text-[11px] tracking-widest text-text-secondary">
+                  {String(idx + 1).padStart(2, "0")} / {String(book.poems.length).padStart(2, "0")}
+                </p>
+                {textSettings.show_titles && (
+                  <h2 className="font-serif text-xl font-semibold text-[#2F332D]" style={style.title}>
+                    {p.title || t.untitled}
+                  </h2>
+                )}
+                <div
+                  className="whitespace-pre-wrap text-[#2F332D]"
+                  style={{
+                    ...style.body,
+                    marginTop: textSettings.show_titles ? style.body.marginTop : 0,
+                  }}
+                >
+                  {p.content}
+                </div>
+              </article>
+            ))}
+            <div className="px-5 py-6 text-center">
+              <a href="#top" className="text-xs text-text-secondary hover:text-text-primary transition-colors">
+                Back to top ↑
+              </a>
+            </div>
+          </div>
+        </Section>
+      )}
 
       <BookExportActions
         bookId={book.id}

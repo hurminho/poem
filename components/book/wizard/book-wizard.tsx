@@ -3,20 +3,24 @@
 import * as React from "react";
 import { WizardStepNav, WizardBottomNav, type WizardStep } from "./wizard-step-nav";
 import { BookTypeStep } from "./steps/book-type-step";
-import { CoverStep } from "./steps/cover-step";
+import { CoverStep, type CoverStepValue } from "./steps/cover-step";
 import { WritingsStep } from "./steps/writings-step";
-import { LayoutStep } from "./steps/layout-step";
-import { ImageStep } from "./steps/image-step";
-import { CompletionStep } from "./steps/completion-step";
+import { PreviewStep } from "./steps/preview-step";
+import { PublishStep } from "./steps/publish-step";
 import { BookCover } from "@/components/book/book-cover";
-import { BookPagePreview, type PagePreviewData } from "@/components/book/book-page-preview";
-import { saveBookAction } from "@/lib/books/actions";
-import type { Poem, BookAuthorPosition } from "@/types";
+import { COVER_COLORS } from "@/lib/books/cover-colors";
+import { resolveTextSettings } from "@/lib/books/text-settings";
+import { saveBookFlowAction } from "@/lib/books/actions";
+import { autosavePoemAction } from "@/lib/poems/actions";
+import { trackActivation } from "@/lib/analytics/events";
+import type { Poem, PoemBook, Visibility, BookTextSettings } from "@/types";
 import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   myPoems: Poem[];
   authorName?: string;
+  /** 지정되면 기존 문집을 다듬는 모드로 동작합니다. */
+  initial?: Partial<PoemBook> & { poem_ids?: string[] };
   notice?: string;
   errorMessage?: string;
   lang?: Locale;
@@ -24,62 +28,69 @@ interface Props {
 
 const STEPS_KO: WizardStep[] = [
   { key: "cover", label: "표지" },
-  { key: "writings", label: "글" },
-  { key: "layout", label: "모양" },
-  { key: "images", label: "이미지" },
-  { key: "complete", label: "완성" },
+  { key: "writing", label: "글" },
+  { key: "preview", label: "미리보기" },
+  { key: "publish", label: "공개" },
 ];
 
 const STEPS_EN: WizardStep[] = [
   { key: "cover", label: "Cover" },
-  { key: "writings", label: "Writings" },
-  { key: "layout", label: "Layout" },
-  { key: "images", label: "Images" },
-  { key: "complete", label: "Finish" },
+  { key: "writing", label: "Writing" },
+  { key: "preview", label: "Preview" },
+  { key: "publish", label: "Publish" },
 ];
 
-export function BookWizard({
-  myPoems,
-  authorName,
-  notice,
-  errorMessage,
-  lang = "ko",
-}: Props) {
+export function BookWizard({ myPoems: myPoemsProp, authorName, initial, notice, errorMessage, lang = "ko" }: Props) {
   const isEn = lang === "en";
   const steps = isEn ? STEPS_EN : STEPS_KO;
 
   const [step, setStep] = React.useState(0);
-  const [bookType, setBookType] = React.useState<string | null>(null);
-  const [showTypeStep, setShowTypeStep] = React.useState(true);
+  const [showTypeStep, setShowTypeStep] = React.useState(!initial);
+  const [bookType, setBookType] = React.useState<string | null>(initial?.book_type ?? null);
 
-  const [cover, setCover] = React.useState({
-    title: "",
-    subtitle: "",
-    coverTheme: "warm_paper",
+  const [cover, setCover] = React.useState<CoverStepValue>({
+    title: initial?.title ?? "",
+    subtitle: initial?.subtitle ?? "",
     authorName: authorName ?? "",
-    authorPosition: "bottom" as BookAuthorPosition,
+    authorPosition: initial?.author_position ?? "bottom",
+    backgroundColor: initial?.cover_background_color ?? COVER_COLORS[0].hex,
+    imageCategory: (initial?.cover_image_category as CoverStepValue["imageCategory"]) ?? "none",
+    imagePosition: (initial?.cover_image_position as CoverStepValue["imagePosition"]) ?? "none",
   });
 
-  const [selectedPoemIds, setSelectedPoemIds] = React.useState<string[]>([]);
-  const [layoutTemplate, setLayoutTemplate] = React.useState("basic_collection");
-  const [imageMode, setImageMode] = React.useState("none");
-  const [coverImageUrl, setCoverImageUrl] = React.useState<string>("");
-  const [pageImageUrls, setPageImageUrls] = React.useState<string[]>([]);
+  const [extraPoems, setExtraPoems] = React.useState<Poem[]>([]);
+  const myPoems = React.useMemo(() => [...extraPoems, ...myPoemsProp], [extraPoems, myPoemsProp]);
+  const [selectedPoemIds, setSelectedPoemIds] = React.useState<string[]>(initial?.poem_ids ?? []);
+  const [pastingDrafts, startPasteTransition] = React.useTransition();
+
+  const [textSettings, setTextSettings] = React.useState<BookTextSettings>(
+    resolveTextSettings(initial?.text_settings),
+  );
+
+  const [visibility, setVisibility] = React.useState<Visibility>(initial?.visibility ?? "private");
   const [pending, startTransition] = React.useTransition();
+  const [saveError, setSaveError] = React.useState<string | undefined>(errorMessage);
+  const [published, setPublished] = React.useState<{ id: string; visibility: Visibility } | null>(
+    initial?.id && initial?.status === "published"
+      ? { id: initial.id, visibility: initial.visibility ?? "link" }
+      : null,
+  );
+  const [bookId, setBookId] = React.useState<string | undefined>(initial?.id);
 
   const handleBookTypeSelect = (slug: string | null) => {
     if (slug) {
       setBookType(slug);
-      const typeDefaults: Record<string, { title: string; coverTheme: string }> = {
-        "first-collection": { title: isEn ? "My First Collection" : "나의 첫 문집", coverTheme: "warm_paper" },
-        "after-work": { title: isEn ? "Lines After Work" : "퇴근 후의 문장들", coverTheme: "letter" },
-        "to-someone": { title: isEn ? "Words for Someone" : "누군가에게 보내는 말", coverTheme: "spring" },
-        "from-travel": { title: isEn ? "Lines from Travel" : "여행에서 가져온 문장", coverTheme: "garden" },
-        "group-collection": { title: isEn ? "Group Collection" : "글쓰기 모임 문집", coverTheme: "modern" },
+      const typeDefaults: Record<string, { title: string }> = {
+        "first-collection": { title: isEn ? "My First Collection" : "나의 첫 문집" },
+        "after-work": { title: isEn ? "Lines After Work" : "퇴근 후의 문장들" },
+        "to-someone": { title: isEn ? "Words for Someone" : "누군가에게 보내는 말" },
+        "from-travel": { title: isEn ? "Lines from Travel" : "여행에서 가져온 문장" },
+        "group-collection": { title: isEn ? "Group Collection" : "글쓰기 모임 문집" },
       };
       const d = typeDefaults[slug];
-      if (d) setCover((c) => ({ ...c, title: d.title, coverTheme: d.coverTheme }));
+      if (d) setCover((c) => ({ ...c, title: d.title }));
     }
+    trackActivation("book_flow_started", { label: slug ?? "skip" });
     setShowTypeStep(false);
     setStep(0);
   };
@@ -88,38 +99,86 @@ export function BookWizard({
     .map((id) => myPoems.find((p) => p.id === id))
     .filter((p): p is Poem => Boolean(p));
 
-  // 실제 글 목록을 미리보기용 PagePreviewData 로 변환
-  const userPages: PagePreviewData[] = React.useMemo(() => {
-    return selectedPoems.map((p, i) => ({
-      title: p.title,
-      body: p.content,
-      imageUrl: imageMode === "per_writing" ? pageImageUrls[i] : undefined,
-    }));
-  }, [selectedPoems, imageMode, pageImageUrls]);
-
-  const handlePageImageChange = (index: number, url: string) => {
-    setPageImageUrls((prev) => {
-      const next = [...prev];
-      next[index] = url;
-      return next;
+  const handlePastedDrafts = (blocks: string[]) => {
+    startPasteTransition(async () => {
+      const created: Poem[] = [];
+      const now = new Date().toISOString();
+      for (const block of blocks) {
+        const lines = block.split("\n").filter((l) => l.trim().length > 0);
+        const firstLine = (lines[0] ?? "").trim();
+        const useFirstAsTitle = lines.length > 1 && firstLine.length > 0 && firstLine.length <= 40;
+        const titleText = useFirstAsTitle ? firstLine : isEn ? "(Untitled)" : "(제목 없음)";
+        const contentText = useFirstAsTitle ? lines.slice(1).join("\n") : block;
+        const res = await autosavePoemAction({
+          title: titleText,
+          content: contentText || block,
+          visibility: "private",
+        });
+        if (res.ok && res.id) {
+          created.push({
+            id: res.id,
+            author_id: "",
+            title: titleText,
+            content: contentText || block,
+            note: null,
+            visibility: "private",
+            status: "draft",
+            allow_comments: true,
+            allow_copy: false,
+            moderation_status: "normal",
+            text_align: "center",
+            theme: "paper",
+            published_at: null,
+            created_at: now,
+            updated_at: now,
+          } as Poem);
+        }
+      }
+      if (created.length > 0) {
+        setExtraPoems((prev) => [...created, ...prev]);
+        setSelectedPoemIds((prev) => [...prev, ...created.map((c) => c.id)]);
+        trackActivation("import_text_used", { label: String(created.length) });
+      }
     });
   };
 
-  const submit = (action: "draft" | "publish") => {
+  const buildFormData = (action: "draft" | "publish") => {
     const fd = new FormData();
+    if (bookId) fd.set("id", bookId);
     fd.set("action", action);
     fd.set("title", cover.title);
     fd.set("subtitle", cover.subtitle);
-    fd.set("cover_theme", cover.coverTheme);
+    fd.set("cover_theme", "warm_paper");
+    fd.set("cover_background_color", cover.backgroundColor);
+    fd.set("cover_image_url", "");
+    fd.set("cover_image_category", cover.imageCategory);
+    fd.set("cover_image_position", cover.imagePosition);
+    fd.set("text_settings", JSON.stringify(textSettings));
     fd.set("author_position", cover.authorPosition);
-    fd.set("visibility", action === "publish" ? "link" : "private");
+    fd.set("visibility", visibility);
     fd.set("allow_reviews", "on");
     fd.set("poem_ids", selectedPoemIds.join(","));
     fd.set("locale", lang);
     fd.set("book_type", bookType ?? "");
-    fd.set("layout_template", layoutTemplate);
-    fd.set("image_mode", imageMode);
-    startTransition(() => saveBookAction(fd));
+    fd.set("layout_template", textSettings.layout_preset);
+    fd.set("image_mode", "none");
+    return fd;
+  };
+
+  const submit = (action: "draft" | "publish") => {
+    setSaveError(undefined);
+    startTransition(async () => {
+      const res = await saveBookFlowAction(buildFormData(action));
+      if (!res.ok) {
+        setSaveError(res.error);
+        return;
+      }
+      if (res.id) setBookId(res.id);
+      if (action === "publish" && res.id) {
+        trackActivation("book_published", { targetType: "book", targetId: res.id, label: res.visibility });
+        setPublished({ id: res.id, visibility: res.visibility ?? "link" });
+      }
+    });
   };
 
   const canGoNext = (): boolean => {
@@ -128,11 +187,15 @@ export function BookWizard({
   };
 
   const prev = () => {
-    if (step === 0) setShowTypeStep(true);
+    if (step === 0) setShowTypeStep(!initial);
     else setStep((s) => Math.max(0, s - 1));
   };
 
   const next = () => {
+    if (step === 0 && selectedPoemIds.length > 0) {
+      trackActivation("writing_added_to_book", { label: String(selectedPoemIds.length) });
+    }
+    if (step === 1) trackActivation("book_preview_opened");
     if (step < steps.length - 1) setStep((s) => s + 1);
   };
 
@@ -144,53 +207,33 @@ export function BookWizard({
     );
   }
 
-  // 사이드바 미리보기 — 스텝에 따라 표지 또는 페이지 미리보기 노출
   const renderSidebarPreview = () => {
-    if (step === 4) return null; // 완성 단계는 자체 미리보기 사용
-
-    // 표지 스텝: 표지만
-    if (step === 0) {
-      return (
-        <div className="space-y-3">
-          <p className="text-center text-xs text-text-secondary">
-            {isEn ? "Preview" : "미리보기"}
-          </p>
-          <BookCover
-            title={cover.title || (isEn ? "Your Title" : "제목")}
-            subtitle={cover.subtitle || undefined}
-            authorName={cover.authorName || undefined}
-            authorPosition={cover.authorPosition}
-            theme={cover.coverTheme}
-            coverUrl={imageMode === "cover_only" ? coverImageUrl : undefined}
-            size="lg"
-            lang={lang}
-          />
-        </div>
-      );
-    }
-
-    // 글/모양/이미지 스텝: 표지 + 축소된 페이지 미리보기
+    if (step >= 2) return null; // 미리보기/공개 단계는 자체 미리보기를 사용
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
+        <p className="text-center text-xs text-text-secondary">{isEn ? "Preview" : "미리보기"}</p>
         <BookCover
           title={cover.title || (isEn ? "Your Title" : "제목")}
           subtitle={cover.subtitle || undefined}
           authorName={cover.authorName || undefined}
           authorPosition={cover.authorPosition}
-          theme={cover.coverTheme}
-          coverUrl={imageMode === "cover_only" ? coverImageUrl : undefined}
-          size="md"
+          backgroundColor={cover.backgroundColor}
+          imageCategory={cover.imageCategory}
+          imagePosition={cover.imagePosition}
+          size="lg"
           lang={lang}
         />
-        <p className="text-center text-xs text-text-secondary">
-          {userPages.length > 0
-            ? isEn
-              ? `${userPages.length} pieces`
-              : `${userPages.length}편`
-            : isEn
-              ? "No writings yet"
-              : "아직 글이 없어요"}
-        </p>
+        {step === 1 && (
+          <p className="text-center text-xs text-text-secondary">
+            {selectedPoemIds.length > 0
+              ? isEn
+                ? `${selectedPoemIds.length} pieces`
+                : `${selectedPoemIds.length}편`
+              : isEn
+                ? "No writings yet"
+                : "아직 글이 없어요"}
+          </p>
+        )}
       </div>
     );
   };
@@ -202,9 +245,9 @@ export function BookWizard({
           {notice}
         </p>
       )}
-      {errorMessage && (
+      {(saveError || errorMessage) && (
         <p className="rounded-lg border border-rose-200/60 bg-rose-50 px-3 py-2 text-xs text-rose-700">
-          {errorMessage}
+          {saveError ?? errorMessage}
         </p>
       )}
 
@@ -233,7 +276,7 @@ export function BookWizard({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_260px] lg:items-start">
+      <div className={step < 2 ? "grid gap-6 lg:grid-cols-[1fr_260px] lg:items-start" : ""}>
         <div className="min-w-0">
           {step === 0 && <CoverStep value={cover} onChange={setCover} lang={lang} />}
           {step === 1 && (
@@ -241,78 +284,49 @@ export function BookWizard({
               myPoems={myPoems}
               selectedPoemIds={selectedPoemIds}
               onSelectedChange={setSelectedPoemIds}
-              layout={layoutTemplate}
-              imageMode={imageMode}
-              pageImageUrls={pageImageUrls}
+              onPastedDrafts={handlePastedDrafts}
+              pastingDrafts={pastingDrafts}
               lang={lang}
             />
           )}
           {step === 2 && (
-            <LayoutStep
-              value={layoutTemplate}
-              onChange={setLayoutTemplate}
-              userPages={userPages}
-              imageMode={imageMode}
+            <PreviewStep
+              cover={cover}
+              poems={selectedPoems}
+              textSettings={textSettings}
+              onTextSettingsChange={setTextSettings}
+              onEditCover={() => setStep(0)}
+              onEditWriting={() => setStep(1)}
+              onGoPublish={() => setStep(3)}
               lang={lang}
             />
           )}
           {step === 3 && (
-            <ImageStep
-              value={imageMode}
-              onChange={setImageMode}
-              coverImageUrl={coverImageUrl}
-              onCoverImageChange={setCoverImageUrl}
-              pageImageUrls={pageImageUrls}
-              onPageImageChange={handlePageImageChange}
-              userPages={userPages}
-              layout={layoutTemplate}
-              lang={lang}
-            />
-          )}
-          {step === 4 && (
-            <CompletionStep
-              title={cover.title}
-              subtitle={cover.subtitle}
-              coverTheme={cover.coverTheme}
-              authorName={cover.authorName}
-              authorPosition={cover.authorPosition}
-              selectedPoems={selectedPoems}
+            <PublishStep
+              cover={cover}
+              visibility={visibility}
+              onVisibilityChange={setVisibility}
               onPublish={() => submit("publish")}
-              onDraft={() => submit("draft")}
+              onSaveDraft={() => submit("draft")}
               pending={pending}
+              published={published}
+              onEditAgain={() => {
+                setPublished(null);
+                setStep(0);
+              }}
               lang={lang}
             />
           )}
         </div>
 
-        {step < 4 && (
-          <div className="hidden lg:block sticky top-20">
-            {renderSidebarPreview()}
-          </div>
-        )}
+        {step < 2 && <div className="hidden lg:block sticky top-20">{renderSidebarPreview()}</div>}
       </div>
 
-      {/* 표지/모양/이미지 스텝에서 사용자 글이 있으면 하단에 페이지 미리보기 노출은
-          각 스텝이 자체적으로 처리합니다. 여기서는 중복 노출을 피합니다. */}
-      {step === 0 && userPages.length > 0 && (
-        <div className="rounded-xl border border-border-soft bg-accent-soft/20 p-4 sm:p-6 lg:hidden">
-          <BookPagePreview
-            pages={userPages}
-            layout={layoutTemplate}
-            imageMode={imageMode}
-            coverImageUrl={coverImageUrl}
-            lang={lang}
-          />
-        </div>
-      )}
-
       <WizardBottomNav
-        onPrev={step > 0 || !showTypeStep ? prev : undefined}
+        onPrev={step > 0 || !!initial ? prev : undefined}
         onNext={step < steps.length - 1 ? next : undefined}
         prevLabel={isEn ? "Back" : "이전"}
-        nextLabel={
-          step === steps.length - 2 ? (isEn ? "Finish" : "완성") : (isEn ? "Next" : "다음")
-        }
+        nextLabel={isEn ? "Next" : "다음"}
         nextDisabled={!canGoNext()}
         isLast={step === steps.length - 2}
       />

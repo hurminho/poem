@@ -1,7 +1,13 @@
 import { cn } from "@/lib/utils";
-import type { BookAuthorPosition } from "@/types";
+import type { BookAuthorPosition, CoverImagePosition } from "@/types";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
+import { COVER_COLORS, getContrastTextColor } from "@/lib/books/cover-colors";
+import { CoverSampleArt, type SampleImageCategory } from "@/components/book/cover-sample-art";
+
+const COVER_COLORS_BY_HEX = Object.fromEntries(
+  COVER_COLORS.map((c) => [c.hex.toLowerCase(), c]),
+);
 
 interface BookCoverProps {
   title: string;
@@ -11,6 +17,10 @@ interface BookCoverProps {
   authorPosition?: BookAuthorPosition | null;
   theme?: string | null;
   coverUrl?: string | null;
+  /** 새 표지 시스템 — 지정되면 theme/coverUrl 그라데이션 대신 이 색상 + 샘플 이미지를 사용합니다. */
+  backgroundColor?: string | null;
+  imageCategory?: string | null;
+  imagePosition?: CoverImagePosition | string | null;
   className?: string;
   size?: "sm" | "md" | "lg";
   lang?: Locale;
@@ -71,6 +81,16 @@ export const COVER_THEMES = [
   { value: "archive",    label: "아카이브" },
 ];
 
+/** 샘플 이미지 배치별 위치/크기 스타일. */
+const IMAGE_POSITION_STYLE: Record<string, string> = {
+  top_small: "absolute top-[10%] left-1/2 -translate-x-1/2 size-10 opacity-70",
+  center_small: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-14 opacity-25",
+  bottom_small: "absolute bottom-[8%] left-1/2 -translate-x-1/2 size-10 opacity-70",
+  background_blur: "absolute inset-0 size-full opacity-[0.12] blur-[1px]",
+  bottom_right_deco: "absolute bottom-3 right-3 size-9 opacity-60",
+  top_left_deco: "absolute top-3 left-3 size-9 opacity-60",
+};
+
 export function BookCover({
   title,
   subtitle,
@@ -78,6 +98,9 @@ export function BookCover({
   authorPosition = "bottom",
   theme = "warm_paper",
   coverUrl,
+  backgroundColor,
+  imageCategory,
+  imagePosition,
   size = "md",
   className,
   lang = "ko",
@@ -86,6 +109,52 @@ export function BookCover({
   const themeStyle = THEMES[themeKey];
   const pos: BookAuthorPosition = authorPosition ?? "bottom";
   const t = getDictionary(lang).studio.bookCover;
+
+  // 새 표지 시스템 — 배경 색상(hex) + 선택적 샘플 이미지.
+  if (backgroundColor) {
+    const hex = backgroundColor;
+    const knownSwatch = COVER_COLORS_BY_HEX[hex.toLowerCase()];
+    const textColor = knownSwatch?.textColor ?? getContrastTextColor(hex);
+    const category = (imageCategory ?? "none") as SampleImageCategory;
+    const position = imagePosition && imagePosition !== "none" ? String(imagePosition) : null;
+
+    return (
+      <div
+        className={cn("book-cover relative w-full overflow-hidden", SIZES[size], className)}
+        style={{ backgroundColor: hex, color: textColor }}
+      >
+        {position && category !== "none" && (
+          <CoverSampleArt
+            category={category}
+            color={textColor}
+            className={IMAGE_POSITION_STYLE[position] ?? IMAGE_POSITION_STYLE.center_small}
+          />
+        )}
+        <div className="relative h-full flex flex-col text-center px-2 pt-[24%]">
+          {authorName && pos === "top" && (
+            <div className="absolute inset-x-4 top-[-18%] text-[10px] tracking-widest opacity-70 text-center">
+              {authorName}
+            </div>
+          )}
+          <p className="font-serif font-semibold leading-snug text-balance">
+            {title || t.untitled}
+          </p>
+          <span className="mt-3 mx-auto h-px w-8 opacity-30" style={{ backgroundColor: textColor }} />
+          {subtitle && (
+            <p className="mt-3 font-serif text-xs opacity-75 text-balance">{subtitle}</p>
+          )}
+          {authorName && pos === "middle" && (
+            <p className="mt-5 text-[11px] tracking-widest opacity-70">{authorName}</p>
+          )}
+        </div>
+        {authorName && pos === "bottom" && (
+          <div className="absolute inset-x-4 bottom-3 text-[10px] tracking-widest opacity-70 text-center">
+            {authorName}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (coverUrl) {
     return (

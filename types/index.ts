@@ -65,6 +65,28 @@ export interface Poem {
 
 export type BookAuthorPosition = "top" | "middle" | "bottom";
 
+/** 표지 위 샘플 이미지 배치 — 'none' 이면 이미지 없이 색상만 사용합니다. */
+export type CoverImagePosition =
+  | "none"
+  | "top_small"
+  | "center_small"
+  | "bottom_small"
+  | "background_blur"
+  | "bottom_right_deco"
+  | "top_left_deco";
+
+export interface BookTextSettings {
+  font_family: "serif_default" | "sans_default" | "serif_alt" | "sans_alt" | "system";
+  title_align: "left" | "center";
+  body_align: "left" | "center";
+  font_size: "small" | "medium" | "large";
+  line_height: "narrow" | "medium" | "wide";
+  margin_size: "narrow" | "medium" | "wide";
+  paragraph_spacing: "narrow" | "medium" | "wide";
+  show_titles: boolean;
+  layout_preset: BookLayoutTemplate;
+}
+
 export interface PoemBook {
   id: string;
   author_id: string;
@@ -73,6 +95,13 @@ export interface PoemBook {
   description: string | null;
   cover_url: string | null;
   cover_theme: string;
+  /** 새 표지 시스템 — 배경 색상(hex) + 선택적 샘플 이미지. 없으면 cover_theme 그라데이션으로 폴백. */
+  cover_background_color?: string | null;
+  cover_image_url?: string | null;
+  cover_image_category?: string | null;
+  cover_image_position?: CoverImagePosition | null;
+  /** 글꼴·정렬·여백 등 읽기 스타일 설정. */
+  text_settings?: Partial<BookTextSettings> | null;
   /** 표지 위 작가 필명의 위치 — 0006 마이그레이션 이전 시집은 'bottom' 으로 폴백. */
   author_position?: BookAuthorPosition | null;
   book_type?: string | null;

@@ -24,6 +24,15 @@ interface Props {
 const MAX_CONTENT = 500;
 const MAX_GUEST_NAME = 30;
 
+/** 시집 감상평에서만 보여주는 추천 문구 — 조용히 한 줄을 시작하기 어려울 때 도와줍니다. */
+const BOOK_REFLECTION_CHIPS: { ko: string; en: string }[] = [
+  { ko: "마지막 문장이 오래 남았어요.", en: "The last line stayed with me." },
+  { ko: "조용히 위로받는 느낌이었어요.", en: "It felt quietly comforting." },
+  { ko: "다시 읽고 싶어요.", en: "I'd like to read it again." },
+  { ko: "표지가 분위기와 잘 어울려요.", en: "The cover matches the mood so well." },
+  { ko: "이 문장은 제 마음에도 있었던 말 같아요.", en: "This line felt like something I've always carried too." },
+];
+
 export function ReflectionForm({
   targetType,
   targetId,
@@ -32,9 +41,9 @@ export function ReflectionForm({
   loggedInName,
   lang = "ko",
 }: Props) {
-  void kind;
   void loggedInName;
   const t = getDictionary(lang).reflections;
+  const isBook = kind === "book";
   const [name, setName] = React.useState("");
   const [content, setContent] = React.useState("");
   const [pending, startTransition] = React.useTransition();
@@ -72,6 +81,9 @@ export function ReflectionForm({
             targetId,
           });
         }
+        if (isBook) {
+          trackActivation("book_reflection_created", { targetType, targetId });
+        }
         setContent("");
         setName("");
         setMessage({ kind: "ok", text: t.ok });
@@ -86,7 +98,24 @@ export function ReflectionForm({
       onSubmit={onSubmit}
       className="space-y-3 rounded-xl border border-dashed border-border-soft bg-surface/60 p-5"
     >
-      <p className="font-serif text-sm font-semibold text-text-primary">{t.formTitle}</p>
+      <p className="font-serif text-sm font-semibold text-text-primary">
+        {isBook ? t.promptBook : t.formTitle}
+      </p>
+
+      {isBook && (
+        <div className="flex flex-wrap gap-1.5" aria-label={t.chipsAria}>
+          {BOOK_REFLECTION_CHIPS.map((chip) => (
+            <button
+              key={chip.ko}
+              type="button"
+              onClick={() => setContent((prev) => (prev ? prev : lang === "en" ? chip.en : chip.ko))}
+              className="rounded-full border border-border-soft bg-surface px-3 py-1 text-[11px] text-text-secondary hover:border-accent hover:text-text-primary transition-colors"
+            >
+              {lang === "en" ? chip.en : chip.ko}
+            </button>
+          ))}
+        </div>
+      )}
 
       {!isLoggedIn && (
         <div className="space-y-1.5">
